@@ -34,6 +34,26 @@
     </developer>
   </developers>
 
+  <!--
+    <scm>
+      <connection>scm:git:git@github.com:Polve/JavaBitcoindRpcClient.git</connection>
+      <developerConnection>scm:git:git@github.com:Polve/JavaBitcoindRpcClient.git</developerConnection>
+      <url>git@github.com:Polve/JavaBitcoindRpcClient.git</url>
+    </scm>
+  -->
+  <scm>
+    <connection>scm:git:https://github.com/Polve/JavaBitcoindRpcClient</connection>
+    <developerConnection>scm:git:https://github.com/Polve/JavaBitcoindRpcClient.git</developerConnection>
+    <url>scm:git:https://github.com/Polve/JavaBitcoindRpcClient</url>
+  </scm>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+
   <build>
     <plugins>
       <plugin>
@@ -44,11 +64,12 @@
           <execution>
             <id>attach-sources</id>
             <goals>
-              <goal>jar</goal>
+              <goal>jar-no-fork</goal>
             </goals>
           </execution>
         </executions>
       </plugin>
+      
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
@@ -62,14 +83,36 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.6.5</version>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>ossrh</serverId>
+          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <autoReleaseAfterClose>true</autoReleaseAfterClose>
+        </configuration>
+      </plugin>
+
     </plugins>
   </build>
-
-  <scm>
-    <connection>scm:git:git@github.com:Polve/JavaBitcoindRpcClient.git</connection>
-    <developerConnection>scm:git:git@github.com:Polve/JavaBitcoindRpcClient.git</developerConnection>
-    <url>git@github.com:Polve/JavaBitcoindRpcClient.git</url>
-  </scm>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
