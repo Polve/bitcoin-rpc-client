@@ -50,8 +50,8 @@ import static wf.bitcoin.javabitcoindrpcclient.MapWrapper.*;
 
 /**
  *
- * @author Mikhail Yevchenko <m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com>
- * Small modifications by Alessandro Polverini <polverini@gmail.com>
+ * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ at azazar.com
+ * Small modifications by Alessandro Polverini polverini at gmail.com
  */
 public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 

@@ -24,10 +24,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- *
- * @author Mikhail Yevchenko <m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com>
- */
 public class BitcoinAcceptor implements Runnable {
     
     private static final Logger logger = Logger.getLogger(BitcoinAcceptor.class.getCanonicalName());

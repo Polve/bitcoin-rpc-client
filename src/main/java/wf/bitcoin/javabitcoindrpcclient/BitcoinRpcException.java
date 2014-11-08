@@ -20,7 +20,7 @@ package wf.bitcoin.javabitcoindrpcclient;
 
 /**
  *
- * @author Mikhail Yevchenko <m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com>
+ * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com
  */
 public class BitcoinRpcException extends RuntimeException {
 

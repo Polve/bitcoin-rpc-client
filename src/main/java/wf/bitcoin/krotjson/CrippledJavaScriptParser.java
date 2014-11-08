@@ -29,7 +29,7 @@ import java.util.List;
 
 /**
  *
- * @author Mikhail Yevchenko <m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com>
+ * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com
  */
 public class CrippledJavaScriptParser {
     

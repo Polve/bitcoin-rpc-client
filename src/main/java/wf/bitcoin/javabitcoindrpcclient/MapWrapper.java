@@ -23,7 +23,7 @@ import java.util.Map;
 
 /**
  *
- * @author Mikhail Yevchenko <m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com>
+ * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com
  */
 class MapWrapper {
 

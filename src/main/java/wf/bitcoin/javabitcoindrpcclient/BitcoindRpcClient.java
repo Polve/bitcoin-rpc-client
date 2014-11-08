@@ -26,14 +26,60 @@ import java.util.Map;
 
 /**
  *
- * @author Mikhail Yevchenko <m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com>
- * Small modifications by Alessandro Polverini <polverini@gmail.com>
+ * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com Small modifications by
+ * Alessandro Polverini polverini at gmail.com
  */
 public interface BitcoindRpcClient {
 
-  //addmultisigaddress
-  //addnode
-  //backupwallet
+  /* Missing methods:
+   addmultisigaddress nrequired ["key",...] ( "account" )
+   addnode "node" "add|remove|onetry"
+   backupwallet "destination"
+   createmultisig nrequired ["key",...]
+   decoderawtransaction "hexstring"
+   decodescript "hex"
+   dumpwallet "filename"
+   encryptwallet "passphrase"
+   getaccountaddress "account"
+   getaddednodeinfo dns ( "node" )
+   getblocktemplate ( "jsonrequestobject" )
+   getconnectioncount
+   getdifficulty
+   getgenerate
+   gethashespersec
+   getinfo
+   getmininginfo
+   getnettotals
+   getnetworkhashps ( blocks height )
+   getnetworkinfo
+   getpeerinfo
+   getrawchangeaddress
+   getreceivedbyaccount "account" ( minconf )
+   gettransaction "txid"
+   gettxout "txid" n ( includemempool )
+   gettxoutsetinfo
+   getunconfirmedbalance
+   getwalletinfo
+   getwork ( "data" )
+   help ( "command" )
+   importwallet "filename"
+   keypoolrefill ( newsize )
+   listaddressgroupings
+   listlockunspent
+   listreceivedbyaccount ( minconf includeempty )
+   lockunspent unlock [{"txid":"txid","vout":n},...]
+   move "fromaccount" "toaccount" amount ( minconf "comment" )
+   ping
+   sendmany "fromaccount" {"address":amount,...} ( minconf "comment" )
+   setaccount "bitcoinaddress" "account"
+   setgenerate generate ( genproclimit )
+   settxfee amount
+   signmessage "bitcoinaddress" "message"
+   stop
+   submitblock "hexdata" ( "jsonparametersobject" )
+   verifychain ( checklevel numblocks )
+   verifymessage "bitcoinaddress" "signature" "message"
+   */
   public static interface TxInput {
 
     public String txid();
@@ -60,7 +106,6 @@ public interface BitcoindRpcClient {
     public int vout() {
       return vout;
     }
-
   }
 
   public static interface TxOutput {
@@ -91,24 +136,16 @@ public interface BitcoindRpcClient {
     }
   }
 
-  /**
+  /*
    * Use BitcoinRawTxBuilder , which is more convenient
    *
-   * @param inputs
-   * @param outputs
-   * @return
-   * @throws BitcoinRpcException
    */
   public String createRawTransaction(List<TxInput> inputs, List<TxOutput> outputs) throws BitcoinRpcException;
 
-  //decoderawtransaction
   public String dumpPrivKey(String address) throws BitcoinRpcException;
 
-  //encryptwallet
   public String getAccount(String address) throws BitcoinRpcException;
 
-  //getaccountaddress
-  //getaddednodeinfo
   public List<String> getAddressesByAccount(String account) throws BitcoinRpcException;
 
   /**
@@ -195,22 +232,10 @@ public interface BitcoindRpcClient {
 
   public int getBlockCount() throws BitcoinRpcException;
 
-  //getblockhash
-  //getblocknumber - deprecated
-  //getconnectioncount
-  //getdifficulty
-  //getgenerate
-  //gethashespersec
-  //getinfo
-  //getmemorypool
-  //getmininginfo
-  //getnewaddress
   public String getNewAddress() throws BitcoinRpcException;
 
   public String getNewAddress(String account) throws BitcoinRpcException;
 
-  //getpeerinfo
-  //getrawmempool
   public List<String> getRawMemPool() throws BitcoinRpcException;
 
   public String getBestBlockHash() throws BitcoinRpcException;
@@ -243,6 +268,7 @@ public interface BitcoindRpcClient {
 
     /**
      * This method should be replaced someday
+     *
      * @return
      */
     public List<In> vIn(); // TODO : Create special interface instead of this
@@ -271,7 +297,6 @@ public interface BitcoindRpcClient {
       public TxInput toInput();
 
       public RawTransaction transaction();
-
     }
 
     /**
@@ -290,7 +315,6 @@ public interface BitcoindRpcClient {
 
   public RawTransaction getRawTransaction(String txId) throws BitcoinRpcException;
 
-  //getreceivedbyaccount
   public double getReceivedByAddress(String address) throws BitcoinRpcException;
 
   /**
@@ -307,16 +331,12 @@ public interface BitcoindRpcClient {
    */
   public double getReceivedByAddress(String address, int minConf) throws BitcoinRpcException;
 
-  //gettransaction
-  //getwork
-  //help
   public void importPrivKey(String bitcoinPrivKey) throws BitcoinRpcException;
 
   public void importPrivKey(String bitcoinPrivKey, String label) throws BitcoinRpcException;
 
   public void importPrivKey(String bitcoinPrivKey, String label, boolean rescan) throws BitcoinRpcException;
 
-  //keypoolrefill
   /**
    * listaccounts [minconf=1]
    *
@@ -327,8 +347,6 @@ public interface BitcoindRpcClient {
 
   public Map<String, Number> listAccounts(int minConf) throws BitcoinRpcException;
 
-  //listaddressgroupings
-  //listreceivedbyaccount
   public static interface ReceivedAddress {
 
     public String address();
@@ -382,7 +400,6 @@ public interface BitcoindRpcClient {
     public RawTransaction raw();
   }
 
-  //listsinceblock
   public static interface TransactionsSinceBlock {
 
     public List<Transaction> transactions();
@@ -396,7 +413,6 @@ public interface BitcoindRpcClient {
 
   public TransactionsSinceBlock listSinceBlock(String blockHash, int targetConfirmations) throws BitcoinRpcException;
 
-  //listtransactions
   public List<Transaction> listTransactions() throws BitcoinRpcException;
 
   public List<Transaction> listTransactions(String account) throws BitcoinRpcException;
@@ -434,9 +450,6 @@ public interface BitcoindRpcClient {
 
   public List<Unspent> listUnspent(int minConf, int maxConf, String... addresses) throws BitcoinRpcException;
 
-  //listlockunspent
-  //lockunspent
-  //move
   public String sendFrom(String fromAccount, String toBitcoinAddress, double amount) throws BitcoinRpcException;
 
   public String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws BitcoinRpcException;
@@ -458,7 +471,6 @@ public interface BitcoindRpcClient {
    */
   public String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment, String commentTo) throws BitcoinRpcException;
 
-  //sendmany
   public String sendRawTransaction(String hex) throws BitcoinRpcException;
 
   public String sendToAddress(String toAddress, double amount) throws BitcoinRpcException;
@@ -476,13 +488,8 @@ public interface BitcoindRpcClient {
    */
   public String sendToAddress(String toAddress, double amount, String comment, String commentTo) throws BitcoinRpcException;
 
-  //setaccount
-  //setgenerate
-  //signmessage
   public String signRawTransaction(String hex) throws BitcoinRpcException;
 
-  //settxfee
-  //stop
   public static interface AddressValidationResult {
 
     public boolean isValid();
@@ -501,9 +508,4 @@ public interface BitcoindRpcClient {
   }
 
   public AddressValidationResult validateAddress(String address) throws BitcoinRpcException;
-
-  //verifymessage
-  //walletlock
-  //walletpassphrase
-  //walletpassphrasechange
 }
