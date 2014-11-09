@@ -5,6 +5,8 @@
   <artifactId>JavaBitcoindRpcClient</artifactId>
   <version>0.9.0</version>
   <packaging>jar</packaging>
+  <name>Java Bitcoind RPC Client</name>
+  <description>A lightweight Java bitcoin JSON-RPC client binding</description>
   <url>https://github.com/Polve/JavaBitcoindRpcClient</url>
   
   <licenses>    
@@ -48,10 +50,17 @@
   </scm>
 
   <distributionManagement>
+
     <snapshotRepository>
       <id>ossrh</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
+
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+
   </distributionManagement>
 
   <build>
