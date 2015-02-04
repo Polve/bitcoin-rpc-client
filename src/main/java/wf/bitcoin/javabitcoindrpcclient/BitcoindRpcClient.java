@@ -507,5 +507,13 @@ public interface BitcoindRpcClient {
     public String account();
   }
 
+  /**
+   * Used in regtest mode to generate an arbitrary number of blocks
+   *
+   * @param numBlocks is the number of blocks to generate
+   * @throws BitcoinRPCException
+   */
+  public void setGenerate(int numBlocks) throws BitcoinRPCException;
+
   public AddressValidationResult validateAddress(String address) throws BitcoinRpcException;
 }
