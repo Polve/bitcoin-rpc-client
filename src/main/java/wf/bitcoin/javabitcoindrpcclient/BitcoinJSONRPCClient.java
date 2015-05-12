@@ -1119,4 +1119,14 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 ////        System.out.println(b.getAddressesByAccount("TEST"));
 ////        System.out.println(b.listReceivedByAddress());
 //    }
+  @Override
+  public double getEstimateFee(int nBlocks) throws BitcoinRpcException {
+    return ((Number) query("estimatefee", nBlocks)).doubleValue();
+  }
+
+  @Override
+  public double getEstimatePriority(int nBlocks) throws BitcoinRpcException {
+    return ((Number) query("estimatepriority", nBlocks)).doubleValue();
+  }
+
 }

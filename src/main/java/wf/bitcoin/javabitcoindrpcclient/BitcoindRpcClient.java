@@ -40,8 +40,11 @@ public interface BitcoindRpcClient {
    decodescript "hex"
    dumpwallet "filename"
    encryptwallet "passphrase"
+   estimatefee "nblocks"
+   estimatepriority "nblock"
    getaccountaddress "account"
    getaddednodeinfo dns ( "node" )
+   getblockchaininfo
    getblocktemplate ( "jsonrequestobject" )
    getconnectioncount
    getdifficulty
@@ -516,4 +519,8 @@ public interface BitcoindRpcClient {
   public void setGenerate(int numBlocks) throws BitcoinRPCException;
 
   public AddressValidationResult validateAddress(String address) throws BitcoinRpcException;
+
+  public double getEstimateFee(int nBlocks) throws BitcoinRpcException;
+
+  public double getEstimatePriority(int nBlocks) throws BitcoinRpcException;
 }
