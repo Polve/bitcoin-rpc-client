@@ -1083,8 +1083,13 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
-  public void setGenerate(int numBlocks) throws BitcoinRPCException {
-    query("setgenerate", true, numBlocks);
+  public void setGenerate(boolean b) throws BitcoinRPCException {
+    query("setgenerate", b);
+  }
+
+  @Override
+  public List<String> generate(int numBlocks) throws BitcoinRPCException {
+    return (List<String>) query("generate", numBlocks);
   }
 
 //    static {
@@ -1127,6 +1132,16 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   @Override
   public double getEstimatePriority(int nBlocks) throws BitcoinRpcException {
     return ((Number) query("estimatepriority", nBlocks)).doubleValue();
+  }
+
+  @Override
+  public void invalidateBlock(String hash) throws BitcoinRpcException {
+    query("invalidateblock", hash);
+  }
+
+  @Override
+  public void reconsiderBlock(String hash) throws BitcoinRpcException {
+    query("reconsiderblock", hash);
   }
 
 }

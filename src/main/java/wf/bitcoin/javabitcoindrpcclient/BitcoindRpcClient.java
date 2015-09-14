@@ -42,6 +42,7 @@ public interface BitcoindRpcClient {
    encryptwallet "passphrase"
    estimatefee "nblocks"
    estimatepriority "nblock"
+   generate "nblocks"
    getaccountaddress "account"
    getaddednodeinfo dns ( "node" )
    getblockchaininfo
@@ -66,6 +67,7 @@ public interface BitcoindRpcClient {
    getwork ( "data" )
    help ( "command" )
    importwallet "filename"
+   invalidateblock "hash"
    keypoolrefill ( newsize )
    listaddressgroupings
    listlockunspent
@@ -73,9 +75,10 @@ public interface BitcoindRpcClient {
    lockunspent unlock [{"txid":"txid","vout":n},...]
    move "fromaccount" "toaccount" amount ( minconf "comment" )
    ping
+   reconsiderblock "hash"
    sendmany "fromaccount" {"address":amount,...} ( minconf "comment" )
    setaccount "bitcoinaddress" "account"
-   setgenerate generate ( genproclimit )
+   setgenerate 0/1
    settxfee amount
    signmessage "bitcoinaddress" "message"
    stop
@@ -511,16 +514,42 @@ public interface BitcoindRpcClient {
   }
 
   /**
-   * Used in regtest mode to generate an arbitrary number of blocks
-   *
-   * @param numBlocks is the number of blocks to generate
+   * @param doGenerate a boolean indicating if blocks must be generated with the
+   * cpu
    * @throws BitcoinRPCException
    */
-  public void setGenerate(int numBlocks) throws BitcoinRPCException;
+  public void setGenerate(boolean doGenerate) throws BitcoinRPCException;
+
+  /**
+   * Used in regtest mode to generate an arbitrary number of blocks
+   *
+   * @param numBlocks a boolean indicating if blocks must be generated with the
+   * cpu
+   * @return the list of hashes of the generated blocks
+   * @throws BitcoinRPCException
+   */
+  public List<String> generate(int numBlocks) throws BitcoinRPCException;
 
   public AddressValidationResult validateAddress(String address) throws BitcoinRpcException;
 
   public double getEstimateFee(int nBlocks) throws BitcoinRpcException;
 
   public double getEstimatePriority(int nBlocks) throws BitcoinRpcException;
+
+  /**
+   * In regtest mode, invalidates a block to create an orphan chain
+   *
+   * @param hash
+   * @throws BitcoinRpcException
+   */
+  public void invalidateBlock(String hash) throws BitcoinRpcException;
+
+  /**
+   * In regtest mode, undo the invalidation of a block, possibly making it on
+   * the top of the chain
+   *
+   * @param hash
+   * @throws BitcoinRpcException
+   */
+  public void reconsiderBlock(String hash) throws BitcoinRpcException;
 }
