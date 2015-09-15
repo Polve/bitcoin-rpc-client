@@ -587,7 +587,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
         @Override
         public String type() {
-          return mapStr(type());
+          return mapStr("type");
         }
 
         @Override
