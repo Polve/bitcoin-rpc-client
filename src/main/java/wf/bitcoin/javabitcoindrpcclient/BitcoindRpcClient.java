@@ -498,6 +498,12 @@ public interface BitcoindRpcClient {
 
   public List<Unspent> listUnspent(int minConf, int maxConf, String... addresses) throws BitcoinRpcException;
 
+  public String move(String fromAccount, String toBitcoinAddress, double amount) throws BitcoinRpcException;
+
+  public String move(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws BitcoinRpcException;
+
+  public String move(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment) throws BitcoinRpcException;
+
   public String sendFrom(String fromAccount, String toBitcoinAddress, double amount) throws BitcoinRpcException;
 
   public String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws BitcoinRpcException;

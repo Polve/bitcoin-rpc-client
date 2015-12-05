@@ -1078,6 +1078,21 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  public String move(String fromAccount, String toBitcoinAddress, double amount) throws BitcoinRpcException {
+    return (String) query("move", fromAccount, toBitcoinAddress, amount);
+  }
+
+  @Override
+  public String move(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws BitcoinRpcException {
+    return (String) query("move", fromAccount, toBitcoinAddress, amount, minConf);
+  }
+
+  @Override
+  public String move(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment) throws BitcoinRpcException {
+    return (String) query("move", fromAccount, toBitcoinAddress, amount, minConf, comment);
+  }
+
+  @Override
   public String sendFrom(String fromAccount, String toBitcoinAddress, double amount) throws BitcoinRpcException {
     return (String) query("sendfrom", fromAccount, toBitcoinAddress, amount);
   }
