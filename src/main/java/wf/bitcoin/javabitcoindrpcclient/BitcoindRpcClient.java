@@ -15,7 +15,7 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
  * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/*
+ /*
  * Repackaged with simple additions for easier maven usage by Alessandro Polverini
  */
 package wf.bitcoin.javabitcoindrpcclient;
@@ -178,6 +178,46 @@ public interface BitcoindRpcClient {
    */
   public double getBalance(String account, int minConf) throws BitcoinRpcException;
 
+  /**
+   *
+   * @return infos about the bitcoind instance
+   * @throws BitcoinRpcException
+   */
+  public Info getInfo() throws BitcoinRpcException;
+
+  public static interface Info {
+
+    public long version();
+
+    public long protocolVersion();
+
+    public long walletVersion();
+
+    public double balance();
+
+    public int blocks();
+
+    public int timeOffset();
+
+    public int connections();
+
+    public String proxy();
+
+    public double difficulty();
+
+    public boolean testnet();
+
+    public long keyPoolOldest();
+
+    public long keyPoolSize();
+
+    public double payTxFee();
+
+    public double relayFee();
+
+    public String errors();
+  }
+
   public static interface BlockChainInfo {
 
     public String chain();
@@ -257,10 +297,10 @@ public interface BitcoindRpcClient {
     public int version();
 
     public long lockTime();
+
     /*
      *
      */
-
     public interface In extends TxInput {
 
       public Map<String, Object> scriptSig();
@@ -275,7 +315,7 @@ public interface BitcoindRpcClient {
     /**
      * This method should be replaced someday
      *
-     * @return
+     * @return the list of inputs
      */
     public List<In> vIn(); // TODO : Create special interface instead of this
 

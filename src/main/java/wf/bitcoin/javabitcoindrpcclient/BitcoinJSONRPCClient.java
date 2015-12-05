@@ -15,7 +15,7 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
  * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/*
+ /*
  * Repackaged with simple additions for easier maven usage by Alessandro Polverini
  */
 package wf.bitcoin.javabitcoindrpcclient;
@@ -283,6 +283,89 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return ((Number) query("getbalance", account, minConf)).doubleValue();
   }
 
+  private class InfoWrapper extends MapWrapper implements Info {
+
+    public InfoWrapper(Map m) {
+      super(m);
+    }
+
+    @Override
+    public double balance() {
+      return mapDouble("balance");
+    }
+
+    @Override
+    public int blocks() {
+      return mapInt("blocks");
+    }
+
+    @Override
+    public int connections() {
+      return mapInt("connections");
+    }
+
+    @Override
+    public double difficulty() {
+      return mapDouble("difficulty");
+    }
+
+    @Override
+    public String errors() {
+      return mapStr("errors");
+    }
+
+    @Override
+    public long keyPoolOldest() {
+      return mapLong("keypoololdest");
+    }
+
+    @Override
+    public long keyPoolSize() {
+      return mapLong("keypoolsize");
+    }
+
+    @Override
+    public double payTxFee() {
+      return mapDouble("paytxfee");
+    }
+
+    @Override
+    public long protocolVersion() {
+      return mapLong("protocolversion");
+    }
+
+    @Override
+    public String proxy() {
+      return mapStr("proxy");
+    }
+
+    @Override
+    public double relayFee() {
+      return mapDouble("relayfee");
+    }
+
+    @Override
+    public boolean testnet() {
+      return mapBool("testnet");
+    }
+
+    @Override
+    public int timeOffset() {
+      return mapInt("timeoffset");
+    }
+
+    @Override
+    public long version() {
+      return mapLong("version");
+    }
+
+    @Override
+    public long walletVersion() {
+      return mapLong("walletversion");
+    }
+
+  }
+
   private class BlockChainInfoMapWrapper extends MapWrapper implements BlockChainInfo {
 
     public BlockChainInfoMapWrapper(Map m) {
@@ -436,6 +519,11 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   @Override
   public int getBlockCount() throws BitcoinRpcException {
     return ((Number) query("getblockcount")).intValue();
+  }
+
+  @Override
+  public Info getInfo() throws BitcoinRpcException {
+    return new InfoWrapper((Map) query("getinfo"));
   }
 
   @Override
