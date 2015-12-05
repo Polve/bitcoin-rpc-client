@@ -152,6 +152,8 @@ public interface BitcoindRpcClient {
 
   public String getAccount(String address) throws BitcoinRpcException;
 
+  public String getAccountAddress(String address) throws BitcoinRpcException;
+
   public List<String> getAddressesByAccount(String account) throws BitcoinRpcException;
 
   /**

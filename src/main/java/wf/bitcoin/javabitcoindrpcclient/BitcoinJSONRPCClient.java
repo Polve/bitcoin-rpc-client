@@ -264,6 +264,11 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  public String getAccountAddress(String address) throws BitcoinRpcException {
+    return (String) query("getaccountaddress", address);
+  }
+
+  @Override
   public List<String> getAddressesByAccount(String account) throws BitcoinRpcException {
     return (List<String>) query("getaddressesbyaccount", account);
   }
