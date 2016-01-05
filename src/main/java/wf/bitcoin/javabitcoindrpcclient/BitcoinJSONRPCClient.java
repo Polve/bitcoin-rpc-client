@@ -1252,4 +1252,127 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     query("reconsiderblock", hash);
   }
 
+  private class PeerInfoWrapper extends MapWrapper implements PeerInfoResult {
+
+    public PeerInfoWrapper(Map m) {
+      super(m);
+    }
+
+    @Override
+    public long getId() {
+      return mapLong("id");
+    }
+
+    @Override
+    public String getAddr() {
+      return mapStr("addr");
+    }
+
+    @Override
+    public String getAddrLocal() {
+      return mapStr("addrlocal");
+    }
+
+    @Override
+    public String getServices() {
+      return mapStr("services");
+    }
+
+    @Override
+    public long getLastSend() {
+      return mapLong("lastsend");
+    }
+
+    @Override
+    public long getLastRecv() {
+      return mapLong("lastrecv");
+    }
+
+    @Override
+    public long getBytesSent() {
+      return mapLong("bytessent");
+    }
+
+    @Override
+    public long getBytesRecv() {
+      return mapLong("bytesrecv");
+    }
+
+    @Override
+    public long getConnTime() {
+      return mapLong("conntime");
+    }
+
+    @Override
+    public int getTimeOffset() {
+      return mapInt("timeoffset");
+    }
+
+    @Override
+    public double getPingTime() {
+      return mapDouble("pingtime");
+    }
+
+    @Override
+    public long getVersion() {
+      return mapLong("version");
+    }
+
+    @Override
+    public String getSubVer() {
+      return mapStr("subver");
+    }
+
+    @Override
+    public boolean isInbound() {
+      return mapBool("inbound");
+    }
+
+    @Override
+    public int getStartingHeight() {
+      return mapInt("startingheight");
+    }
+
+    @Override
+    public long getBanScore() {
+      return mapLong("banscore");
+    }
+
+    @Override
+    public int getSyncedHeaders() {
+      return mapInt("synced_headers");
+    }
+
+    @Override
+    public int getSyncedBlocks() {
+      return mapInt("synced_blocks");
+    }
+
+    @Override
+    public boolean isWhiteListed() {
+      return mapBool("whitelisted");
+    }
+
+  }
+
+  @Override
+  public List<PeerInfoResult> getPeerInfo() throws BitcoinRpcException {
+    final List<Map> l = (List<Map>) query("getpeerinfo");
+//    final List<PeerInfoResult> res = new ArrayList<>(l.size());
+//    for (Map m : l)
+//      res.add(new PeerInfoWrapper(m));
+//    return res;
+    return new AbstractList<PeerInfoResult>() {
+
+      @Override
+      public PeerInfoResult get(int index) {
+        return new PeerInfoWrapper(l.get(index));
+      }
+
+      @Override
+      public int size() {
+        return l.size();
+      }
+    };
+  }
 }

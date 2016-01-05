@@ -600,4 +600,47 @@ public interface BitcoindRpcClient {
    * @throws BitcoinRpcException
    */
   public void reconsiderBlock(String hash) throws BitcoinRpcException;
+
+  public static interface PeerInfoResult {
+
+    long getId();
+
+    String getAddr();
+
+    String getAddrLocal();
+
+    String getServices();
+
+    long getLastSend();
+
+    long getLastRecv();
+
+    long getBytesSent();
+
+    long getBytesRecv();
+
+    long getConnTime();
+
+    int getTimeOffset();
+
+    double getPingTime();
+
+    long getVersion();
+
+    String getSubVer();
+
+    boolean isInbound();
+
+    int getStartingHeight();
+
+    long getBanScore();
+
+    int getSyncedHeaders();
+
+    int getSyncedBlocks();
+
+    boolean isWhiteListed();
+  }
+
+  List<PeerInfoResult> getPeerInfo();
 }
