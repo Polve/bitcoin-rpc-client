@@ -643,4 +643,6 @@ public interface BitcoindRpcClient {
   }
 
   List<PeerInfoResult> getPeerInfo();
+
+  void stop();
 }

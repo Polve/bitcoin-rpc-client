@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -288,7 +289,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return ((Number) query("getbalance", account, minConf)).doubleValue();
   }
 
-  private class InfoWrapper extends MapWrapper implements Info {
+  private class InfoWrapper extends MapWrapper implements Info, Serializable {
 
     public InfoWrapper(Map m) {
       super(m);
@@ -371,7 +372,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
   }
 
-  private class BlockChainInfoMapWrapper extends MapWrapper implements BlockChainInfo {
+  private class BlockChainInfoMapWrapper extends MapWrapper implements BlockChainInfo, Serializable {
 
     public BlockChainInfoMapWrapper(Map m) {
       super(m);
@@ -408,7 +409,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
   }
 
-  private class BlockMapWrapper extends MapWrapper implements Block {
+  private class BlockMapWrapper extends MapWrapper implements Block, Serializable {
 
     public BlockMapWrapper(Map m) {
       super(m);
@@ -556,7 +557,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return (String) query("getrawtransaction", txId);
   }
 
-  private class RawTransactionImpl extends MapWrapper implements RawTransaction {
+  private class RawTransactionImpl extends MapWrapper implements RawTransaction, Serializable {
 
     public RawTransactionImpl(Map<String, Object> tx) {
       super(tx);
@@ -582,7 +583,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       return mapLong("locktime");
     }
 
-    private class InImpl extends MapWrapper implements In {
+    private class InImpl extends MapWrapper implements In, Serializable {
 
       public InImpl(Map m) {
         super(m);
@@ -641,7 +642,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       };
     }
 
-    private class OutImpl extends MapWrapper implements Out {
+    private class OutImpl extends MapWrapper implements Out, Serializable {
 
       public OutImpl(Map m) {
         super(m);
@@ -657,7 +658,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
         return mapInt("n");
       }
 
-      private class ScriptPubKeyImpl extends MapWrapper implements ScriptPubKey {
+      private class ScriptPubKeyImpl extends MapWrapper implements ScriptPubKey, Serializable {
 
         public ScriptPubKeyImpl(Map m) {
           super(m);
@@ -951,7 +952,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
   }
 
-  private class TransactionsSinceBlockImpl implements TransactionsSinceBlock {
+  private class TransactionsSinceBlockImpl implements TransactionsSinceBlock, Serializable {
 
     public final List<Transaction> transactions;
     public final String lastBlock;
@@ -1252,7 +1253,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     query("reconsiderblock", hash);
   }
 
-  private class PeerInfoWrapper extends MapWrapper implements PeerInfoResult {
+  private class PeerInfoWrapper extends MapWrapper implements PeerInfoResult, Serializable {
 
     public PeerInfoWrapper(Map m) {
       super(m);
@@ -1375,4 +1376,10 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       }
     };
   }
+
+  @Override
+  public void stop() {
+    query("stop");
+  }
+
 }
