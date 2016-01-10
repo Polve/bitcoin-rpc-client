@@ -20,6 +20,7 @@
  */
 package wf.bitcoin.javabitcoindrpcclient;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +87,7 @@ public interface BitcoindRpcClient {
    verifychain ( checklevel numblocks )
    verifymessage "bitcoinaddress" "signature" "message"
    */
-  public static interface TxInput {
+  public static interface TxInput extends Serializable  {
 
     public String txid();
 
@@ -114,7 +115,7 @@ public interface BitcoindRpcClient {
     }
   }
 
-  public static interface TxOutput {
+  public static interface TxOutput extends Serializable  {
 
     public String address();
 
@@ -187,7 +188,7 @@ public interface BitcoindRpcClient {
    */
   public Info getInfo() throws BitcoinRpcException;
 
-  public static interface Info {
+  public static interface Info extends Serializable  {
 
     public long version();
 
@@ -220,7 +221,7 @@ public interface BitcoindRpcClient {
     public String errors();
   }
 
-  public static interface BlockChainInfo {
+  public static interface BlockChainInfo extends Serializable  {
 
     public String chain();
 
@@ -235,7 +236,7 @@ public interface BitcoindRpcClient {
     public String chainWork();
   }
 
-  public static interface Block {
+  public static interface Block extends Serializable {
 
     public String hash();
 
@@ -290,7 +291,7 @@ public interface BitcoindRpcClient {
 
   public String getRawTransactionHex(String txId) throws BitcoinRpcException;
 
-  public interface RawTransaction {
+  public interface RawTransaction extends Serializable {
 
     public String hex();
 
@@ -303,7 +304,7 @@ public interface BitcoindRpcClient {
     /*
      *
      */
-    public interface In extends TxInput {
+    public interface In extends TxInput, Serializable {
 
       public Map<String, Object> scriptSig();
 
@@ -321,13 +322,13 @@ public interface BitcoindRpcClient {
      */
     public List<In> vIn(); // TODO : Create special interface instead of this
 
-    public interface Out {
+    public interface Out extends Serializable {
 
       public double value();
 
       public int n();
 
-      public interface ScriptPubKey {
+      public interface ScriptPubKey extends Serializable {
 
         public String asm();
 
@@ -395,7 +396,7 @@ public interface BitcoindRpcClient {
 
   public Map<String, Number> listAccounts(int minConf) throws BitcoinRpcException;
 
-  public static interface ReceivedAddress {
+  public static interface ReceivedAddress extends Serializable {
 
     public String address();
 
@@ -415,7 +416,7 @@ public interface BitcoindRpcClient {
   /**
    * returned by listsinceblock and listtransactions
    */
-  public static interface Transaction {
+  public static interface Transaction extends Serializable {
 
     public String account();
 
@@ -448,7 +449,7 @@ public interface BitcoindRpcClient {
     public RawTransaction raw();
   }
 
-  public static interface TransactionsSinceBlock {
+  public static interface TransactionsSinceBlock extends Serializable {
 
     public List<Transaction> transactions();
 
@@ -469,7 +470,7 @@ public interface BitcoindRpcClient {
 
   public List<Transaction> listTransactions(String account, int count, int from) throws BitcoinRpcException;
 
-  public interface Unspent extends TxInput, TxOutput {
+  public interface Unspent extends TxInput, TxOutput,  Serializable  {
 
     @Override
     public String txid();
@@ -544,7 +545,7 @@ public interface BitcoindRpcClient {
 
   public String signRawTransaction(String hex) throws BitcoinRpcException;
 
-  public static interface AddressValidationResult {
+  public static interface AddressValidationResult extends Serializable {
 
     public boolean isValid();
 
@@ -601,7 +602,7 @@ public interface BitcoindRpcClient {
    */
   public void reconsiderBlock(String hash) throws BitcoinRpcException;
 
-  public static interface PeerInfoResult {
+  public static interface PeerInfoResult extends Serializable {
 
     long getId();
 
