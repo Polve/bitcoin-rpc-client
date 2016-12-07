@@ -87,16 +87,24 @@ public interface BitcoindRpcClient {
     public String txid();
 
     public int vout();
+
+    public String scriptPubKey();
   }
 
   public static class BasicTxInput implements TxInput {
 
     public String txid;
     public int vout;
+    public String scriptPubKey;
 
     public BasicTxInput(String txid, int vout) {
       this.txid = txid;
       this.vout = vout;
+    }
+
+    public BasicTxInput(String txid, int vout, String scriptPubKey) {
+      this(txid, vout);
+      this.scriptPubKey = scriptPubKey;
     }
 
     @Override
@@ -108,6 +116,12 @@ public interface BitcoindRpcClient {
     public int vout() {
       return vout;
     }
+
+    @Override
+    public String scriptPubKey() {
+      return scriptPubKey;
+    }
+
   }
 
   public static interface TxOutput extends Serializable {
@@ -569,7 +583,7 @@ public interface BitcoindRpcClient {
    */
   public String sendToAddress(String toAddress, double amount, String comment, String commentTo) throws BitcoinRpcException;
 
-  public String signRawTransaction(String hex) throws BitcoinRpcException;
+  public String signRawTransaction(String hex, List<TxInput> inputs, List<String> privateKeys) throws BitcoinRpcException;
 
   public static interface AddressValidationResult extends Serializable {
 

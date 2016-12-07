@@ -700,6 +700,11 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
         return getTransaction().vOut().get(mapInt("vout"));
       }
 
+      @Override
+      public String scriptPubKey() {
+        return mapStr("scriptPubKey");
+      }
+
     }
 
     @Override
@@ -1210,9 +1215,28 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return (String) query("sendtoaddress", toAddress, amount, comment, commentTo);
   }
 
-  @Override
   public String signRawTransaction(String hex) throws BitcoinRpcException {
-    Map result = (Map) query("signrawtransaction", hex);
+    return signRawTransaction(hex, null, null);
+  }
+
+  @Override
+  public String signRawTransaction(String hex, List<TxInput> inputs, List<String> privateKeys) throws BitcoinRpcException {
+    List<Map> pInputs = new ArrayList<>();
+
+    if (inputs != null)
+      for (final TxInput txInput : inputs) {
+        pInputs.add(new LinkedHashMap() {
+          {
+            put("txid", txInput.txid());
+            put("vout", txInput.vout());
+          }
+        });
+      }
+
+    if (privateKeys == null)
+      privateKeys = new ArrayList<>();
+
+    Map result = (Map) query("signrawtransaction", hex, pInputs, privateKeys);
 
     if ((Boolean) result.get("complete"))
       return (String) result.get("hex");
