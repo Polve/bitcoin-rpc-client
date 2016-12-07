@@ -120,7 +120,7 @@ public class BitcoinRawTxBuilder {
   }
 
   public String sign() throws BitcoinRpcException {
-    return bitcoin.signRawTransaction(create());
+    return bitcoin.signRawTransaction(create(), null, null);
   }
 
   public String send() throws BitcoinRpcException {
