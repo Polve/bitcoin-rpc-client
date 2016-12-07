@@ -87,21 +87,29 @@ public interface BitcoindRpcClient {
    verifychain ( checklevel numblocks )
    verifymessage "bitcoinaddress" "signature" "message"
    */
-  public static interface TxInput extends Serializable  {
+  public static interface TxInput extends Serializable {
 
     public String txid();
 
     public int vout();
+
+    public String scriptPubKey();
   }
 
   public static class BasicTxInput implements TxInput {
 
     public String txid;
     public int vout;
+    public String scriptPubKey;
 
     public BasicTxInput(String txid, int vout) {
       this.txid = txid;
       this.vout = vout;
+    }
+
+    public BasicTxInput(String txid, int vout, String scriptPubKey) {
+      this(txid, vout);
+      this.scriptPubKey = scriptPubKey;
     }
 
     @Override
@@ -113,9 +121,15 @@ public interface BitcoindRpcClient {
     public int vout() {
       return vout;
     }
+
+    @Override
+    public String scriptPubKey() {
+      return scriptPubKey;
+    }
+
   }
 
-  public static interface TxOutput extends Serializable  {
+  public static interface TxOutput extends Serializable {
 
     public String address();
 
@@ -188,7 +202,7 @@ public interface BitcoindRpcClient {
    */
   public Info getInfo() throws BitcoinRpcException;
 
-  public static interface Info extends Serializable  {
+  public static interface Info extends Serializable {
 
     public long version();
 
@@ -221,7 +235,7 @@ public interface BitcoindRpcClient {
     public String errors();
   }
 
-  public static interface BlockChainInfo extends Serializable  {
+  public static interface BlockChainInfo extends Serializable {
 
     public String chain();
 
@@ -470,7 +484,7 @@ public interface BitcoindRpcClient {
 
   public List<Transaction> listTransactions(String account, int count, int from) throws BitcoinRpcException;
 
-  public interface Unspent extends TxInput, TxOutput,  Serializable  {
+  public interface Unspent extends TxInput, TxOutput, Serializable {
 
     @Override
     public String txid();
@@ -543,7 +557,7 @@ public interface BitcoindRpcClient {
    */
   public String sendToAddress(String toAddress, double amount, String comment, String commentTo) throws BitcoinRpcException;
 
-  public String signRawTransaction(String hex) throws BitcoinRpcException;
+  public String signRawTransaction(String hex, List<TxInput> inputs, List<String> privateKeys) throws BitcoinRpcException;
 
   public static interface AddressValidationResult extends Serializable {
 
