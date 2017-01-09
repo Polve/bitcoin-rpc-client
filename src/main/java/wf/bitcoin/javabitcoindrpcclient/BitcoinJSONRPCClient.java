@@ -583,6 +583,21 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       return mapLong("locktime");
     }
 
+    @Override
+    public String hash() {
+      return mapStr("hash");
+    }
+
+    @Override
+    public long size() {
+      return mapLong("size");
+    }
+
+    @Override
+    public long vsize() {
+      return mapLong("vsize");
+    }
+
     private class InImpl extends MapWrapper implements In, Serializable {
 
       public InImpl(Map m) {
@@ -1141,6 +1156,13 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       return (String) result.get("hex");
     else
       throw new BitcoinRpcException("Incomplete");
+  }
+
+
+  public RawTransaction decodeRawTransaction(String hex) throws BitcoinRpcException{
+    Map result = (Map) query("decoderawtransaction", hex);
+    RawTransaction rawTransaction = new RawTransactionImpl(result);
+    return rawTransaction.vOut().get(0).transaction();
   }
 
   @Override
