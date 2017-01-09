@@ -301,6 +301,12 @@ public interface BitcoindRpcClient {
 
     public long lockTime();
 
+    public long size();
+
+    public long vsize();
+
+    public String hash();
+
     /*
      *
      */
