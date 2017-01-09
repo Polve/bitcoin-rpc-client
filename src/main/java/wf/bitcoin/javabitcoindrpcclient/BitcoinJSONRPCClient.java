@@ -1404,4 +1404,8 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     query("stop");
   }
 
+  public String getRawChangeAddress(){
+    return (String) query("getrawchangeaddress");
+  }
+
 }
