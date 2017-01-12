@@ -37,7 +37,6 @@ public interface BitcoindRpcClient {
    addnode "node" "add|remove|onetry"
    backupwallet "destination"
    createmultisig nrequired ["key",...]
-   decoderawtransaction "hexstring"
    decodescript "hex"
    dumpwallet "filename"
    encryptwallet "passphrase"
@@ -48,8 +47,6 @@ public interface BitcoindRpcClient {
    getaddednodeinfo dns ( "node" )
    getblockchaininfo
    getblocktemplate ( "jsonrequestobject" )
-   getconnectioncount
-   getdifficulty
    getgenerate
    gethashespersec
    getinfo
@@ -58,12 +55,10 @@ public interface BitcoindRpcClient {
    getnetworkhashps ( blocks height )
    getnetworkinfo
    getpeerinfo
-   getrawchangeaddress
    getreceivedbyaccount "account" ( minconf )
    gettransaction "txid"
    gettxout "txid" n ( includemempool )
    gettxoutsetinfo
-   getunconfirmedbalance
    getwalletinfo
    getwork ( "data" )
    help ( "command" )
@@ -87,7 +82,7 @@ public interface BitcoindRpcClient {
    verifychain ( checklevel numblocks )
    verifymessage "bitcoinaddress" "signature" "message"
    */
-  public static interface TxInput extends Serializable  {
+  public static interface TxInput extends Serializable {
 
     public String txid();
 
@@ -115,7 +110,7 @@ public interface BitcoindRpcClient {
     }
   }
 
-  public static interface TxOutput extends Serializable  {
+  public static interface TxOutput extends Serializable {
 
     public String address();
 
@@ -158,14 +153,12 @@ public interface BitcoindRpcClient {
   public List<String> getAddressesByAccount(String account) throws BitcoinRpcException;
 
   /**
-   *
    * @return returns the server's total available balance
    * @throws BitcoinRpcException
    */
   public double getBalance() throws BitcoinRpcException;
 
   /**
-   *
    * @param account
    * @return returns the balance in the account
    * @throws BitcoinRpcException
@@ -173,7 +166,6 @@ public interface BitcoindRpcClient {
   public double getBalance(String account) throws BitcoinRpcException;
 
   /**
-   *
    * @param account
    * @param minConf
    * @return returns the balance in the account
@@ -182,13 +174,12 @@ public interface BitcoindRpcClient {
   public double getBalance(String account, int minConf) throws BitcoinRpcException;
 
   /**
-   *
    * @return infos about the bitcoind instance
    * @throws BitcoinRpcException
    */
   public Info getInfo() throws BitcoinRpcException;
 
-  public static interface Info extends Serializable  {
+  public static interface Info extends Serializable {
 
     public long version();
 
@@ -221,7 +212,7 @@ public interface BitcoindRpcClient {
     public String errors();
   }
 
-  public static interface BlockChainInfo extends Serializable  {
+  public static interface BlockChainInfo extends Serializable {
 
     public String chain();
 
@@ -476,7 +467,7 @@ public interface BitcoindRpcClient {
 
   public List<Transaction> listTransactions(String account, int count, int from) throws BitcoinRpcException;
 
-  public interface Unspent extends TxInput, TxOutput,  Serializable  {
+  public interface Unspent extends TxInput, TxOutput, Serializable {
 
     @Override
     public String txid();
@@ -523,7 +514,7 @@ public interface BitcoindRpcClient {
    *
    * @param fromAccount
    * @param toBitcoinAddress
-   * @param amount is a real and is rounded to 8 decimal places
+   * @param amount           is a real and is rounded to 8 decimal places
    * @param minConf
    * @param comment
    * @param commentTo
@@ -539,9 +530,8 @@ public interface BitcoindRpcClient {
   public String sendToAddress(String toAddress, double amount, String comment) throws BitcoinRpcException;
 
   /**
-   *
    * @param toAddress
-   * @param amount is a real and is rounded to 8 decimal places
+   * @param amount    is a real and is rounded to 8 decimal places
    * @param comment
    * @param commentTo
    * @return the transaction ID &lt;txid&gt; if successful
@@ -570,7 +560,7 @@ public interface BitcoindRpcClient {
 
   /**
    * @param doGenerate a boolean indicating if blocks must be generated with the
-   * cpu
+   *                   cpu
    * @throws BitcoinRPCException
    */
   public void setGenerate(boolean doGenerate) throws BitcoinRPCException;
@@ -579,7 +569,7 @@ public interface BitcoindRpcClient {
    * Used in regtest mode to generate an arbitrary number of blocks
    *
    * @param numBlocks a boolean indicating if blocks must be generated with the
-   * cpu
+   *                  cpu
    * @return the list of hashes of the generated blocks
    * @throws BitcoinRPCException
    */
@@ -652,4 +642,12 @@ public interface BitcoindRpcClient {
   List<PeerInfoResult> getPeerInfo();
 
   void stop();
+
+  String getRawChangeAddress();
+
+  long getConnectionCount();
+
+  double getUnconfirmedBalance();
+
+  double getDifficulty();
 }

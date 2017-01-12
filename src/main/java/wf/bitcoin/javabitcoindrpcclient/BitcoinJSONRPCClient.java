@@ -1158,7 +1158,6 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       throw new BitcoinRpcException("Incomplete");
   }
 
-
   public RawTransaction decodeRawTransaction(String hex) throws BitcoinRpcException{
     Map result = (Map) query("decoderawtransaction", hex);
     RawTransaction rawTransaction = new RawTransactionImpl(result);
@@ -1404,8 +1403,29 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     query("stop");
   }
 
-  public String getRawChangeAddress(){
+  @Override
+  public String getRawChangeAddress() throws BitcoinRpcException {
     return (String) query("getrawchangeaddress");
+  }
+
+  @Override
+  public long getConnectionCount() throws BitcoinRpcException {
+    return (long) query("getconnectioncount");
+  }
+
+  @Override
+  public double getUnconfirmedBalance() throws BitcoinRpcException {
+    return (double) query("getunconfirmedbalance");
+  }
+
+  @Override
+  public double getDifficulty() throws BitcoinRpcException {
+    if (query("getdifficulty") instanceof Long) {
+      return ((Long) query("getdifficulty")).doubleValue();
+    }
+    else {
+      return (double) query("getdifficulty");
+    }
   }
 
 }
