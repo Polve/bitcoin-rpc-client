@@ -211,7 +211,7 @@ public class CrippledJavaScriptParser {
                         if (dot || exp)
                             throw new NumberFormatException(b.toString() + jsExpr.toString());
                         dot = true;
-                    } else if (sc == '-' && (psc == 'E' || psc == 'e')) {
+                    } else if ((sc == '-' || sc == '+') && (psc == 'E' || psc == 'e')) {
                         // it's ok
                     } else
                         break;

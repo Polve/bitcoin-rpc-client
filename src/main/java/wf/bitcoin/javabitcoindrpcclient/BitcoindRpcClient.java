@@ -179,6 +179,13 @@ public interface BitcoindRpcClient {
    */
   public Info getInfo() throws BitcoinRpcException;
 
+  /**
+   *
+   * @return miningInfo about the bitcoind instance
+   * @throws BitcoinRpcException
+   */
+  public MiningInfo getMiningInfo() throws BitcoinRpcException;
+
   public static interface Info extends Serializable {
 
     public long version();
@@ -210,6 +217,29 @@ public interface BitcoindRpcClient {
     public double relayFee();
 
     public String errors();
+  }
+
+  public static interface MiningInfo extends Serializable {
+
+    public int blocks();
+
+    public int currentBlockSize();
+
+    public int currentBlockWeight();
+
+    public int currentBlockTx();
+
+    public double difficulty();
+
+    public String errors();
+
+    public double networkHashps();
+
+    public int pooledTx();
+
+    public boolean testNet();
+
+    public String chain();
   }
 
   public static interface BlockChainInfo extends Serializable {
