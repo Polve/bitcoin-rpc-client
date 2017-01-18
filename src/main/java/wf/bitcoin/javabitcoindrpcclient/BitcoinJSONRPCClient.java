@@ -1221,9 +1221,10 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
   @Override
   public String signRawTransaction(String hex, List<TxInput> inputs, List<String> privateKeys) throws BitcoinRpcException {
-    List<Map> pInputs = new ArrayList<>();
+    List<Map> pInputs = null;
 
-    if (inputs != null)
+    if (inputs != null) {
+      pInputs = new ArrayList<>();
       for (final TxInput txInput : inputs) {
         pInputs.add(new LinkedHashMap() {
           {
@@ -1232,11 +1233,39 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
           }
         });
       }
-
-    if (privateKeys == null)
-      privateKeys = new ArrayList<>();
+    }
 
     Map result = (Map) query("signrawtransaction", hex, pInputs, privateKeys);
+
+    if ((Boolean) result.get("complete"))
+      return (String) result.get("hex");
+    else
+      throw new BitcoinRpcException("Incomplete");
+  }
+/*
+  public String signRawTransaction(String hex, List<ExtendedTxInput> inputs, List<String> privateKeys) {
+    return signRawTransaction(hex, inputs, privateKeys, "ALL");
+  }
+*/
+  public String signRawTransaction(String hex, List<ExtendedTxInput> inputs, List<String> privateKeys, String sigHashType) {
+    List<Map> pInputs = null;
+
+    if (inputs != null) {
+      pInputs = new ArrayList<>();
+      for (final ExtendedTxInput txInput : inputs) {
+        pInputs.add(new LinkedHashMap() {
+          {
+            put("txid", txInput.txid());
+            put("vout", txInput.vout());
+            put("scriptPubKey", txInput.scriptPubKey());
+            put("redeemScript", txInput.redeemScript());
+            put("amount", txInput.amount());
+          }
+        });
+      }
+    }
+
+    Map result = (Map) query("signrawtransaction", hex, pInputs, privateKeys, sigHashType);
 
     if ((Boolean) result.get("complete"))
       return (String) result.get("hex");

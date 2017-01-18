@@ -21,6 +21,7 @@
 package wf.bitcoin.javabitcoindrpcclient;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -120,6 +121,35 @@ public interface BitcoindRpcClient {
     @Override
     public String scriptPubKey() {
       return scriptPubKey;
+    }
+
+  }
+
+  public static class ExtendedTxInput extends BasicTxInput {
+
+    public String redeemScript;
+    public BigDecimal amount;
+
+    public ExtendedTxInput(String txid, int vout) {
+      super(txid, vout);
+    }
+
+    public ExtendedTxInput(String txid, int vout, String scriptPubKey) {
+      super(txid, vout, scriptPubKey);
+    }
+
+    public ExtendedTxInput(String txid, int vout, String scriptPubKey, String redeemScript, BigDecimal amount) {
+      super(txid, vout, scriptPubKey);
+      this.redeemScript = redeemScript;
+      this.amount = amount;
+    }
+
+    public String redeemScript() {
+      return redeemScript;
+    }
+
+    public BigDecimal amount() {
+      return amount;
     }
 
   }
