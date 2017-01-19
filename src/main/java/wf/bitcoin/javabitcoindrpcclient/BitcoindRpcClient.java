@@ -613,7 +613,7 @@ public interface BitcoindRpcClient {
    */
   public String sendToAddress(String toAddress, double amount, String comment, String commentTo) throws BitcoinRpcException;
 
-  public String signRawTransaction(String hex, List<ExtendedTxInput> inputs, List<String> privateKeys) throws BitcoinRpcException;
+  public String signRawTransaction(String hex) throws BitcoinRpcException;
 
   public static interface AddressValidationResult extends Serializable {
 
