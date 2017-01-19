@@ -1216,7 +1216,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   public String signRawTransaction(String hex) throws BitcoinRpcException {
-    return signRawTransaction(hex, null, null, null);
+    return signRawTransaction(hex, null, null, "ALL");
   }
 
   @Override
