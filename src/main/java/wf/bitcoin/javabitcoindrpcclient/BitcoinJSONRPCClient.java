@@ -1219,7 +1219,6 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return signRawTransaction(hex, null, null, "ALL");
   }
 
-  @Override
   public String signRawTransaction(String hex, List<ExtendedTxInput> inputs, List<String> privateKeys) {
     return signRawTransaction(hex, inputs, privateKeys, "ALL");
   }
@@ -1243,14 +1242,13 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     Map result = (Map) query("signrawtransaction", hex, pInputs, privateKeys, sigHashType); //if sigHashType is null it will return the default "ALL"
-
     if ((Boolean) result.get("complete"))
       return (String) result.get("hex");
     else
       throw new BitcoinRpcException("Incomplete");
   }
 
-  public RawTransaction decodeRawTransaction(String hex) throws BitcoinRpcException{
+  public RawTransaction decodeRawTransaction(String hex) throws BitcoinRpcException {
     Map result = (Map) query("decoderawtransaction", hex);
     RawTransaction rawTransaction = new RawTransactionImpl(result);
     return rawTransaction.vOut().get(0).transaction();
@@ -1364,6 +1362,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   @Override
   public void reconsiderBlock(String hash) throws BitcoinRpcException {
     query("reconsiderblock", hash);
+
   }
 
   private class PeerInfoWrapper extends MapWrapper implements PeerInfoResult, Serializable {
@@ -1514,8 +1513,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   public double getDifficulty() throws BitcoinRpcException {
     if (query("getdifficulty") instanceof Long) {
       return ((Long) query("getdifficulty")).doubleValue();
-    }
-    else {
+    } else {
       return (double) query("getdifficulty");
     }
   }
