@@ -700,6 +700,11 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
         return getTransaction().vOut().get(mapInt("vout"));
       }
 
+      @Override
+      public String scriptPubKey() {
+        return mapStr("scriptPubKey");
+      }
+
     }
 
     @Override
@@ -1210,9 +1215,34 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return (String) query("sendtoaddress", toAddress, amount, comment, commentTo);
   }
 
-  @Override
   public String signRawTransaction(String hex) throws BitcoinRpcException {
-    Map result = (Map) query("signrawtransaction", hex);
+    return signRawTransaction(hex, null, null, "ALL");
+  }
+
+  @Override
+  public String signRawTransaction(String hex, List<ExtendedTxInput> inputs, List<String> privateKeys) {
+    return signRawTransaction(hex, inputs, privateKeys, "ALL");
+  }
+
+  public String signRawTransaction(String hex, List<ExtendedTxInput> inputs, List<String> privateKeys, String sigHashType) {
+    List<Map> pInputs = null;
+
+    if (inputs != null) {
+      pInputs = new ArrayList<>();
+      for (final ExtendedTxInput txInput : inputs) {
+        pInputs.add(new LinkedHashMap() {
+          {
+            put("txid", txInput.txid());
+            put("vout", txInput.vout());
+            put("scriptPubKey", txInput.scriptPubKey());
+            put("redeemScript", txInput.redeemScript());
+            put("amount", txInput.amount());
+          }
+        });
+      }
+    }
+
+    Map result = (Map) query("signrawtransaction", hex, pInputs, privateKeys, sigHashType); //if sigHashType is null it will return the default "ALL"
 
     if ((Boolean) result.get("complete"))
       return (String) result.get("hex");
