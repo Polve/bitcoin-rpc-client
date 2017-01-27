@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -37,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -45,6 +47,7 @@ import java.util.logging.Logger;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
+
 import wf.bitcoin.krotjson.Base64Coder;
 import wf.bitcoin.krotjson.JSON;
 import static wf.bitcoin.javabitcoindrpcclient.MapWrapper.*;
@@ -372,6 +375,318 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
   }
 
+  private class TxOutSetInfoWrapper extends MapWrapper implements TxOutSetInfo, Serializable {
+
+    public TxOutSetInfoWrapper(Map m) {
+      super(m);
+    }
+
+    @Override
+    public long height() {
+      return mapInt("height");
+    }
+
+    @Override
+    public String bestBlock() {
+      return mapStr("bestBlock");
+    }
+
+    @Override
+    public long transactions() {
+      return mapInt("transactions");
+    }
+
+    @Override
+    public long txouts() {
+      return mapInt("txouts");
+    }
+
+    @Override
+    public long bytesSerialized() {
+      return mapInt("bytes_serialized");
+    }
+
+    @Override
+    public String hashSerialized() {
+      return mapStr("hash_serialized");
+    }
+
+    @Override
+    public BigDecimal totalAmount() {
+      return mapBigDecimal("total_amount");
+    }
+  }
+
+  private class WalletInfoWrapper extends MapWrapper implements WalletInfo, Serializable {
+
+    public WalletInfoWrapper(Map m) { super(m);}
+
+    @Override
+    public long walletVersion() {
+      return mapLong("walletversion");
+    }
+
+    @Override
+    public BigDecimal balance() {
+      return mapBigDecimal("balance");
+    }
+
+    @Override
+    public BigDecimal unconfirmedBalance() {
+      return mapBigDecimal("unconfirmed_balance");
+    }
+
+    @Override
+    public BigDecimal immatureBalance() {
+      return mapBigDecimal("immature_balance");
+    }
+
+    @Override
+    public long txCount() {
+      return mapLong("txcount");
+    }
+
+    @Override
+    public long keyPoolOldest() {
+      return mapLong("keypoololdest");
+    }
+
+    @Override
+    public long keyPoolSize() {
+      return mapLong("keypoolsize");
+    }
+
+    @Override
+    public long unlockedUntil() {
+      return mapLong("unlocked_until");
+    }
+
+    @Override
+    public BigDecimal payTxFee() {
+      return mapBigDecimal("paytxfee");
+    }
+
+    @Override
+    public String hdMasterKeyId() {
+      return mapStr("hdmasterkeyid");
+    }
+  }
+
+  private class NetworkInfoWrapper extends MapWrapper implements NetworkInfo, Serializable {
+
+    public NetworkInfoWrapper(Map m) {
+      super(m);
+    }
+
+    @Override
+    public long version() {
+      return mapLong("version");
+    }
+
+    @Override
+    public String subversion() {
+      return mapStr("subversion");
+    }
+
+    @Override
+    public long protocolVersion() {
+      return mapLong("protocolversion");
+    }
+
+    @Override
+    public String localServices() {
+      return mapStr("localservices");
+    }
+
+    @Override
+    public boolean localRelay() {
+      return mapBool("localrelay");
+    }
+
+    @Override
+    public long timeOffset() {
+      return mapLong("timeoffset");
+    }
+
+    @Override
+    public long connections() {
+      return mapLong("connections");
+    }
+
+    @Override
+    public List<Network> networks() {
+      List<Map> maps = (List<Map>) m.get("networks");
+      List<Network> networks = new LinkedList<Network>();
+      for(Map m: maps) {
+        Network net = new NetworkWrapper(m);
+        networks.add(net);
+      }
+      return networks;
+    }
+
+    @Override
+    public BigDecimal relayFee() {
+      return mapBigDecimal("relayfee");
+    }
+
+    @Override
+    public List<String> localAddresses() {
+      return (List<String>) m.get("localaddresses");
+    }
+
+    @Override
+    public String warnings() {
+      return mapStr("warnings");
+    }
+  }
+
+  private class NetworkWrapper extends MapWrapper implements Network, Serializable {
+
+    public NetworkWrapper(Map m) {
+      super(m);
+    }
+
+    @Override
+    public String name() {
+      return mapStr("name");
+    }
+
+    @Override
+    public boolean limited() {
+      return mapBool("limited");
+    }
+
+    @Override
+    public boolean reachable() {
+      return mapBool("reachable");
+    }
+
+    @Override
+    public String proxy() {
+      return mapStr("proxy");
+    }
+
+    @Override
+    public boolean proxyRandomizeCredentials() {
+      return mapBool("proxy_randomize_credentials");
+    }
+  }
+
+  private class MultiSigWrapper extends MapWrapper implements MultiSig, Serializable {
+
+    public MultiSigWrapper(Map m) { super(m);}
+
+
+    @Override
+    public String address() {
+      return mapStr("address");
+    }
+
+    @Override
+    public String redeemScript() {
+      return mapStr("redeemScript");
+    }
+  }
+
+  private class NodeInfoWrapper extends MapWrapper implements NodeInfo, Serializable {
+
+    public NodeInfoWrapper(Map m) { super(m); }
+
+    @Override
+    public String addedNode() {
+      return mapStr("addednode");
+    }
+
+    @Override
+    public boolean connected() {
+      return mapBool("connected");
+    }
+
+    @Override
+    public List<Address> addresses() {
+        List<Map> maps = (List<Map>) m.get("addresses");
+        List<Address> addresses = new LinkedList<Address>();
+        for(Map m: maps) {
+          Address add = new AddressWrapper(m);
+          addresses.add(add);
+        }
+        return addresses;
+      }
+  }
+
+  private class AddressWrapper extends MapWrapper implements Address, Serializable {
+
+    public AddressWrapper(Map m) { super(m); }
+
+    @Override
+    public String address() {
+      return mapStr("address");
+    }
+
+    @Override
+    public String connected() {
+      return mapStr("connected");
+    }
+  }
+
+
+  private class TxOutWrapper extends MapWrapper implements TxOut, Serializable {
+
+    public TxOutWrapper(Map m) {
+      super(m);
+    }
+
+    @Override
+    public String bestBlock() {
+      return mapStr("bestblock");
+    }
+
+    @Override
+    public long confirmations() {
+      return mapLong("confirmations");
+    }
+
+    @Override
+    public BigDecimal value() {
+      return mapBigDecimal("value");
+    }
+
+    @Override
+    public String asm() {
+      return mapStr("asm");
+    }
+
+    @Override
+    public String hex() {
+      return mapStr("hex");
+    }
+
+    @Override
+    public long reqSigs() {
+      return mapLong("reqSigs");
+    }
+
+    @Override
+    public String type() {
+      return mapStr("type");
+    }
+
+    @Override
+    public List<String> addresses() {
+      return (List<String>) m.get("addresses");
+    }
+
+    @Override
+    public long version() {
+      return mapLong("version");
+    }
+
+    @Override
+    public boolean coinBase() {
+      return mapBool("coinbase");
+    }
+  }
+
   private class MiningInfoWrapper extends MapWrapper implements MiningInfo, Serializable {
 
     public MiningInfoWrapper(Map m) {
@@ -590,8 +905,39 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  public TxOutSetInfo getTxOutSetInfo() throws BitcoinRpcException {
+    return new TxOutSetInfoWrapper((Map) query("gettxoutsetinfo"));
+  }
+
+  @Override
+  public NetworkInfo getNetworkInfo() throws BitcoinRpcException {
+    return new NetworkInfoWrapper((Map) query("getnetworkinfo"));
+  }
+
+  @Override
   public MiningInfo getMiningInfo() throws BitcoinRpcException {
     return new MiningInfoWrapper((Map) query("getmininginfo"));
+  }
+
+  @Override
+  public List<NodeInfo> getAddedNodeInfo(boolean dummy, String node) throws BitcoinRpcException {
+    List<Map> list = ((List<Map>) query("getaddednodeinfo", dummy, node));
+    List<NodeInfo> nodeInfoList = new LinkedList<NodeInfo>();
+    for(Map m: list){
+      NodeInfoWrapper niw = new NodeInfoWrapper(m);
+      nodeInfoList.add(niw);
+    }
+    return nodeInfoList;
+  }
+
+  @Override
+  public MultiSig createMultiSig(int nRequired, List<String> keys) throws BitcoinRpcException {
+    return new MultiSigWrapper ((Map) query("createmultisig", nRequired, keys));
+  }
+
+  @Override
+  public WalletInfo getWalletInfo() {
+    return new WalletInfoWrapper((Map) query("getwalletinfo"));
   }
 
   @Override
@@ -827,6 +1173,109 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       return mapCTime("blocktime");
     }
 
+  }
+
+  public class DecodedScriptImpl extends MapWrapper implements DecodedScript, Serializable {
+
+    public DecodedScriptImpl(Map m) {
+      super(m);
+    }
+
+
+    @Override
+    public String asm() {
+      return mapStr("asm");
+    }
+
+    @Override
+    public String hex() {
+      return mapStr("hex");
+    }
+
+    @Override
+    public String type() {
+      return mapStr("type");
+    }
+
+    @Override
+    public int reqSigs() {
+      return mapInt("reqSigs");
+    }
+
+    @Override
+    public List<String> addresses() {
+      return (List) m.get("addresses");
+    }
+
+    @Override
+    public String p2sh() {
+      return mapStr("p2sh");
+    }
+  }
+
+  public class NetTotalsImpl extends MapWrapper implements NetTotals, Serializable {
+
+    public NetTotalsImpl(Map m) {
+      super(m);
+    }
+
+    @Override
+    public long totalBytesRecv() {
+      return mapLong("totalbytesrecv");
+    }
+
+    @Override
+    public long totalBytesSent() {
+      return mapLong("totalbytessent");
+    }
+
+    @Override
+    public long timeMillis() {
+      return mapLong("timemillis");
+    }
+
+    public class uploadTargetImpl extends MapWrapper implements uploadTarget, Serializable {
+
+      public uploadTargetImpl(Map m) {
+        super(m);
+      }
+
+
+      @Override
+      public long timeFrame() {
+        return mapLong("timeframe");
+      }
+
+      @Override
+      public int target() {
+        return mapInt("target");
+      }
+
+      @Override
+      public boolean targetReached() {
+        return mapBool("targetreached");
+      }
+
+      @Override
+      public boolean serveHistoricalBlocks() {
+        return mapBool("servehistoricalblocks");
+      }
+
+      @Override
+      public long bytesLeftInCycle() {
+        return mapLong("bytesleftincycle");
+      }
+
+      @Override
+      public long timeLeftInCycle() {
+        return mapLong("timeleftincycle");
+      }
+    }
+
+    @Override
+    public NetTotals.uploadTarget uploadTarget() {
+      return new uploadTargetImpl((Map) m.get("uploadtarget"));
+    }
   }
 
   @Override
@@ -1518,5 +1967,135 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       return (double) query("getdifficulty");
     }
   }
+
+  @Override
+  public NetTotals getNetTotals() throws BitcoinRpcException {
+    return new NetTotalsImpl((Map) query("getnettotals"));
+  }
+
+  @Override
+  public DecodedScript decodeScript(String hex) throws BitcoinRpcException {
+    return new DecodedScriptImpl((Map) query("decodescript", hex));
+  }
+
+  @Override
+  public void ping() throws BitcoinRpcException {
+    query("ping");
+  }
+
+  //It doesn't work!
+  @Override
+  public boolean getGenerate() throws BitcoinRPCException {
+    return (boolean) query("getgenerate");
+  }
+
+
+  @Override
+  public double getNetworkHashPs() throws BitcoinRpcException {
+    return (Double)query("getnetworkhashps");
+  }
+
+  @Override
+  public boolean setTxFee(BigDecimal amount) throws BitcoinRpcException {
+    return (boolean) query("settxfee", amount);
+  }
+
+  /**
+   *
+   * @param node example: "192.168.0.6:8333"
+   * @param command must be either "add", "remove" or "onetry"
+   * @throws BitcoinRpcException
+   */
+  @Override
+  public void addNode(String node, String command) throws BitcoinRpcException {
+    query("addnode", node, command);
+  }
+
+  @Override
+  public void backupWallet(String destination) throws BitcoinRpcException {
+    query("backupwallet", destination);
+  }
+
+  @Override
+  public String signMessage(String bitcoinAdress, String message) throws BitcoinRpcException {
+    return (String) query("signmessage", bitcoinAdress, message);
+  }
+
+  @Override
+  public void dumpWallet(String filename) throws BitcoinRpcException {
+    query("dumpwallet", filename);
+  }
+
+  @Override
+  public void importWallet(String filename) throws BitcoinRpcException {
+    query("dumpwallet", filename);
+  }
+
+  @Override
+  public void keyPoolRefill() throws BitcoinRpcException {
+    keyPoolRefill(100); //default is 100 if you don't send anything
+  }
+
+  public void keyPoolRefill(long size) throws BitcoinRpcException {
+    query("keypoolrefill", size);
+  }
+
+  @Override
+  public BigDecimal getReceivedByAccount(String account) throws BitcoinRpcException {
+    return getReceivedByAccount(account, 1);
+  }
+
+  public BigDecimal getReceivedByAccount(String account, int minConf) throws BitcoinRpcException {
+    return BigDecimal.valueOf((Double)query("getreceivedbyaccount", account, minConf));
+  }
+
+  @Override
+  public void encryptWallet(String passPhrase) throws BitcoinRpcException {
+    query("encryptwallet", passPhrase);
+  }
+
+  @Override
+  public void walletPassPhrase(String passPhrase, long timeOut) throws BitcoinRpcException {
+    query("walletpassphrase", passPhrase, timeOut);
+  }
+
+  @Override
+  public boolean verifyMessage(String bitcoinAddress, String signature, String message) throws BitcoinRpcException {
+    return (boolean) query("verifymessage", bitcoinAddress, signature, message);
+  }
+
+  @Override
+  public String addMultiSigAddress(int nRequired, List<String> keyObject) throws BitcoinRpcException {
+    return (String) query("addmultisigaddress", nRequired, keyObject);
+  }
+
+  @Override
+  public boolean verifyChain() {
+    return verifyChain(3, 6); //3 and 6 are the default values
+  }
+
+  public boolean verifyChain(int checklevel, int numblocks) {
+    return (boolean)query("verifychain", checklevel, numblocks);
+  }
+
+  /**
+   * Attempts to submit new block to network.
+   * The 'jsonparametersobject' parameter is currently ignored, therefore left out.
+   * @param hexData
+   */
+  @Override
+  public void submitBlock(String hexData) {
+    query("submitblock", hexData);
+  }
+
+  @Override
+  public TxOut getTxOut(String txId, long vout) throws BitcoinRpcException {
+    return new TxOutWrapper((Map) query("gettxout"));
+  }
+
+  public TxOut getTxOut(String txId, long vout, boolean includemempool) throws BitcoinRpcException {
+    return new TxOutWrapper((Map) query("gettxout"));
+  }
+
 
 }

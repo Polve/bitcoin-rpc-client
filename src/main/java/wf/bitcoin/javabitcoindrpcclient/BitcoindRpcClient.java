@@ -34,54 +34,17 @@ import java.util.Map;
 public interface BitcoindRpcClient {
 
   /* Missing methods:
-   addmultisigaddress nrequired ["key",...] ( "account" )
-   addnode "node" "add|remove|onetry"
-   backupwallet "destination"
-   createmultisig nrequired ["key",...]
-   decodescript "hex"
-   dumpwallet "filename"
-   encryptwallet "passphrase"
-   estimatefee "nblocks"
-   estimatepriority "nblock"
-   generate "nblocks"
-   getaccountaddress "account"
-   getaddednodeinfo dns ( "node" )
-   getblockchaininfo
    getblocktemplate ( "jsonrequestobject" )
-   getgenerate
-   gethashespersec
-   getinfo
-   getmininginfo
-   getnettotals
-   getnetworkhashps ( blocks height )
-   getnetworkinfo
-   getpeerinfo
-   getreceivedbyaccount "account" ( minconf )
-   gettransaction "txid"
-   gettxout "txid" n ( includemempool )
-   gettxoutsetinfo
-   getwalletinfo
-   getwork ( "data" )
+   *getgenerate
+   *gethashespersec
+   *getwork ( "data" )
    help ( "command" )
-   importwallet "filename"
-   invalidateblock "hash"
-   keypoolrefill ( newsize )
-   listaddressgroupings
-   listlockunspent
-   listreceivedbyaccount ( minconf includeempty )
+   *listaddressgroupings
+   *listlockunspent
+   (DEPRECATED) listreceivedbyaccount ( minconf includeempty )
    lockunspent unlock [{"txid":"txid","vout":n},...]
-   move "fromaccount" "toaccount" amount ( minconf "comment" )
-   ping
-   reconsiderblock "hash"
    sendmany "fromaccount" {"address":amount,...} ( minconf "comment" )
-   setaccount "bitcoinaddress" "account"
-   setgenerate 0/1
-   settxfee amount
-   signmessage "bitcoinaddress" "message"
-   stop
-   submitblock "hexdata" ( "jsonparametersobject" )
-   verifychain ( checklevel numblocks )
-   verifymessage "bitcoinaddress" "signature" "message"
+   (DEPRECATED) setaccount "bitcoinaddress" "account"
    */
   public static interface TxInput extends Serializable {
 
@@ -230,6 +193,10 @@ public interface BitcoindRpcClient {
    */
   public MiningInfo getMiningInfo() throws BitcoinRpcException;
 
+  public MultiSig createMultiSig(int nRequired, List<String> keys) throws BitcoinRpcException;
+
+  public NetworkInfo getNetworkInfo() throws BitcoinRpcException;
+
   public static interface Info extends Serializable {
 
     public long version();
@@ -286,6 +253,32 @@ public interface BitcoindRpcClient {
     public String chain();
   }
 
+  public static interface NetTotals extends Serializable {
+
+    public long totalBytesRecv();
+
+    public long totalBytesSent();
+
+    public long timeMillis();
+
+    public interface uploadTarget extends Serializable {
+
+      public long timeFrame();
+
+      public int target();
+
+      public boolean targetReached();
+
+      public boolean serveHistoricalBlocks();
+
+      public long bytesLeftInCycle();
+
+      public long timeLeftInCycle();
+    }
+
+    public uploadTarget uploadTarget();
+  }
+
   public static interface BlockChainInfo extends Serializable {
 
     public String chain();
@@ -299,6 +292,133 @@ public interface BitcoindRpcClient {
     public double verificationProgress();
 
     public String chainWork();
+  }
+
+  public static interface DecodedScript extends Serializable {
+
+    public String asm();
+
+    public String hex();
+
+    public String type();
+
+    public int reqSigs();
+
+    public List<String> addresses();
+
+    public String p2sh();
+  }
+
+  public TxOutSetInfo getTxOutSetInfo();
+
+  public WalletInfo getWalletInfo();
+
+  public static interface WalletInfo extends Serializable {
+
+    public long walletVersion();
+
+    public BigDecimal balance();
+
+    public BigDecimal unconfirmedBalance();
+
+    public BigDecimal immatureBalance();
+
+    public long txCount();
+
+    public long keyPoolOldest();
+
+    public long keyPoolSize();
+
+    public long unlockedUntil();
+
+    public BigDecimal payTxFee();
+
+    public String hdMasterKeyId();
+  }
+
+  public static interface NetworkInfo extends Serializable {
+
+    public long version();
+
+    public String subversion();
+
+    public long protocolVersion();
+
+    public String localServices();
+
+    public boolean localRelay();
+
+    public long timeOffset();
+
+    public long connections();
+
+    public List<Network> networks();
+
+    public BigDecimal relayFee();
+
+    public List<String> localAddresses();
+
+    public String warnings();
+  }
+
+  public static interface Network extends Serializable {
+
+    public String name();
+
+    public boolean limited();
+
+    public boolean reachable();
+
+    public String proxy();
+
+    public boolean proxyRandomizeCredentials();
+  }
+
+  public static interface MultiSig extends Serializable {
+
+    public String address();
+
+    public String redeemScript();
+  }
+
+  public static interface NodeInfo extends Serializable {
+
+    public String addedNode();
+
+    public boolean connected();
+
+    public List<Address> addresses();
+
+  }
+
+  public static interface Address extends Serializable {
+
+    public String address();
+
+    public String connected();
+  }
+
+  public static interface TxOut extends Serializable {
+    public String bestBlock();
+
+    public long confirmations();
+
+    public BigDecimal value();
+
+    public String asm();
+
+    public String hex();
+
+    public long reqSigs();
+
+    public String type();
+
+    public List<String> addresses();
+
+    public long version();
+
+    public boolean coinBase();
+
   }
 
   public static interface Block extends Serializable {
@@ -334,6 +454,23 @@ public interface BitcoindRpcClient {
     public Block previous() throws BitcoinRpcException;
 
     public Block next() throws BitcoinRpcException;
+  }
+
+  public static interface TxOutSetInfo extends Serializable {
+
+    public long height();
+
+    public String bestBlock();
+
+    public long transactions();
+
+    public long txouts();
+
+    public long bytesSerialized();
+
+    public String hashSerialized();
+
+    public BigDecimal totalAmount();
   }
 
   public Block getBlock(int height) throws BitcoinRpcException;
@@ -724,4 +861,47 @@ public interface BitcoindRpcClient {
   double getUnconfirmedBalance();
 
   double getDifficulty();
+
+  void ping();
+
+  DecodedScript decodeScript(String hex);
+
+  NetTotals getNetTotals();
+
+  boolean getGenerate();
+
+  double getNetworkHashPs();
+
+  boolean setTxFee(BigDecimal amount);
+
+  void addNode(String node, String command);
+
+  void backupWallet(String destination);
+
+  String signMessage(String bitcoinAdress, String message);
+
+  void dumpWallet(String filename);
+
+  void importWallet(String filename);
+
+  void keyPoolRefill();
+
+  BigDecimal getReceivedByAccount(String account);
+
+  void encryptWallet(String passPhrase);
+
+  void walletPassPhrase(String passPhrase, long timeOut);
+
+  boolean verifyMessage(String bitcoinAddress, String signature, String message);
+
+  String addMultiSigAddress(int nRequired, List<String> keyObject);
+
+  boolean verifyChain();
+
+  List<NodeInfo> getAddedNodeInfo(boolean dummy, String node);
+
+  void submitBlock(String hexData);
+
+  TxOut getTxOut(String txId, long vout);
+
 }
