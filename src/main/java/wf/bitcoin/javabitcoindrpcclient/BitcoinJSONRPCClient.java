@@ -2046,7 +2046,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   public BigDecimal getReceivedByAccount(String account, int minConf) throws BitcoinRpcException {
-    return BigDecimal.valueOf((Double)query("getreceivedbyaccount", account, minConf));
+    return BigDecimal.valueOf((String)query("getreceivedbyaccount", account, minConf));
   }
 
   @Override
