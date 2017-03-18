@@ -896,6 +896,8 @@ public interface BitcoindRpcClient {
 
   String addMultiSigAddress(int nRequired, List<String> keyObject);
 
+  String addMultiSigAddress(int nRequired, List<String> keyObject, String account);
+
   boolean verifyChain();
 
   List<NodeInfo> getAddedNodeInfo(boolean dummy, String node);
