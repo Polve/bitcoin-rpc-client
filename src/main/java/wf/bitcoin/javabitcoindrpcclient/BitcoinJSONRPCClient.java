@@ -2070,6 +2070,11 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  public String addMultiSigAddress(int nRequired, List<String> keyObject, String account) throws BitcoinRpcException {
+    return (String) query("addmultisigaddress", nRequired, keyObject, account);
+  }
+
+  @Override
   public boolean verifyChain() {
     return verifyChain(3, 6); //3 and 6 are the default values
   }
