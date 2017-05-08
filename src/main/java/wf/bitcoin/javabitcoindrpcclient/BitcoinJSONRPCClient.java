@@ -2095,11 +2095,11 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
   @Override
   public TxOut getTxOut(String txId, long vout) throws BitcoinRpcException {
-    return new TxOutWrapper((Map) query("gettxout"));
+    return new TxOutWrapper((Map) query("gettxout", txId, vout, true));
   }
 
   public TxOut getTxOut(String txId, long vout, boolean includemempool) throws BitcoinRpcException {
-    return new TxOutWrapper((Map) query("gettxout"));
+    return new TxOutWrapper((Map) query("gettxout", txId, vout, includemempool));
   }
 
 
