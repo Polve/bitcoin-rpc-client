@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>wf.bitcoin</groupId>
   <artifactId>JavaBitcoindRpcClient</artifactId>
-  <version>0.9.13</version>
+  <version>0.9.14</version>
   <packaging>jar</packaging>
   <name>Java Bitcoind RPC Client</name>
   <description>A lightweight Java bitcoin JSON-RPC client binding</description>
