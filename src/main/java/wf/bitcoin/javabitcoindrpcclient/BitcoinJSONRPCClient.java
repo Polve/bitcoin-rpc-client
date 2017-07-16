@@ -1309,6 +1309,12 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  public Object importAddress(String address, String label, boolean rescan) throws BitcoinRpcException {
+    query("importaddress", address, label, rescan);
+      return null;
+  }
+
+  @Override
   public Map<String, Number> listAccounts() throws BitcoinRpcException {
     return (Map) query("listaccounts");
   }
