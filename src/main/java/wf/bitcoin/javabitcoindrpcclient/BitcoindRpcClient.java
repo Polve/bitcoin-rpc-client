@@ -594,6 +594,8 @@ public interface BitcoindRpcClient {
 
   public void importPrivKey(String bitcoinPrivKey, String label, boolean rescan) throws BitcoinRpcException;
 
+  Object importAddress(String address, String label, boolean rescan) throws BitcoinRpcException;
+
   /**
    * listaccounts [minconf=1]
    *
