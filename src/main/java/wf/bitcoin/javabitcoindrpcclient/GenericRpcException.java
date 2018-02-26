@@ -22,13 +22,13 @@ package wf.bitcoin.javabitcoindrpcclient;
  *
  * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com
  */
-public class BitcoinRpcException extends RuntimeException {
+public class GenericRpcException extends RuntimeException {
 
     /**
      * Creates a new instance of
      * <code>BitcoinException</code> without detail message.
      */
-    public BitcoinRpcException() {
+    public GenericRpcException() {
     }
 
     /**
@@ -37,15 +37,15 @@ public class BitcoinRpcException extends RuntimeException {
      *
      * @param msg the detail message.
      */
-    public BitcoinRpcException(String msg) {
+    public GenericRpcException(String msg) {
         super(msg);
     }
 
-    public BitcoinRpcException(Throwable cause) {
+    public GenericRpcException(Throwable cause) {
         super(cause);
     }
 
-    public BitcoinRpcException(String message, Throwable cause) {
+    public GenericRpcException(String message, Throwable cause) {
         super(message, cause);
     }
 

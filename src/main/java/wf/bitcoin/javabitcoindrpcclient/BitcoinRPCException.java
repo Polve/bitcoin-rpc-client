@@ -24,7 +24,7 @@ import java.util.Arrays;
  * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com, Alessandro Polverini
  * <alex@polverini.org>
  */
-public class BitcoinRPCException extends BitcoinRpcException {
+public class BitcoinRPCException extends GenericRpcException {
 
   private String rpcMethod;
   private String rpcParams;

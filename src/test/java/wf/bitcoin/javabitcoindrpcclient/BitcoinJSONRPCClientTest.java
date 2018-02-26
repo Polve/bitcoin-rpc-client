@@ -30,12 +30,12 @@ public class BitcoinJSONRPCClientTest {
         }
 
         @Override
-        public Object query(String method, Object... o) throws BitcoinRpcException {
+        public Object query(String method, Object... o) throws GenericRpcException {
             if(method!=expectedMethod) {
-                throw new BitcoinRpcException("wrong method");
+                throw new GenericRpcException("wrong method");
             }
             if(o.equals(expectedObject)){
-                throw new BitcoinRpcException("wrong object");
+                throw new GenericRpcException("wrong object");
             }
             return JSON.parse(result);
         }

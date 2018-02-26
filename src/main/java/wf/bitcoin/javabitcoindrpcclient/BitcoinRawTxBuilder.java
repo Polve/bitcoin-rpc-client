@@ -68,11 +68,11 @@ public class BitcoinRawTxBuilder {
     return this;
   }
 
-  public BitcoinRawTxBuilder in(double value) throws BitcoinRpcException {
+  public BitcoinRawTxBuilder in(double value) throws GenericRpcException {
     return in(value, 6);
   }
 
-  public BitcoinRawTxBuilder in(double value, int minConf) throws BitcoinRpcException {
+  public BitcoinRawTxBuilder in(double value, int minConf) throws GenericRpcException {
     List<BitcoindRpcClient.Unspent> unspent = bitcoin.listUnspent(minConf);
     double v = value;
     for (BitcoindRpcClient.Unspent o : unspent) {
@@ -84,13 +84,13 @@ public class BitcoinRawTxBuilder {
         break;
     }
     if (v > 0)
-      throw new BitcoinRpcException("Not enough bitcoins (" + v + "/" + value + ")");
+      throw new GenericRpcException("Not enough bitcoins (" + v + "/" + value + ")");
     return this;
   }
 
   private HashMap<String, BitcoindRpcClient.RawTransaction> txCache = new HashMap<>();
 
-  private BitcoindRpcClient.RawTransaction tx(String txId) throws BitcoinRpcException {
+  private BitcoindRpcClient.RawTransaction tx(String txId) throws GenericRpcException {
     BitcoindRpcClient.RawTransaction tx = txCache.get(txId);
     if (tx != null)
       return tx;
@@ -99,11 +99,11 @@ public class BitcoinRawTxBuilder {
     return tx;
   }
 
-  public BitcoinRawTxBuilder outChange(String address) throws BitcoinRpcException {
+  public BitcoinRawTxBuilder outChange(String address) throws GenericRpcException {
     return outChange(address, 0d);
   }
 
-  public BitcoinRawTxBuilder outChange(String address, double fee) throws BitcoinRpcException {
+  public BitcoinRawTxBuilder outChange(String address, double fee) throws GenericRpcException {
     double is = 0d;
     for (BitcoindRpcClient.TxInput i : inputs)
       is = BitcoinUtil.normalizeAmount(is + tx(i.txid()).vOut().get(i.vout()).value());
@@ -115,15 +115,15 @@ public class BitcoinRawTxBuilder {
     return this;
   }
 
-  public String create() throws BitcoinRpcException {
+  public String create() throws GenericRpcException {
     return bitcoin.createRawTransaction(new ArrayList<>(inputs), outputs);
   }
 
-  public String sign() throws BitcoinRpcException {
+  public String sign() throws GenericRpcException {
     return bitcoin.signRawTransaction(create(), null, null);
   }
 
-  public String send() throws BitcoinRpcException {
+  public String send() throws GenericRpcException {
     return bitcoin.sendRawTransaction(sign());
   }
 

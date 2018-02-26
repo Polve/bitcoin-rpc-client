@@ -149,53 +149,53 @@ public interface BitcoindRpcClient {
    * Use BitcoinRawTxBuilder , which is more convenient
    *
    */
-  public String createRawTransaction(List<TxInput> inputs, List<TxOutput> outputs) throws BitcoinRpcException;
+  public String createRawTransaction(List<TxInput> inputs, List<TxOutput> outputs) throws GenericRpcException;
 
-  public String dumpPrivKey(String address) throws BitcoinRpcException;
+  public String dumpPrivKey(String address) throws GenericRpcException;
 
-  public String getAccount(String address) throws BitcoinRpcException;
+  public String getAccount(String address) throws GenericRpcException;
 
-  public String getAccountAddress(String address) throws BitcoinRpcException;
+  public String getAccountAddress(String address) throws GenericRpcException;
 
-  public List<String> getAddressesByAccount(String account) throws BitcoinRpcException;
+  public List<String> getAddressesByAccount(String account) throws GenericRpcException;
 
   /**
    * @return returns the server's total available balance
-   * @throws BitcoinRpcException
+   * @throws GenericRpcException
    */
-  public double getBalance() throws BitcoinRpcException;
+  public double getBalance() throws GenericRpcException;
 
   /**
    * @param account
    * @return returns the balance in the account
-   * @throws BitcoinRpcException
+   * @throws GenericRpcException
    */
-  public double getBalance(String account) throws BitcoinRpcException;
+  public double getBalance(String account) throws GenericRpcException;
 
   /**
    * @param account
    * @param minConf
    * @return returns the balance in the account
-   * @throws BitcoinRpcException
+   * @throws GenericRpcException
    */
-  public double getBalance(String account, int minConf) throws BitcoinRpcException;
+  public double getBalance(String account, int minConf) throws GenericRpcException;
 
   /**
    * @return infos about the bitcoind instance
-   * @throws BitcoinRpcException
+   * @throws GenericRpcException
    */
-  public Info getInfo() throws BitcoinRpcException;
+  public Info getInfo() throws GenericRpcException;
 
   /**
    *
    * @return miningInfo about the bitcoind instance
-   * @throws BitcoinRpcException
+   * @throws GenericRpcException
    */
-  public MiningInfo getMiningInfo() throws BitcoinRpcException;
+  public MiningInfo getMiningInfo() throws GenericRpcException;
 
-  public MultiSig createMultiSig(int nRequired, List<String> keys) throws BitcoinRpcException;
+  public MultiSig createMultiSig(int nRequired, List<String> keys) throws GenericRpcException;
 
-  public NetworkInfo getNetworkInfo() throws BitcoinRpcException;
+  public NetworkInfo getNetworkInfo() throws GenericRpcException;
 
   public static interface Info extends Serializable {
 
@@ -399,6 +399,7 @@ public interface BitcoindRpcClient {
   }
 
   public static interface TxOut extends Serializable {
+
     public String bestBlock();
 
     public long confirmations();
@@ -451,9 +452,9 @@ public interface BitcoindRpcClient {
 
     public String chainwork();
 
-    public Block previous() throws BitcoinRpcException;
+    public Block previous() throws GenericRpcException;
 
-    public Block next() throws BitcoinRpcException;
+    public Block next() throws GenericRpcException;
   }
 
   public static interface TxOutSetInfo extends Serializable {
@@ -473,25 +474,27 @@ public interface BitcoindRpcClient {
     public BigDecimal totalAmount();
   }
 
-  public Block getBlock(int height) throws BitcoinRpcException;
+  public Block getBlock(int height) throws GenericRpcException;
 
-  public Block getBlock(String blockHash) throws BitcoinRpcException;
+  public Block getBlock(String blockHash) throws GenericRpcException;
 
-  public String getBlockHash(int height) throws BitcoinRpcException;
+  public String getRawBlock(String blockHash) throws GenericRpcException;
 
-  public BlockChainInfo getBlockChainInfo() throws BitcoinRpcException;
+  public String getBlockHash(int height) throws GenericRpcException;
 
-  public int getBlockCount() throws BitcoinRpcException;
+  public BlockChainInfo getBlockChainInfo() throws GenericRpcException;
 
-  public String getNewAddress() throws BitcoinRpcException;
+  public int getBlockCount() throws GenericRpcException;
 
-  public String getNewAddress(String account) throws BitcoinRpcException;
+  public String getNewAddress() throws GenericRpcException;
 
-  public List<String> getRawMemPool() throws BitcoinRpcException;
+  public String getNewAddress(String account) throws GenericRpcException;
 
-  public String getBestBlockHash() throws BitcoinRpcException;
+  public List<String> getRawMemPool() throws GenericRpcException;
 
-  public String getRawTransactionHex(String txId) throws BitcoinRpcException;
+  public String getBestBlockHash() throws GenericRpcException;
+
+  public String getRawTransactionHex(String txId) throws GenericRpcException;
 
   public interface RawTransaction extends Serializable {
 
@@ -570,9 +573,9 @@ public interface BitcoindRpcClient {
     public Date blocktime();
   }
 
-  public RawTransaction getRawTransaction(String txId) throws BitcoinRpcException;
+  public RawTransaction getRawTransaction(String txId) throws GenericRpcException;
 
-  public double getReceivedByAddress(String address) throws BitcoinRpcException;
+  public double getReceivedByAddress(String address) throws GenericRpcException;
 
   /**
    * Returns the total amount received by &lt;bitcoinaddress&gt; in transactions
@@ -586,25 +589,25 @@ public interface BitcoindRpcClient {
    * @param minConf
    * @return the total amount received by &lt;bitcoinaddress&gt;
    */
-  public double getReceivedByAddress(String address, int minConf) throws BitcoinRpcException;
+  public double getReceivedByAddress(String address, int minConf) throws GenericRpcException;
 
-  public void importPrivKey(String bitcoinPrivKey) throws BitcoinRpcException;
+  public void importPrivKey(String bitcoinPrivKey) throws GenericRpcException;
 
-  public void importPrivKey(String bitcoinPrivKey, String label) throws BitcoinRpcException;
+  public void importPrivKey(String bitcoinPrivKey, String label) throws GenericRpcException;
 
-  public void importPrivKey(String bitcoinPrivKey, String label, boolean rescan) throws BitcoinRpcException;
+  public void importPrivKey(String bitcoinPrivKey, String label, boolean rescan) throws GenericRpcException;
 
-  Object importAddress(String address, String label, boolean rescan) throws BitcoinRpcException;
+  Object importAddress(String address, String label, boolean rescan) throws GenericRpcException;
 
   /**
    * listaccounts [minconf=1]
    *
    * @return Map that has account names as keys, account balances as values
-   * @throws BitcoinRpcException
+   * @throws GenericRpcException
    */
-  public Map<String, Number> listAccounts() throws BitcoinRpcException;
+  public Map<String, Number> listAccounts() throws GenericRpcException;
 
-  public Map<String, Number> listAccounts(int minConf) throws BitcoinRpcException;
+  public Map<String, Number> listAccounts(int minConf) throws GenericRpcException;
 
   public static interface ReceivedAddress extends Serializable {
 
@@ -617,11 +620,11 @@ public interface BitcoindRpcClient {
     public int confirmations();
   }
 
-  public List<ReceivedAddress> listReceivedByAddress() throws BitcoinRpcException;
+  public List<ReceivedAddress> listReceivedByAddress() throws GenericRpcException;
 
-  public List<ReceivedAddress> listReceivedByAddress(int minConf) throws BitcoinRpcException;
+  public List<ReceivedAddress> listReceivedByAddress(int minConf) throws GenericRpcException;
 
-  public List<ReceivedAddress> listReceivedByAddress(int minConf, boolean includeEmpty) throws BitcoinRpcException;
+  public List<ReceivedAddress> listReceivedByAddress(int minConf, boolean includeEmpty) throws GenericRpcException;
 
   /**
    * returned by listsinceblock and listtransactions
@@ -666,19 +669,19 @@ public interface BitcoindRpcClient {
     public String lastBlock();
   }
 
-  public TransactionsSinceBlock listSinceBlock() throws BitcoinRpcException;
+  public TransactionsSinceBlock listSinceBlock() throws GenericRpcException;
 
-  public TransactionsSinceBlock listSinceBlock(String blockHash) throws BitcoinRpcException;
+  public TransactionsSinceBlock listSinceBlock(String blockHash) throws GenericRpcException;
 
-  public TransactionsSinceBlock listSinceBlock(String blockHash, int targetConfirmations) throws BitcoinRpcException;
+  public TransactionsSinceBlock listSinceBlock(String blockHash, int targetConfirmations) throws GenericRpcException;
 
-  public List<Transaction> listTransactions() throws BitcoinRpcException;
+  public List<Transaction> listTransactions() throws GenericRpcException;
 
-  public List<Transaction> listTransactions(String account) throws BitcoinRpcException;
+  public List<Transaction> listTransactions(String account) throws GenericRpcException;
 
-  public List<Transaction> listTransactions(String account, int count) throws BitcoinRpcException;
+  public List<Transaction> listTransactions(String account, int count) throws GenericRpcException;
 
-  public List<Transaction> listTransactions(String account, int count, int from) throws BitcoinRpcException;
+  public List<Transaction> listTransactions(String account, int count, int from) throws GenericRpcException;
 
   public interface Unspent extends TxInput, TxOutput, Serializable {
 
@@ -701,25 +704,25 @@ public interface BitcoindRpcClient {
     public int confirmations();
   }
 
-  public List<Unspent> listUnspent() throws BitcoinRpcException;
+  public List<Unspent> listUnspent() throws GenericRpcException;
 
-  public List<Unspent> listUnspent(int minConf) throws BitcoinRpcException;
+  public List<Unspent> listUnspent(int minConf) throws GenericRpcException;
 
-  public List<Unspent> listUnspent(int minConf, int maxConf) throws BitcoinRpcException;
+  public List<Unspent> listUnspent(int minConf, int maxConf) throws GenericRpcException;
 
-  public List<Unspent> listUnspent(int minConf, int maxConf, String... addresses) throws BitcoinRpcException;
+  public List<Unspent> listUnspent(int minConf, int maxConf, String... addresses) throws GenericRpcException;
 
-  public String move(String fromAccount, String toBitcoinAddress, double amount) throws BitcoinRpcException;
+  public String move(String fromAccount, String toBitcoinAddress, double amount) throws GenericRpcException;
 
-  public String move(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws BitcoinRpcException;
+  public String move(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws GenericRpcException;
 
-  public String move(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment) throws BitcoinRpcException;
+  public String move(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment) throws GenericRpcException;
 
-  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount) throws BitcoinRpcException;
+  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount) throws GenericRpcException;
 
-  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws BitcoinRpcException;
+  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws GenericRpcException;
 
-  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment) throws BitcoinRpcException;
+  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment) throws GenericRpcException;
 
   /**
    * Will send the given amount to the given address, ensuring the account has a
@@ -732,15 +735,15 @@ public interface BitcoindRpcClient {
    * @param comment
    * @param commentTo
    * @return the transaction ID if successful
-   * @throws BitcoinRpcException
+   * @throws GenericRpcException
    */
-  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment, String commentTo) throws BitcoinRpcException;
+  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment, String commentTo) throws GenericRpcException;
 
-  public String sendRawTransaction(String hex) throws BitcoinRpcException;
+  public String sendRawTransaction(String hex) throws GenericRpcException;
 
-  public String sendToAddress(String toAddress, double amount) throws BitcoinRpcException;
+  public String sendToAddress(String toAddress, double amount) throws GenericRpcException;
 
-  public String sendToAddress(String toAddress, double amount, String comment) throws BitcoinRpcException;
+  public String sendToAddress(String toAddress, double amount, String comment) throws GenericRpcException;
 
   /**
    * @param toAddress
@@ -748,11 +751,11 @@ public interface BitcoindRpcClient {
    * @param comment
    * @param commentTo
    * @return the transaction ID &lt;txid&gt; if successful
-   * @throws BitcoinRpcException
+   * @throws GenericRpcException
    */
-  public String sendToAddress(String toAddress, double amount, String comment, String commentTo) throws BitcoinRpcException;
+  public String sendToAddress(String toAddress, double amount, String comment, String commentTo) throws GenericRpcException;
 
-  public String signRawTransaction(String hex, List<ExtendedTxInput> inputs, List<String> privateKeys) throws BitcoinRpcException;
+  public String signRawTransaction(String hex, List<ExtendedTxInput> inputs, List<String> privateKeys) throws GenericRpcException;
 
   public static interface AddressValidationResult extends Serializable {
 
@@ -788,28 +791,28 @@ public interface BitcoindRpcClient {
    */
   public List<String> generate(int numBlocks) throws BitcoinRPCException;
 
-  public AddressValidationResult validateAddress(String address) throws BitcoinRpcException;
+  public AddressValidationResult validateAddress(String address) throws GenericRpcException;
 
-  public double getEstimateFee(int nBlocks) throws BitcoinRpcException;
+  public double getEstimateFee(int nBlocks) throws GenericRpcException;
 
-  public double getEstimatePriority(int nBlocks) throws BitcoinRpcException;
+  public double getEstimatePriority(int nBlocks) throws GenericRpcException;
 
   /**
    * In regtest mode, invalidates a block to create an orphan chain
    *
    * @param hash
-   * @throws BitcoinRpcException
+   * @throws GenericRpcException
    */
-  public void invalidateBlock(String hash) throws BitcoinRpcException;
+  public void invalidateBlock(String hash) throws GenericRpcException;
 
   /**
    * In regtest mode, undo the invalidation of a block, possibly making it on
    * the top of the chain
    *
    * @param hash
-   * @throws BitcoinRpcException
+   * @throws GenericRpcException
    */
-  public void reconsiderBlock(String hash) throws BitcoinRpcException;
+  public void reconsiderBlock(String hash) throws GenericRpcException;
 
   public static interface PeerInfoResult extends Serializable {
 
@@ -908,4 +911,12 @@ public interface BitcoindRpcClient {
 
   TxOut getTxOut(String txId, long vout);
 
+  public static interface SmartFeeResult extends Serializable {
+
+    double feeRate();
+
+    int blocks();
+  }
+
+  SmartFeeResult getEstimateSmartFee(int blocks);
 }
