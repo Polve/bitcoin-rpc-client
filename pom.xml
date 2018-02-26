@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>wf.bitcoin</groupId>
   <artifactId>JavaBitcoindRpcClient</artifactId>
-  <version>0.9.16</version>
+  <version>0.9.17</version>
   <packaging>jar</packaging>
   <name>Java Bitcoind RPC Client</name>
   <description>A lightweight Java bitcoin JSON-RPC client binding</description>
@@ -77,7 +77,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>2.4</version>
+        <version>3.0.1</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -91,7 +91,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.10.1</version>
+        <version>3.0.0</version>
         <executions>
           <execution>
             <id>attach-javadocs</id>

@@ -17,8 +17,6 @@
  */
 package wf.bitcoin.javabitcoindrpcclient;
 
-import java.util.Arrays;
-
 /**
  *
  * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com, Alessandro Polverini
