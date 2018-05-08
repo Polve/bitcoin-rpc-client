@@ -1648,18 +1648,18 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
-  public String move(String fromAccount, String toBitcoinAddress, double amount) throws GenericRpcException {
-    return (String) query("move", fromAccount, toBitcoinAddress, amount);
+  public boolean move(String fromAccount, String toBitcoinAddress, double amount) throws GenericRpcException {
+    return (boolean) query("move", fromAccount, toBitcoinAddress, amount);
   }
 
   @Override
-  public String move(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws GenericRpcException {
-    return (String) query("move", fromAccount, toBitcoinAddress, amount, minConf);
+  public boolean move(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws GenericRpcException {
+    return (boolean) query("move", fromAccount, toBitcoinAddress, amount, minConf);
   }
 
   @Override
-  public String move(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment) throws GenericRpcException {
-    return (String) query("move", fromAccount, toBitcoinAddress, amount, minConf, comment);
+  public boolean move(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment) throws GenericRpcException {
+    return (boolean) query("move", fromAccount, toBitcoinAddress, amount, minConf, comment);
   }
 
   @Override
@@ -1798,6 +1798,11 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   @Override
   public List<String> generate(int numBlocks) throws BitcoinRPCException {
     return (List<String>) query("generate", numBlocks);
+  }
+
+  @Override
+  public List<String> generate(int numBlocks, long maxTries) throws BitcoinRPCException {
+    return (List<String>) query("generate", numBlocks, maxTries);
   }
 
 //    static {

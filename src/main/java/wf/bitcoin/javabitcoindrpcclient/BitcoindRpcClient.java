@@ -712,11 +712,11 @@ public interface BitcoindRpcClient {
 
   public List<Unspent> listUnspent(int minConf, int maxConf, String... addresses) throws GenericRpcException;
 
-  public String move(String fromAccount, String toBitcoinAddress, double amount) throws GenericRpcException;
+  public boolean move(String fromAccount, String toBitcoinAddress, double amount) throws GenericRpcException;
 
-  public String move(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws GenericRpcException;
+  public boolean move(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws GenericRpcException;
 
-  public String move(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment) throws GenericRpcException;
+  public boolean move(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment) throws GenericRpcException;
 
   public String sendFrom(String fromAccount, String toBitcoinAddress, double amount) throws GenericRpcException;
 
@@ -790,6 +790,8 @@ public interface BitcoindRpcClient {
    * @throws BitcoinRPCException
    */
   public List<String> generate(int numBlocks) throws BitcoinRPCException;
+
+  public List<String> generate(int numBlocks, long maxTries) throws BitcoinRPCException;
 
   public AddressValidationResult validateAddress(String address) throws GenericRpcException;
 

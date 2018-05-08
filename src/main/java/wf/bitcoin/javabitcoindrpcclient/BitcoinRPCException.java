@@ -81,4 +81,8 @@ public class BitcoinRPCException extends GenericRpcException {
     return rpcParams;
   }
 
+  public String getResponseMessage() {
+    return responseMessage;
+  }
+
 }
