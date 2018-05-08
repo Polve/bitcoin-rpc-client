@@ -19,8 +19,8 @@ package wf.bitcoin.javabitcoindrpcclient;
 
 /**
  *
- * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com, Alessandro Polverini
- * <alex@polverini.org>
+ * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com
+ * @author Alessandro Polverini <alex@polverini.org>
  */
 public class BitcoinRPCException extends GenericRpcException {
 
