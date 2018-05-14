@@ -82,6 +82,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
   public static final URL DEFAULT_JSONRPC_URL;
   public static final URL DEFAULT_JSONRPC_TESTNET_URL;
+  public static final URL DEFAULT_JSONRPC_REGTEST_URL;
 
   static {
     String user = "user";
@@ -119,6 +120,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     try {
       DEFAULT_JSONRPC_URL = new URL("http://" + user + ':' + password + "@" + host + ":" + (port == null ? "8332" : port) + "/");
       DEFAULT_JSONRPC_TESTNET_URL = new URL("http://" + user + ':' + password + "@" + host + ":" + (port == null ? "18332" : port) + "/");
+      DEFAULT_JSONRPC_REGTEST_URL = new URL("http://" + user + ':' + password + "@" + host + ":" + (port == null ? "18443" : port) + "/");
     } catch (MalformedURLException ex) {
       throw new RuntimeException(ex);
     }
