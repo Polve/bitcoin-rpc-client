@@ -151,32 +151,52 @@ public interface BitcoindRpcClient {
    */
   public String createRawTransaction(List<TxInput> inputs, List<TxOutput> outputs) throws GenericRpcException;
 
+  /**
+   * The dumpprivkey RPC returns the wallet-import-format (WIF) private key corresponding to an address. 
+   * (But does not remove it from the wallet.)
+   * 
+   * Requires wallet support. Requires an unlocked wallet or an unencrypted wallet.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#dumpprivkey">dumpprivkey</a>
+   */
   public String dumpPrivKey(String address) throws GenericRpcException;
 
   public String getAccount(String address) throws GenericRpcException;
 
   public String getAccountAddress(String address) throws GenericRpcException;
 
+  /**
+   * The getaddressesbyaccount RPC returns a list of every address assigned to a particular account. 
+   * 
+   * @param account The name of an account to get the balance for.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getaddressesbyaccount">getaddressesbyaccount</a>
+   */
   public List<String> getAddressesByAccount(String account) throws GenericRpcException;
 
   /**
-   * @return returns the server's total available balance
-   * @throws GenericRpcException
+   * The getbalance RPC gets the balance in decimal bitcoins for the default account.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getbalance">getbalance</a>
    */
   public double getBalance() throws GenericRpcException;
 
   /**
-   * @param account
-   * @return returns the balance in the account
-   * @throws GenericRpcException
+   * The getbalance RPC gets the balance in decimal bitcoins across all accounts or for a particular account.
+   * 
+   * @param account The name of an account to get the balance for.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getbalance">getbalance</a>
    */
   public double getBalance(String account) throws GenericRpcException;
 
   /**
-   * @param account
-   * @param minConf
-   * @return returns the balance in the account
-   * @throws GenericRpcException
+   * The getbalance RPC gets the balance in decimal bitcoins across all accounts or for a particular account.
+   * 
+   * @param account The name of an account to get the balance for.
+   * @param minConf The minimum number of confirmations
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getbalance">getbalance</a>
    */
   public double getBalance(String account, int minConf) throws GenericRpcException;
 
@@ -486,8 +506,19 @@ public interface BitcoindRpcClient {
 
   public int getBlockCount() throws GenericRpcException;
 
+  /**
+   * The getnewaddress RPC returns a new Bitcoin address for receiving payments. 
+   *  
+   * @see <a href="https://bitcoin.org/en/developer-reference#getnewaddress">getnewaddress</a>
+   */
   public String getNewAddress() throws GenericRpcException;
 
+  /**
+   * The getnewaddress RPC returns a new Bitcoin address for receiving payments. 
+   * If an account is specified, payments received with the address will be credited to that account.
+   *  
+   * @see <a href="https://bitcoin.org/en/developer-reference#getnewaddress">getnewaddress</a>
+   */
   public String getNewAddress(String account) throws GenericRpcException;
 
   public List<String> getRawMemPool() throws GenericRpcException;
@@ -792,6 +823,16 @@ public interface BitcoindRpcClient {
   public List<String> generate(int numBlocks) throws BitcoinRPCException;
 
   public List<String> generate(int numBlocks, long maxTries) throws BitcoinRPCException;
+
+  /**
+   * The generatetoaddress RPC mines blocks immediately to a specified address.
+   * 
+   * @param numBlocks The number of blocks to generate.
+   * @param address The address to send the newly generated Bitcoin to
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#generatetoaddress">generatetoaddress</a>
+   */
+  public List<String> generateToAddress(int numBlocks, String address) throws BitcoinRPCException;
 
   public AddressValidationResult validateAddress(String address) throws GenericRpcException;
 

@@ -1807,6 +1807,11 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return (List<String>) query("generate", numBlocks, maxTries);
   }
 
+  @Override
+  public List<String> generateToAddress(int numBlocks, String address) throws BitcoinRPCException {
+    return (List<String>) query("generatetoaddress", numBlocks, address);
+  }
+
 //    static {
 //        logger.setLevel(Level.ALL);
 //        for (Handler handler : logger.getParent().getHandlers())
