@@ -145,25 +145,49 @@ public interface BitcoindRpcClient {
     }
   }
 
-  /*
-   * Use BitcoinRawTxBuilder , which is more convenient
-   *
+  /**
+   * The createrawtransaction RPC creates an unsigned serialized transaction that spends a previous output to a new output with a P2PKH or P2SH address. 
+   * The transaction is not stored in the wallet or transmitted to the network.
+   * 
+   * @param inputs An array of objects, each one to be used as an input to the transaction
+   * @param outputs The addresses and amounts to pay
+   * @return The resulting unsigned raw transaction in serialized transaction format encoded as hex.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#createrawtransaction">createrawtransaction</a>
    */
-  public String createRawTransaction(List<TxInput> inputs, List<TxOutput> outputs) throws GenericRpcException;
+  String createRawTransaction(List<TxInput> inputs, List<TxOutput> outputs) throws GenericRpcException;
 
   /**
    * The dumpprivkey RPC returns the wallet-import-format (WIF) private key corresponding to an address. 
    * (But does not remove it from the wallet.)
    * 
-   * Requires wallet support. Requires an unlocked wallet or an unencrypted wallet.
+   * @param address The P2PKH address corresponding to the private key you want returned.
    * 
    * @see <a href="https://bitcoin.org/en/developer-reference#dumpprivkey">dumpprivkey</a>
    */
   public String dumpPrivKey(String address) throws GenericRpcException;
 
+  /**
+   * The getaccount RPC returns the name of the account associated with the given address.
+   * 
+   * @param address A P2PKH or P2SH Bitcoin address belonging either to a specific account or the default account 
+   * @return The name of an account, or an empty string
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getaccount">getaccount</a>
+   */
   public String getAccount(String address) throws GenericRpcException;
 
-  public String getAccountAddress(String address) throws GenericRpcException;
+  /**
+   * The getaccountaddress RPC returns the current Bitcoin address for receiving payments to this account. 
+   * If the account doesn’t exist, it creates both the account and a new address for receiving payment. 
+   * Once a payment has been received to an address, future calls to this RPC for the same account will return a different address.
+   * 
+   * @param account The name of an account. 
+   * @return An address, belonging to the account specified, which has not yet received any payments
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getaccountaddress">getaccountaddress</a>
+   */
+  public String getAccountAddress(String account) throws GenericRpcException;
 
   /**
    * The getaddressesbyaccount RPC returns a list of every address assigned to a particular account. 
@@ -201,317 +225,400 @@ public interface BitcoindRpcClient {
   public double getBalance(String account, int minConf) throws GenericRpcException;
 
   /**
-   * @return infos about the bitcoind instance
-   * @throws GenericRpcException
+   * The getinfo RPC prints various information about the node and the network.
+   * 
+   * getinfo was removed in 0.16.0 version of Bitcoin Core.
+   * 
+   * @return Information about this node and the network
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getinfo">getinfo</a>
    */
   public Info getInfo() throws GenericRpcException;
 
   /**
-   *
-   * @return miningInfo about the bitcoind instance
-   * @throws GenericRpcException
+   * The getmininginfo RPC returns various mining-related information.
+   * 
+   * @return Various mining-related information
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getmininginfo">getmininginfo</a>
    */
   public MiningInfo getMiningInfo() throws GenericRpcException;
 
-  public MultiSig createMultiSig(int nRequired, List<String> keys) throws GenericRpcException;
+  /**
+   * The createmultisig RPC creates a P2SH multi-signature address.
+   * 
+   * @param nRequired The minimum (m) number of signatures required to spend this m-of-n multisig script
+   * @param keys An array of strings with each string being a public key or address
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#createmultisig">createmultisig</a>
+   */
+  MultiSig createMultiSig(int nRequired, List<String> keys) throws GenericRpcException;
 
-  public NetworkInfo getNetworkInfo() throws GenericRpcException;
+  /**
+   * The getnetworkinfo RPC returns information about the node’s connection to the network.
+   * 
+   * @return Information about this node’s connection to the network
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getnetworkinfo">getnetworkinfo</a>
+   */
+  NetworkInfo getNetworkInfo() throws GenericRpcException;
 
-  public static interface Info extends Serializable {
+  static interface Info extends Serializable {
 
-    public long version();
+    long version();
 
-    public long protocolVersion();
+    long protocolVersion();
 
-    public long walletVersion();
+    long walletVersion();
 
-    public double balance();
+    double balance();
 
-    public int blocks();
+    int blocks();
 
-    public int timeOffset();
+    int timeOffset();
 
-    public int connections();
+    int connections();
 
-    public String proxy();
+    String proxy();
 
-    public double difficulty();
+    double difficulty();
 
-    public boolean testnet();
+    boolean testnet();
 
-    public long keyPoolOldest();
+    long keyPoolOldest();
 
-    public long keyPoolSize();
+    long keyPoolSize();
 
-    public double payTxFee();
+    double payTxFee();
 
-    public double relayFee();
+    double relayFee();
 
-    public String errors();
+    String errors();
   }
 
-  public static interface MiningInfo extends Serializable {
+  static interface MiningInfo extends Serializable {
 
-    public int blocks();
+    int blocks();
 
-    public int currentBlockSize();
+    int currentBlockSize();
 
-    public int currentBlockWeight();
+    int currentBlockWeight();
 
-    public int currentBlockTx();
+    int currentBlockTx();
 
-    public double difficulty();
+    double difficulty();
 
-    public String errors();
+    String errors();
 
-    public double networkHashps();
+    double networkHashps();
 
-    public int pooledTx();
+    int pooledTx();
 
-    public boolean testNet();
+    boolean testNet();
 
-    public String chain();
+    String chain();
   }
 
-  public static interface NetTotals extends Serializable {
+  static interface NetTotals extends Serializable {
 
-    public long totalBytesRecv();
+    long totalBytesRecv();
 
-    public long totalBytesSent();
+    long totalBytesSent();
 
-    public long timeMillis();
+    long timeMillis();
 
-    public interface uploadTarget extends Serializable {
+    interface uploadTarget extends Serializable {
 
-      public long timeFrame();
+      long timeFrame();
 
-      public int target();
+      int target();
 
-      public boolean targetReached();
+      boolean targetReached();
 
-      public boolean serveHistoricalBlocks();
+      boolean serveHistoricalBlocks();
 
-      public long bytesLeftInCycle();
+      long bytesLeftInCycle();
 
-      public long timeLeftInCycle();
+      long timeLeftInCycle();
     }
 
-    public uploadTarget uploadTarget();
+    uploadTarget uploadTarget();
   }
 
-  public static interface BlockChainInfo extends Serializable {
+  static interface BlockChainInfo extends Serializable {
 
-    public String chain();
+    String chain();
 
-    public int blocks();
+    int blocks();
 
-    public String bestBlockHash();
+    String bestBlockHash();
 
-    public double difficulty();
+    double difficulty();
 
-    public double verificationProgress();
+    double verificationProgress();
 
-    public String chainWork();
+    String chainWork();
   }
 
-  public static interface DecodedScript extends Serializable {
+  static interface DecodedScript extends Serializable {
 
-    public String asm();
+    String asm();
 
-    public String hex();
+    String hex();
 
-    public String type();
+    String type();
 
-    public int reqSigs();
+    int reqSigs();
 
-    public List<String> addresses();
+    List<String> addresses();
 
-    public String p2sh();
+    String p2sh();
   }
 
-  public TxOutSetInfo getTxOutSetInfo();
+  /**
+   * The gettxoutsetinfo RPC returns statistics about the confirmed unspent transaction output (UTXO) set. 
+   * Note that this call may take some time and that it only counts outputs from confirmed transactions—it does not count outputs from the memory pool.
+   * 
+   * @return Information about the UTXO set
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#gettxoutsetinfo">gettxoutsetinfo</a>
+   */
+  TxOutSetInfo getTxOutSetInfo();
 
-  public WalletInfo getWalletInfo();
+  /**
+   * The getwalletinfo RPC provides information about the wallet.
+   * 
+   * @return An object describing the wallet
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getwalletinfo">getwalletinfo</a>
+   */
+  WalletInfo getWalletInfo();
 
-  public static interface WalletInfo extends Serializable {
+  static interface WalletInfo extends Serializable {
 
-    public long walletVersion();
+    long walletVersion();
 
-    public BigDecimal balance();
+    BigDecimal balance();
 
-    public BigDecimal unconfirmedBalance();
+    BigDecimal unconfirmedBalance();
 
-    public BigDecimal immatureBalance();
+    BigDecimal immatureBalance();
 
-    public long txCount();
+    long txCount();
 
-    public long keyPoolOldest();
+    long keyPoolOldest();
 
-    public long keyPoolSize();
+    long keyPoolSize();
 
-    public long unlockedUntil();
+    long unlockedUntil();
 
-    public BigDecimal payTxFee();
+    BigDecimal payTxFee();
 
-    public String hdMasterKeyId();
+    String hdMasterKeyId();
   }
 
-  public static interface NetworkInfo extends Serializable {
+  static interface NetworkInfo extends Serializable {
 
-    public long version();
+    long version();
 
-    public String subversion();
+    String subversion();
 
-    public long protocolVersion();
+    long protocolVersion();
 
-    public String localServices();
+    String localServices();
 
-    public boolean localRelay();
+    boolean localRelay();
 
-    public long timeOffset();
+    long timeOffset();
 
-    public long connections();
+    long connections();
 
-    public List<Network> networks();
+    List<Network> networks();
 
-    public BigDecimal relayFee();
+    BigDecimal relayFee();
 
-    public List<String> localAddresses();
+    List<String> localAddresses();
 
-    public String warnings();
+    String warnings();
   }
 
-  public static interface Network extends Serializable {
+  static interface Network extends Serializable {
 
-    public String name();
+    String name();
 
-    public boolean limited();
+    boolean limited();
 
-    public boolean reachable();
+    boolean reachable();
 
-    public String proxy();
+    String proxy();
 
-    public boolean proxyRandomizeCredentials();
+    boolean proxyRandomizeCredentials();
   }
 
-  public static interface MultiSig extends Serializable {
+  static interface MultiSig extends Serializable {
 
-    public String address();
+    String address();
 
-    public String redeemScript();
+    String redeemScript();
   }
 
-  public static interface NodeInfo extends Serializable {
+  static interface NodeInfo extends Serializable {
 
-    public String addedNode();
+    String addedNode();
 
-    public boolean connected();
+    boolean connected();
 
-    public List<Address> addresses();
-
-  }
-
-  public static interface Address extends Serializable {
-
-    public String address();
-
-    public String connected();
-  }
-
-  public static interface TxOut extends Serializable {
-
-    public String bestBlock();
-
-    public long confirmations();
-
-    public BigDecimal value();
-
-    public String asm();
-
-    public String hex();
-
-    public long reqSigs();
-
-    public String type();
-
-    public List<String> addresses();
-
-    public long version();
-
-    public boolean coinBase();
+    List<Address> addresses();
 
   }
 
-  public static interface Block extends Serializable {
+  static interface Address extends Serializable {
 
-    public String hash();
+    String address();
 
-    public int confirmations();
-
-    public int size();
-
-    public int height();
-
-    public int version();
-
-    public String merkleRoot();
-
-    public List<String> tx();
-
-    public Date time();
-
-    public long nonce();
-
-    public String bits();
-
-    public double difficulty();
-
-    public String previousHash();
-
-    public String nextHash();
-
-    public String chainwork();
-
-    public Block previous() throws GenericRpcException;
-
-    public Block next() throws GenericRpcException;
+    String connected();
   }
 
-  public static interface TxOutSetInfo extends Serializable {
+  static interface TxOut extends Serializable {
 
-    public long height();
+    String bestBlock();
 
-    public String bestBlock();
+    long confirmations();
 
-    public long transactions();
+    BigDecimal value();
 
-    public long txouts();
+    String asm();
 
-    public long bytesSerialized();
+    String hex();
 
-    public String hashSerialized();
+    long reqSigs();
 
-    public BigDecimal totalAmount();
+    String type();
+
+    List<String> addresses();
+
+    long version();
+
+    boolean coinBase();
+
   }
 
-  public Block getBlock(int height) throws GenericRpcException;
+  static interface Block extends Serializable {
 
-  public Block getBlock(String blockHash) throws GenericRpcException;
+    String hash();
 
-  public String getRawBlock(String blockHash) throws GenericRpcException;
+    int confirmations();
 
-  public String getBlockHash(int height) throws GenericRpcException;
+    int size();
 
-  public BlockChainInfo getBlockChainInfo() throws GenericRpcException;
+    int height();
 
-  public int getBlockCount() throws GenericRpcException;
+    int version();
+
+    String merkleRoot();
+
+    List<String> tx();
+
+    Date time();
+
+    long nonce();
+
+    String bits();
+
+    double difficulty();
+
+    String previousHash();
+
+    String nextHash();
+
+    String chainwork();
+
+    Block previous() throws GenericRpcException;
+
+    Block next() throws GenericRpcException;
+  }
+
+  static interface TxOutSetInfo extends Serializable {
+
+    long height();
+
+    String bestBlock();
+
+    long transactions();
+
+    long txouts();
+
+    long bytesSerialized();
+
+    String hashSerialized();
+
+    BigDecimal totalAmount();
+  }
+
+  /**
+   * Gets a block at the given height from the local block database.
+   *
+   * This is a convenience method as a combination of {@link #getBlockHash(int)} and {@link #getBlock(String)}.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getblockhash">getblockhash</a>
+   * @see <a href="https://bitcoin.org/en/developer-reference#getblock">getblock</a>
+   */
+  Block getBlock(int height) throws GenericRpcException;
+
+  /**
+   * The getblock RPC gets a block with a particular header hash from the local block database either as a JSON object or as a serialized block.
+   * 
+   * @param blockHash The hash of the header of the block to get, encoded as hex in RPC byte order
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getblock">getblock</a>
+   */
+  Block getBlock(String blockHash) throws GenericRpcException;
+
+  /**
+   * The getblock RPC gets a block with a particular header hash from the local block database as a serialized block.
+   * 
+   * @param blockHash The hash of the header of the block to get, encoded as hex in RPC byte order
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getblock">getblock</a>
+   * 
+   * [TODO] Is this really public API?
+   */
+  String getRawBlock(String blockHash) throws GenericRpcException;
+
+  /**
+   * The getblockhash RPC returns the header hash of a block at the given height in the local best block chain.
+   * 
+   * @param height The height of the block whose header hash should be returned.
+   * @return The hash of the block at the requested height, encoded as hex in RPC byte order, or JSON null if an error occurred
+   *  
+   * @see <a href="https://bitcoin.org/en/developer-reference#getblockhash">getblockhash</a>
+   */
+  String getBlockHash(int height) throws GenericRpcException;
+
+  /**
+   * The getblockchaininfo RPC provides information about the current state of the block chain.
+   * 
+   * @return Information about the current state of the local block chain
+   *  
+   * @see <a href="https://bitcoin.org/en/developer-reference#getblockchaininfo">getblockchaininfo</a>
+   */
+  BlockChainInfo getBlockChainInfo() throws GenericRpcException;
+
+  /**
+   * The getblockcount RPC returns the number of blocks in the local best block chain.
+   * 
+   * @return The number of blocks in the local best block chain.
+   *  
+   * @see <a href="https://bitcoin.org/en/developer-reference#getblockcount">getblockcount</a>
+   */
+  int getBlockCount() throws GenericRpcException;
 
   /**
    * The getnewaddress RPC returns a new Bitcoin address for receiving payments. 
    *  
    * @see <a href="https://bitcoin.org/en/developer-reference#getnewaddress">getnewaddress</a>
    */
-  public String getNewAddress() throws GenericRpcException;
+  String getNewAddress() throws GenericRpcException;
 
   /**
    * The getnewaddress RPC returns a new Bitcoin address for receiving payments. 
@@ -519,42 +626,53 @@ public interface BitcoindRpcClient {
    *  
    * @see <a href="https://bitcoin.org/en/developer-reference#getnewaddress">getnewaddress</a>
    */
-  public String getNewAddress(String account) throws GenericRpcException;
+  String getNewAddress(String account) throws GenericRpcException;
 
-  public List<String> getRawMemPool() throws GenericRpcException;
+  /**
+   * The getrawmempool RPC returns all transaction identifiers (TXIDs) in the memory pool as a JSON array, 
+   * or detailed information about each transaction in the memory pool as a JSON object.
+   * 
+   * @return An array of TXIDs belonging to transactions in the memory pool.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getrawmempool">getrawmempool</a>
+   */
+  List<String> getRawMemPool() throws GenericRpcException;
 
-  public String getBestBlockHash() throws GenericRpcException;
+  /**
+   * The getbestblockhash RPC returns the header hash of the most recent block on the best block chain.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getbestblockhash">getbestblockhash</a>
+   */
+  String getBestBlockHash() throws GenericRpcException;
 
-  public String getRawTransactionHex(String txId) throws GenericRpcException;
+  interface RawTransaction extends Serializable {
 
-  public interface RawTransaction extends Serializable {
+    String hex();
 
-    public String hex();
+    String txId();
 
-    public String txId();
+    int version();
 
-    public int version();
+    long lockTime();
 
-    public long lockTime();
+    long size();
 
-    public long size();
+    long vsize();
 
-    public long vsize();
-
-    public String hash();
+    String hash();
 
     /*
      *
      */
-    public interface In extends TxInput, Serializable {
+    interface In extends TxInput, Serializable {
 
-      public Map<String, Object> scriptSig();
+      Map<String, Object> scriptSig();
 
-      public long sequence();
+      long sequence();
 
-      public RawTransaction getTransaction();
+      RawTransaction getTransaction();
 
-      public Out getTransactionOutput();
+      Out getTransactionOutput();
     }
 
     /**
@@ -562,267 +680,583 @@ public interface BitcoindRpcClient {
      *
      * @return the list of inputs
      */
-    public List<In> vIn(); // TODO : Create special interface instead of this
+    List<In> vIn(); // TODO : Create special interface instead of this
 
-    public interface Out extends Serializable {
+    interface Out extends Serializable {
 
-      public double value();
+      double value();
 
-      public int n();
+      int n();
 
-      public interface ScriptPubKey extends Serializable {
+      interface ScriptPubKey extends Serializable {
 
-        public String asm();
+        String asm();
 
-        public String hex();
+        String hex();
 
-        public int reqSigs();
+        int reqSigs();
 
-        public String type();
+        String type();
 
-        public List<String> addresses();
+        List<String> addresses();
       }
 
-      public ScriptPubKey scriptPubKey();
+      ScriptPubKey scriptPubKey();
 
-      public TxInput toInput();
+      TxInput toInput();
 
-      public RawTransaction transaction();
+      RawTransaction transaction();
     }
 
     /**
      * This method should be replaced someday
      */
-    public List<Out> vOut(); // TODO : Create special interface instead of this
+    List<Out> vOut(); // TODO : Create special interface instead of this
 
-    public String blockHash();
+    String blockHash();
 
-    public int confirmations();
+    int confirmations();
 
-    public Date time();
+    Date time();
 
-    public Date blocktime();
+    Date blocktime();
   }
 
-  public RawTransaction getRawTransaction(String txId) throws GenericRpcException;
-
-  public double getReceivedByAddress(String address) throws GenericRpcException;
-
   /**
-   * Returns the total amount received by &lt;bitcoinaddress&gt; in transactions
-   * with at least [minconf] confirmations. While some might consider this
-   * obvious, value reported by this only considers *receiving* transactions. It
-   * does not check payments that have been made *from* this address. In other
-   * words, this is not "getaddressbalance". Works only for addresses in the
-   * local wallet, external addresses will always show 0.
-   *
-   * @param address
-   * @param minConf
-   * @return the total amount received by &lt;bitcoinaddress&gt;
+   * The getrawtransaction RPC gets a hex-encoded serialized transaction or a JSON object describing the transaction. 
+   * By default, Bitcoin Core only stores complete transaction data for UTXOs and your own transactions, 
+   * so the RPC may fail on historic transactions unless you use the non-default txindex=1 in your Bitcoin Core startup settings.
+   * 
+   * @param txId The TXID of the transaction to get, encoded as hex in RPC byte order
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getrawtransaction">getrawtransaction</a>
    */
-  public double getReceivedByAddress(String address, int minConf) throws GenericRpcException;
-
-  public void importPrivKey(String bitcoinPrivKey) throws GenericRpcException;
-
-  public void importPrivKey(String bitcoinPrivKey, String label) throws GenericRpcException;
-
-  public void importPrivKey(String bitcoinPrivKey, String label, boolean rescan) throws GenericRpcException;
-
-  Object importAddress(String address, String label, boolean rescan) throws GenericRpcException;
+  RawTransaction getRawTransaction(String txId) throws GenericRpcException;
 
   /**
-   * listaccounts [minconf=1]
+   * The getrawtransaction RPC gets a hex-encoded serialized transaction.
+   * 
+   * @param txId The TXID of the transaction to get, encoded as hex in RPC byte order
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getrawtransaction">getrawtransaction</a>
+   */
+  String getRawTransactionHex(String txId) throws GenericRpcException;
+
+  /**
+   * The getreceivedbyaddress RPC returns the total amount received by the specified address in transactions with the specified number of confirmations. 
+   * It does not count coinbase transactions.
+   *
+   * @param address The address whose transactions should be tallied
+   * @return The number of bitcoins received by the address
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getreceivedbyaddress">getreceivedbyaddress</a>
+   */
+  double getReceivedByAddress(String address) throws GenericRpcException;
+
+  /**
+   * The getreceivedbyaddress RPC returns the total amount received by the specified address in transactions with the specified number of confirmations. 
+   * It does not count coinbase transactions.
+   *
+   * @param address The address whose transactions should be tallied
+   * @param minConf The minimum number of confirmations
+   * @return The number of bitcoins received by the address
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getreceivedbyaddress">getreceivedbyaddress</a>
+   */
+  double getReceivedByAddress(String address, int minConf) throws GenericRpcException;
+
+  /**
+   * The importprivkey RPC adds a private key to your wallet. 
+   * The key should be formatted in the wallet import format created by the dumpprivkey RPC.
+   * 
+   * @param bitcoinPrivKey The private key to import into the wallet encoded in base58check using wallet import format (WIF)
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#importprivkey">importprivkey</a>
+   */
+  void importPrivKey(String bitcoinPrivKey) throws GenericRpcException;
+
+  /**
+   * The importprivkey RPC adds a private key to your wallet. 
+   * The key should be formatted in the wallet import format created by the dumpprivkey RPC.
+   * 
+   * @param bitcoinPrivKey The private key to import into the wallet encoded in base58check using wallet import format (WIF)
+   * @param account The name of an account to which transactions involving the key should be assigned.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#importprivkey">importprivkey</a>
+   */
+  void importPrivKey(String bitcoinPrivKey, String account) throws GenericRpcException;
+
+  /**
+   * The importprivkey RPC adds a private key to your wallet. 
+   * The key should be formatted in the wallet import format created by the dumpprivkey RPC.
+   * 
+   * @param bitcoinPrivKey The private key to import into the wallet encoded in base58check using wallet import format (WIF)
+   * @param account The name of an account to which transactions involving the key should be assigned.
+   * @param rescan Set to true (the default) to rescan the entire local block database for transactions affecting any address or pubkey script in the wallet.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#importprivkey">importprivkey</a>
+   */
+  void importPrivKey(String bitcoinPrivKey, String account, boolean rescan) throws GenericRpcException;
+
+  /**
+   * The importaddress RPC adds an address or pubkey script to the wallet without the associated private key, 
+   * allowing you to watch for transactions affecting that address or pubkey script without being able to spend any of its outputs.
+   * 
+   * @param address Either a P2PKH or P2SH address encoded in base58check, or a pubkey script encoded as hex
+   * @param account An account name into which the address should be placed. 
+   * @param rescan Set to true (the default) to rescan the entire local block database
+   * 
+   * @return Null on success
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#importaddress">importaddress</a>
+   * 
+   * [TODO] Should this really return Object?
+   */
+  Object importAddress(String address, String account, boolean rescan) throws GenericRpcException;
+
+  /**
+   * The listaccounts RPC lists accounts and their balances.
    *
    * @return Map that has account names as keys, account balances as values
-   * @throws GenericRpcException
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#listaccounts">listaccounts</a>
    */
-  public Map<String, Number> listAccounts() throws GenericRpcException;
-
-  public Map<String, Number> listAccounts(int minConf) throws GenericRpcException;
-
-  public static interface ReceivedAddress extends Serializable {
-
-    public String address();
-
-    public String account();
-
-    public double amount();
-
-    public int confirmations();
-  }
-
-  public List<ReceivedAddress> listReceivedByAddress() throws GenericRpcException;
-
-  public List<ReceivedAddress> listReceivedByAddress(int minConf) throws GenericRpcException;
-
-  public List<ReceivedAddress> listReceivedByAddress(int minConf, boolean includeEmpty) throws GenericRpcException;
+  Map<String, Number> listAccounts() throws GenericRpcException;
 
   /**
-   * returned by listsinceblock and listtransactions
-   */
-  public static interface Transaction extends Serializable {
-
-    public String account();
-
-    public String address();
-
-    public String category();
-
-    public double amount();
-
-    public double fee();
-
-    public int confirmations();
-
-    public String blockHash();
-
-    public int blockIndex();
-
-    public Date blockTime();
-
-    public String txId();
-
-    public Date time();
-
-    public Date timeReceived();
-
-    public String comment();
-
-    public String commentTo();
-
-    public RawTransaction raw();
-  }
-
-  public static interface TransactionsSinceBlock extends Serializable {
-
-    public List<Transaction> transactions();
-
-    public String lastBlock();
-  }
-
-  public TransactionsSinceBlock listSinceBlock() throws GenericRpcException;
-
-  public TransactionsSinceBlock listSinceBlock(String blockHash) throws GenericRpcException;
-
-  public TransactionsSinceBlock listSinceBlock(String blockHash, int targetConfirmations) throws GenericRpcException;
-
-  public List<Transaction> listTransactions() throws GenericRpcException;
-
-  public List<Transaction> listTransactions(String account) throws GenericRpcException;
-
-  public List<Transaction> listTransactions(String account, int count) throws GenericRpcException;
-
-  public List<Transaction> listTransactions(String account, int count, int from) throws GenericRpcException;
-
-  public interface Unspent extends TxInput, TxOutput, Serializable {
-
-    @Override
-    public String txid();
-
-    @Override
-    public int vout();
-
-    @Override
-    public String address();
-
-    public String account();
-
-    public String scriptPubKey();
-
-    @Override
-    public double amount();
-
-    public int confirmations();
-  }
-
-  public List<Unspent> listUnspent() throws GenericRpcException;
-
-  public List<Unspent> listUnspent(int minConf) throws GenericRpcException;
-
-  public List<Unspent> listUnspent(int minConf, int maxConf) throws GenericRpcException;
-
-  public List<Unspent> listUnspent(int minConf, int maxConf, String... addresses) throws GenericRpcException;
-
-  public boolean move(String fromAccount, String toBitcoinAddress, double amount) throws GenericRpcException;
-
-  public boolean move(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws GenericRpcException;
-
-  public boolean move(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment) throws GenericRpcException;
-
-  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount) throws GenericRpcException;
-
-  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws GenericRpcException;
-
-  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment) throws GenericRpcException;
-
-  /**
-   * Will send the given amount to the given address, ensuring the account has a
-   * valid balance using minConf confirmations.
+   * The listaccounts RPC lists accounts and their balances.
    *
-   * @param fromAccount
-   * @param toBitcoinAddress
-   * @param amount is a real and is rounded to 8 decimal places
-   * @param minConf
-   * @param comment
-   * @param commentTo
-   * @return the transaction ID if successful
-   * @throws GenericRpcException
+   * @param minConf The minimum number of confirmations an externally-generated transaction must have before it is counted towards the balance.
+   * @return Map that has account names as keys, account balances as values
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#listaccounts">listaccounts</a>
    */
-  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment, String commentTo) throws GenericRpcException;
+  Map<String, Number> listAccounts(int minConf) throws GenericRpcException;
 
-  public String sendRawTransaction(String hex) throws GenericRpcException;
+  static interface ReceivedAddress extends Serializable {
 
-  public String sendToAddress(String toAddress, double amount) throws GenericRpcException;
+    String address();
 
-  public String sendToAddress(String toAddress, double amount, String comment) throws GenericRpcException;
+    String account();
 
-  /**
-   * @param toAddress
-   * @param amount is a real and is rounded to 8 decimal places
-   * @param comment
-   * @param commentTo
-   * @return the transaction ID &lt;txid&gt; if successful
-   * @throws GenericRpcException
-   */
-  public String sendToAddress(String toAddress, double amount, String comment, String commentTo) throws GenericRpcException;
+    double amount();
 
-  public String signRawTransaction(String hex, List<ExtendedTxInput> inputs, List<String> privateKeys) throws GenericRpcException;
-
-  public static interface AddressValidationResult extends Serializable {
-
-    public boolean isValid();
-
-    public String address();
-
-    public boolean isMine();
-
-    public boolean isScript();
-
-    public String pubKey();
-
-    public boolean isCompressed();
-
-    public String account();
+    int confirmations();
   }
 
   /**
-   * @param doGenerate a boolean indicating if blocks must be generated with the
-   * cpu
-   * @throws BitcoinRPCException
+   * The listreceivedbyaddress RPC lists the total number of bitcoins received by each address.
+   * 
+   * @return An array containing objects each describing a particular address
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#listreceivedbyaddress">listreceivedbyaddress</a>
    */
-  public void setGenerate(boolean doGenerate) throws BitcoinRPCException;
+  List<ReceivedAddress> listReceivedByAddress() throws GenericRpcException;
 
   /**
-   * Used in regtest mode to generate an arbitrary number of blocks
-   *
-   * @param numBlocks a boolean indicating if blocks must be generated with the
-   * cpu
-   * @return the list of hashes of the generated blocks
-   * @throws BitcoinRPCException
+   * The listreceivedbyaddress RPC lists the total number of bitcoins received by each address.
+   * 
+   * @param minConf The minimum number of confirmations an externally-generated transaction must have before it is counted towards the balance.
+   * 
+   * @return An array containing objects each describing a particular address
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#listreceivedbyaddress">listreceivedbyaddress</a>
    */
-  public List<String> generate(int numBlocks) throws BitcoinRPCException;
+  List<ReceivedAddress> listReceivedByAddress(int minConf) throws GenericRpcException;
 
-  public List<String> generate(int numBlocks, long maxTries) throws BitcoinRPCException;
+  /**
+   * The listreceivedbyaddress RPC lists the total number of bitcoins received by each address.
+   * 
+   * @param minConf The minimum number of confirmations an externally-generated transaction must have before it is counted towards the balance.
+   * @param includeEmpty Set to true to display accounts which have never received a payment. 
+   * 
+   * @return An array containing objects each describing a particular address
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#listreceivedbyaddress">listreceivedbyaddress</a>
+   */
+  List<ReceivedAddress> listReceivedByAddress(int minConf, boolean includeEmpty) throws GenericRpcException;
+
+  static interface Transaction extends Serializable {
+
+    String account();
+
+    String address();
+
+    String category();
+
+    double amount();
+
+    double fee();
+
+    int confirmations();
+
+    String blockHash();
+
+    int blockIndex();
+
+    Date blockTime();
+
+    String txId();
+
+    Date time();
+
+    Date timeReceived();
+
+    String comment();
+
+    String commentTo();
+
+    RawTransaction raw();
+  }
+
+  static interface TransactionsSinceBlock extends Serializable {
+
+    List<Transaction> transactions();
+
+    String lastBlock();
+  }
+
+  /**
+   * The listsinceblock RPC gets all transactions affecting the wallet which have occurred since a particular block, plus the header hash of a block at a particular depth.
+   * 
+   * @return An object containing an array of transactions and the lastblock field
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#listsinceblock">listsinceblock</a>
+   */
+  TransactionsSinceBlock listSinceBlock() throws GenericRpcException;
+
+  /**
+   * The listsinceblock RPC gets all transactions affecting the wallet which have occurred since a particular block, plus the header hash of a block at a particular depth.
+   * 
+   * @param blockHash The hash of a block header encoded as hex in RPC byte order.
+   * @return An object containing an array of transactions and the lastblock field
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#listsinceblock">listsinceblock</a>
+   */
+  TransactionsSinceBlock listSinceBlock(String blockHash) throws GenericRpcException;
+
+  /**
+   * The listsinceblock RPC gets all transactions affecting the wallet which have occurred since a particular block, plus the header hash of a block at a particular depth.
+   * 
+   * @param blockHash The hash of a block header encoded as hex in RPC byte order.
+   * @param targetConfirmations Sets the lastblock field of the results to the header hash of a block with this many confirmations.
+   * 
+   * @return An object containing an array of transactions and the lastblock field
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#listsinceblock">listsinceblock</a>
+   */
+  TransactionsSinceBlock listSinceBlock(String blockHash, int targetConfirmations) throws GenericRpcException;
+
+  /**
+   * The listtransactions RPC returns the most recent transactions that affect the wallet.
+   * 
+   * @return An array containing objects, with each object describing a payment or internal accounting entry (not a transaction).
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#listtransactions">listtransactions</a>
+   */
+  List<Transaction> listTransactions() throws GenericRpcException;
+
+  /**
+   * The listtransactions RPC returns the most recent transactions that affect the wallet.
+   * 
+   * @param account The name of an account to get transactinos from (deprecated).
+   * 
+   * @return An array containing objects, with each object describing a payment or internal accounting entry (not a transaction).
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#listtransactions">listtransactions</a>
+   */
+  List<Transaction> listTransactions(String account) throws GenericRpcException;
+
+  /**
+   * The listtransactions RPC returns the most recent transactions that affect the wallet.
+   * 
+   * @param account The name of an account to get transactinos from (deprecated).
+   * @param count The number of the most recent transactions to list.
+   * 
+   * @return An array containing objects, with each object describing a payment or internal accounting entry (not a transaction).
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#listtransactions">listtransactions</a>
+   */
+  List<Transaction> listTransactions(String account, int count) throws GenericRpcException;
+
+  /**
+   * The listtransactions RPC returns the most recent transactions that affect the wallet.
+   * 
+   * @param account The name of an account to get transactinos from (deprecated).
+   * @param count The number of the most recent transactions to list.
+   * @param skip The number of the most recent transactions which should not be returned.
+   * 
+   * @return An array containing objects, with each object describing a payment or internal accounting entry (not a transaction).
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#listtransactions">listtransactions</a>
+   */
+  List<Transaction> listTransactions(String account, int count, int skip) throws GenericRpcException;
+
+  interface Unspent extends TxInput, TxOutput, Serializable {
+
+    @Override
+    String txid();
+
+    @Override
+    int vout();
+
+    @Override
+    String address();
+
+    String account();
+
+    String scriptPubKey();
+
+    @Override
+    double amount();
+
+    int confirmations();
+  }
+
+  /**
+   * The listunspent RPC returns an array of unspent transaction outputs belonging to this wallet.
+   * 
+   * @return An array of objects each describing an unspent output.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#listunspent">listunspent</a>
+   */
+  List<Unspent> listUnspent() throws GenericRpcException;
+
+  /**
+   * The listunspent RPC returns an array of unspent transaction outputs belonging to this wallet.
+   * 
+   * @param minConf The minimum number of confirmations the transaction containing an output must have in order to be returned.
+   * 
+   * @return An array of objects each describing an unspent output.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#listunspent">listunspent</a>
+   */
+  List<Unspent> listUnspent(int minConf) throws GenericRpcException;
+
+  /**
+   * The listunspent RPC returns an array of unspent transaction outputs belonging to this wallet.
+   * 
+   * @param minConf The minimum number of confirmations the transaction containing an output must have in order to be returned.
+   * @param maxConf The maximum number of confirmations the transaction containing an output may have in order to be returned.
+   * 
+   * @return An array of objects each describing an unspent output.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#listunspent">listunspent</a>
+   */
+  List<Unspent> listUnspent(int minConf, int maxConf) throws GenericRpcException;
+
+  /**
+   * The listunspent RPC returns an array of unspent transaction outputs belonging to this wallet.
+   * 
+   * @param minConf The minimum number of confirmations the transaction containing an output must have in order to be returned.
+   * @param maxConf The maximum number of confirmations the transaction containing an output may have in order to be returned.
+   * @param addresses Only outputs which pay an address in this array will be returned
+   * 
+   * @return An array of objects each describing an unspent output.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#listunspent">listunspent</a>
+   */
+  List<Unspent> listUnspent(int minConf, int maxConf, String... addresses) throws GenericRpcException;
+
+  /**
+   * The move RPC moves a specified amount from one account in your wallet to another using an off-block-chain transaction.
+   * 
+   * @param fromAccount The name of the account to move the funds from
+   * @param toAccount The name of the account to move the funds to
+   * @param amount The amount of bitcoins to move
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#move">move</a>
+   */
+  boolean move(String fromAccount, String toAccount, double amount) throws GenericRpcException;
+
+  /**
+   * The move RPC moves a specified amount from one account in your wallet to another using an off-block-chain transaction.
+   * 
+   * @param fromAccount The name of the account to move the funds from
+   * @param toAccount The name of the account to move the funds to
+   * @param amount The amount of bitcoins to move
+   * @param comment A comment to assign to this move payment
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#move">move</a>
+   */
+  boolean move(String fromAccount, String toAccount, double amount, String comment) throws GenericRpcException;
+
+  /**
+   * @see <a href="https://bitcoin.org/en/developer-reference#move">move</a>
+   * @deprecated
+   */
+  boolean move(String fromAccount, String toAccount, double amount, int minConf) throws GenericRpcException;
+
+  /**
+   * @see <a href="https://bitcoin.org/en/developer-reference#move">move</a>
+   * @deprecated
+   */
+  boolean move(String fromAccount, String toAccount, double amount, int minConf, String comment) throws GenericRpcException;
+
+  /**
+   * The sendfrom RPC spends an amount from a local account to a bitcoin address.
+   * 
+   * @param fromAccount The name of the account from which the bitcoins should be spent.
+   * @param toAddress A P2PKH or P2SH address to which the bitcoins should be sent
+   * @param amount The amount to spend in bitcoins.
+   *  
+   * @return The TXID of the sent transaction, encoded as hex in RPC byte order
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#sendfrom">sendfrom</a>
+   */
+  String sendFrom(String fromAccount, String toAddress, double amount) throws GenericRpcException;
+
+  /**
+   * The sendfrom RPC spends an amount from a local account to a bitcoin address.
+   * 
+   * @param fromAccount The name of the account from which the bitcoins should be spent.
+   * @param toAddress A P2PKH or P2SH address to which the bitcoins should be sent
+   * @param amount The amount to spend in bitcoins.
+   * @param minConf The minimum number of confirmations an incoming transaction must have for its outputs to be credited to this account’s balance. 
+   *  
+   * @return The TXID of the sent transaction, encoded as hex in RPC byte order
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#sendfrom">sendfrom</a>
+   */
+  String sendFrom(String fromAccount, String toAddress, double amount, int minConf) throws GenericRpcException;
+
+  /**
+   * The sendfrom RPC spends an amount from a local account to a bitcoin address.
+   * 
+   * @param fromAccount The name of the account from which the bitcoins should be spent.
+   * @param toAddress A P2PKH or P2SH address to which the bitcoins should be sent
+   * @param amount The amount to spend in bitcoins.
+   * @param minConf The minimum number of confirmations an incoming transaction must have for its outputs to be credited to this account’s balance. 
+   * @param comment A locally-stored (not broadcast) comment assigned to this transaction.
+   *  
+   * @return The TXID of the sent transaction, encoded as hex in RPC byte order
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#sendfrom">sendfrom</a>
+   */
+  String sendFrom(String fromAccount, String toAddress, double amount, int minConf, String comment) throws GenericRpcException;
+
+  /**
+   * The sendfrom RPC spends an amount from a local account to a bitcoin address.
+   * 
+   * @param fromAccount The name of the account from which the bitcoins should be spent.
+   * @param toAddress A P2PKH or P2SH address to which the bitcoins should be sent
+   * @param amount The amount to spend in bitcoins.
+   * @param minConf The minimum number of confirmations an incoming transaction must have for its outputs to be credited to this account’s balance. 
+   * @param comment A locally-stored (not broadcast) comment assigned to this transaction.
+   * @param commentTo A locally-stored (not broadcast) comment assigned to this transaction
+   *  
+   * @return The TXID of the sent transaction, encoded as hex in RPC byte order
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#sendfrom">sendfrom</a>
+   */
+  String sendFrom(String fromAccount, String toAddress, double amount, int minConf, String comment, String commentTo) throws GenericRpcException;
+
+  /**
+   * The sendrawtransaction RPC validates a transaction and broadcasts it to the peer-to-peer network.
+   * 
+   * @param hex The serialized transaction to broadcast encoded as hex
+   * 
+   * @return If the transaction was accepted by the node for broadcast, this will be the TXID of the transaction encoded as hex in RPC byte order.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#sendrawtransaction">sendrawtransaction</a>
+   */
+  String sendRawTransaction(String hex) throws GenericRpcException;
+
+  /**
+   * The sendtoaddress RPC spends an amount to a given address.
+   * 
+   * @param toAddress A P2PKH or P2SH address to which the bitcoins should be sent
+   * @param amount The amount to spent in bitcoins
+   * 
+   * @return The TXID of the sent transaction, encoded as hex in RPC byte order
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#sendtoaddress">sendtoaddress</a>
+   */
+  String sendToAddress(String toAddress, double amount) throws GenericRpcException;
+
+  /**
+   * The sendtoaddress RPC spends an amount to a given address.
+   * 
+   * @param toAddress A P2PKH or P2SH address to which the bitcoins should be sent
+   * @param amount The amount to spent in bitcoins
+   * @param comment A locally-stored (not broadcast) comment assigned to this transaction.
+   * 
+   * @return The TXID of the sent transaction, encoded as hex in RPC byte order
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#sendtoaddress">sendtoaddress</a>
+   */
+  String sendToAddress(String toAddress, double amount, String comment) throws GenericRpcException;
+
+  /**
+   * The sendtoaddress RPC spends an amount to a given address.
+   * 
+   * @param toAddress A P2PKH or P2SH address to which the bitcoins should be sent
+   * @param amount The amount to spent in bitcoins
+   * @param comment A locally-stored (not broadcast) comment assigned to this transaction.
+   * @param commentTo A locally-stored (not broadcast) comment assigned to this transaction
+   * 
+   * @return The TXID of the sent transaction, encoded as hex in RPC byte order
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#sendtoaddress">sendtoaddress</a>
+   */
+  String sendToAddress(String toAddress, double amount, String comment, String commentTo) throws GenericRpcException;
+
+  /**
+   * The signrawtransaction RPC signs a transaction in the serialized transaction format using private keys stored in the wallet or provided in the call.
+   * 
+   * @param hex The transaction to sign as a serialized transaction
+   * @param inputs The previous outputs being spent by this transaction
+   * @param privateKeys An array holding private keys.
+   * 
+   * @return The results of the signature
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#signrawtransaction">signrawtransaction</a>
+   */
+  String signRawTransaction(String hex, List<ExtendedTxInput> inputs, List<String> privateKeys) throws GenericRpcException;
+
+  static interface AddressValidationResult extends Serializable {
+
+    boolean isValid();
+
+    String address();
+
+    boolean isMine();
+
+    boolean isScript();
+
+    String pubKey();
+
+    boolean isCompressed();
+
+    String account();
+  }
+
+  /**
+   * @see <a href="https://bitcoin.org/en/developer-reference#setgenerate">setgenerate</a>
+   * @deprecated
+   */
+  void setGenerate(boolean doGenerate) throws BitcoinRPCException;
+
+  /**
+   * The generate RPC nearly instantly generates blocks.
+   *
+   * @param numBlocks The number of blocks to generate.
+   * @return An array containing the block header hashes of the generated blocks
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#generate">generate</a>
+   */
+  List<String> generate(int numBlocks) throws BitcoinRPCException;
+
+  /**
+   * The generate RPC nearly instantly generates blocks.
+   *
+   * @param numBlocks The number of blocks to generate.
+   * @param maxTries The maximum number of iterations that are tried to create the requested number of blocks. 
+   * @return An array containing the block header hashes of the generated blocks
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#generate">generate</a>
+   */
+  List<String> generate(int numBlocks, long maxTries) throws BitcoinRPCException;
 
   /**
    * The generatetoaddress RPC mines blocks immediately to a specified address.
@@ -832,32 +1266,60 @@ public interface BitcoindRpcClient {
    * 
    * @see <a href="https://bitcoin.org/en/developer-reference#generatetoaddress">generatetoaddress</a>
    */
-  public List<String> generateToAddress(int numBlocks, String address) throws BitcoinRPCException;
-
-  public AddressValidationResult validateAddress(String address) throws GenericRpcException;
-
-  public double getEstimateFee(int nBlocks) throws GenericRpcException;
-
-  public double getEstimatePriority(int nBlocks) throws GenericRpcException;
+  List<String> generateToAddress(int numBlocks, String address) throws BitcoinRPCException;
 
   /**
-   * In regtest mode, invalidates a block to create an orphan chain
-   *
-   * @param hash
-   * @throws GenericRpcException
+   * The validateaddress RPC returns information about the given Bitcoin address.
+   * 
+   * @param address The P2PKH or P2SH address to validate encoded in base58check format
+   * @return Information about the address
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#validateaddress">validateaddress</a>
    */
-  public void invalidateBlock(String hash) throws GenericRpcException;
+  AddressValidationResult validateAddress(String address) throws GenericRpcException;
 
   /**
-   * In regtest mode, undo the invalidation of a block, possibly making it on
-   * the top of the chain
-   *
-   * @param hash
-   * @throws GenericRpcException
+   * The estimatefee RPC estimates the transaction fee per kilobyte that needs to be paid for a transaction to be included within a certain number of blocks.
+   * 
+   * @param nBlocks The maximum number of blocks a transaction should have to wait before it is predicted to be included in a block.
+   * @return The estimated fee the transaction should pay in order to be included within the specified number of blocks.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#estimatefee">estimatefee</a>
    */
-  public void reconsiderBlock(String hash) throws GenericRpcException;
+  double getEstimateFee(int nBlocks) throws GenericRpcException;
 
-  public static interface PeerInfoResult extends Serializable {
+  /**
+   * The estimatepriority RPC estimates the priority (coin age) that a transaction needs in order to be included within a certain number of blocks as a free high-priority transaction. 
+   * This should not to be confused with the prioritisetransaction RPC which will remain supported for adding fee deltas to transactions.
+   * 
+   * estimatepriority has been removed and will no longer be available in the next major release (planned for Bitcoin Core 0.15.0).
+   * 
+   * @param nBlocks The maximum number of blocks a transaction should have to wait before it is predicted to be included in a block based purely on its priority
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#estimatepriority">estimatepriority</a>
+   */
+  double getEstimatePriority(int nBlocks) throws GenericRpcException;
+
+  /**
+   * Permanently marks a block as invalid, as if it violated a consensus rule.
+   *
+   * @param blockHash the hash of the block to mark as invalid
+   * 
+   * [TODO] Add to https://bitcoin.org/en/developer-reference
+   */
+  void invalidateBlock(String blockHash) throws GenericRpcException;
+
+  /**
+   * Removes invalidity status of a block and its descendants, reconsider them for activation. 
+   * This can be used to undo the effects of invalidateblock.
+   *
+   * @param blockHash The hash of the block to reconsider
+   * 
+   * [TODO] Add to https://bitcoin.org/en/developer-reference
+   */
+  void reconsiderBlock(String blockHash) throws GenericRpcException;
+
+  static interface PeerInfoResult extends Serializable {
 
     long getId();
 
@@ -898,68 +1360,302 @@ public interface BitcoindRpcClient {
     boolean isWhiteListed();
   }
 
+  /**
+   * The getpeerinfo RPC returns data about each connected network node.
+   * 
+   * @return An array of objects each describing one connected node.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getpeerinfo">getpeerinfo</a>
+   */
   List<PeerInfoResult> getPeerInfo();
 
+  /**
+   * The stop RPC safely shuts down the Bitcoin Core server.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#stop">stop</a>
+   */
   void stop();
 
+  /**
+   * The getrawchangeaddress RPC returns a new Bitcoin address for receiving change. This is for use with raw transactions, not normal use.
+   * 
+   * @return A P2PKH address which has not previously been returned by this RPC.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getrawchangeaddress">getrawchangeaddress</a>
+   */
   String getRawChangeAddress();
 
+  /**
+   * The getconnectioncount RPC returns the number of connections to other nodes.
+   * 
+   * @return The total number of connections to other nodes (both inbound and outbound)
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getconnectioncount">getconnectioncount</a>
+   */
   long getConnectionCount();
 
+  /**
+   * The getunconfirmedbalance RPC returns the wallet’s total unconfirmed balance.
+   * 
+   * @return The total number of bitcoins paid to this wallet in unconfirmed transactions
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getunconfirmedbalance">getunconfirmedbalance</a>
+   */
   double getUnconfirmedBalance();
 
+  /**
+   * The getdifficulty RPC
+   * 
+   * @return The difficulty of creating a block with the same target threshold (nBits) as the highest-height block in the local best block chain.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getdifficulty">getdifficulty</a>
+   */
   double getDifficulty();
 
+  /**
+   * The ping RPC sends a P2P ping message to all connected nodes to measure ping time. 
+   * Results are provided by the getpeerinfo RPC pingtime and pingwait fields as decimal seconds. 
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#ping">ping</a>
+   */
   void ping();
 
+  /**
+   * The decodescript RPC decodes a hex-encoded P2SH redeem script.
+   * 
+   * @param hex The redeem script to decode as a hex-encoded serialized script
+   * @return An object describing the decoded script, or JSON null if the script could not be decoded
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#decodescript">decodescript</a>
+   */
   DecodedScript decodeScript(String hex);
 
+  /**
+   * The getnettotals RPC returns information about network traffic, including bytes in, bytes out, and the current time.
+   * 
+   * @return An object containing information about the node’s network totals
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getnettotals">getnettotals</a>
+   */
   NetTotals getNetTotals();
 
+  /**
+   * The getgenerate RPC was removed in Bitcoin Core 0.13.0.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getgenerate">getgenerate</a>
+   */
   boolean getGenerate();
 
+  /**
+   * The getnetworkhashps RPC returns the estimated current or historical network hashes per second based on the last n blocks.
+   * 
+   * @return The estimated number of hashes per second based on the parameters provided.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getgenerate">getgenerate</a>
+   * 
+   * [TODO] Add parameters blocks, height
+   */
   double getNetworkHashPs();
 
+  /**
+   * The settxfee RPC sets the transaction fee per kilobyte paid by transactions created by this wallet.
+   * 
+   * @param amount The transaction fee to pay, in bitcoins, for each kilobyte of transaction data.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#settxfee">settxfee</a>
+   */
   boolean setTxFee(BigDecimal amount);
 
+  /**
+   * The addnode RPC attempts to add or remove a node from the addnode list, or to try a connection to a node once.
+   * 
+   * @param node The node to add as a string in the form of <IP address>:<port>.
+   * @param command What to do with the IP address above. 
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#addnode">addnode</a>
+   */
   void addNode(String node, String command);
 
+  /**
+   * The backupwallet RPC safely copies wallet.dat to the specified file, which can be a directory or a path with filename.
+   * 
+   * @param destination A filename or directory name.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#backupwallet">backupwallet</a>
+   */
   void backupWallet(String destination);
 
-  String signMessage(String bitcoinAdress, String message);
+  /**
+   * The signmessage RPC signs a message with the private key of an address.
+   * 
+   * @param adress A P2PKH address whose private key belongs to this wallet
+   * @param message The message to sign
+   * 
+   * @return The signature of the message, encoded in base64.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#signmessage">signmessage</a>
+   */
+  String signMessage(String adress, String message);
 
+  /**
+   * The dumpwallet RPC creates or overwrites a file with all wallet keys in a human-readable format.
+   * 
+   * @param filename The file in which the wallet dump will be placed.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#dumpwallet">dumpwallet</a>
+   */
   void dumpWallet(String filename);
 
+  /**
+   * The importwallet RPC imports private keys from a file in wallet dump file format (see the dumpwallet RPC). 
+   * These keys will be added to the keys currently in the wallet.
+   *  
+   * @param filename The file to import. The path is relative to Bitcoin Core’s working directory
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#importwallet">importwallet</a>
+   */
   void importWallet(String filename);
 
+  /**
+   * The keypoolrefill RPC fills the cache of unused pre-generated keys (the keypool).
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#keypoolrefill">keypoolrefill</a>
+   */
   void keyPoolRefill();
 
+  /**
+   * The getreceivedbyaccount RPC returns the total amount received by addresses in a particular account from transactions with the specified number of confirmations.
+   * 
+   * @param account The name of the account containing the addresses to get.
+   * @return The number of bitcoins received by the account.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getreceivedbyaccount">getreceivedbyaccount</a>
+   */
   BigDecimal getReceivedByAccount(String account);
 
+  /**
+   * The encryptwallet RPC encrypts the wallet with a passphrase. 
+   * This is only to enable encryption for the first time. 
+   * After encryption is enabled, you will need to enter the passphrase to use private keys.
+   * 
+   * @param passPhrase The passphrase to use for the encrypted wallet. 
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#encryptwallet">encryptwallet</a>
+   */
   void encryptWallet(String passPhrase);
 
+  /**
+   * The walletpassphrase RPC stores the wallet decryption key in memory for the indicated number of seconds. 
+   * Issuing the walletpassphrase command while the wallet is already unlocked will set a new unlock time that overrides the old one.
+   * 
+   * @param passPhrase The passphrase that unlocks the wallet
+   * @param timeOut The number of seconds after which the decryption key will be automatically deleted from memory
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#walletpassphrase">walletpassphrase</a>
+   */
   void walletPassPhrase(String passPhrase, long timeOut);
 
-  boolean verifyMessage(String bitcoinAddress, String signature, String message);
+  /**
+   * The verifymessage RPC verifies a signed message.
+   * 
+   * @param address The P2PKH address corresponding to the private key which made the signature. 
+   * @param signature The signature created by the signer encoded as base-64 (the format output by the signmessage RPC)
+   * @param message The message exactly as it was signed
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#verifymessage">verifymessage</a>
+   */
+  boolean verifyMessage(String address, String signature, String message);
 
+  /**
+   * The addmultisigaddress RPC adds a P2SH multisig address to the wallet.
+   * 
+   * @param nRequired The minimum (m) number of signatures required to spend this m-of-n multisig script
+   * @param keyObject An array of strings with each string being a public key or address
+   * @return The P2SH multisig address.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#addmultisigaddress">addmultisigaddress</a>
+   */
   String addMultiSigAddress(int nRequired, List<String> keyObject);
 
+  /**
+   * The addmultisigaddress RPC adds a P2SH multisig address to the wallet.
+   * 
+   * @param nRequired The minimum (m) number of signatures required to spend this m-of-n multisig script
+   * @param keyObject An array of strings with each string being a public key or address
+   * @param account The account name in which the address should be stored.
+   * 
+   * @return The P2SH multisig address.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#addmultisigaddress">addmultisigaddress</a>
+   */
   String addMultiSigAddress(int nRequired, List<String> keyObject, String account);
 
+  /**
+   * The verifychain RPC verifies each entry in the local block chain database.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#verifychain">verifychain</a>
+   * 
+   * [TODO] Add parameters checkLevel, numOfBlocks
+   */
   boolean verifyChain();
 
-  List<NodeInfo> getAddedNodeInfo(boolean dummy, String node);
+  /**
+   * The getaddednodeinfo RPC returns information about the given added node, or all added nodes (except onetry nodes). 
+   * Only nodes which have been manually added using the addnode RPC will have their information displayed.
+   * 
+   * @param details Removed in Bitcoin Core 0.14.0
+   * @param node The node to get information about in the same <IP address>:<port> format as the addnode RPC.
+   * @return An array containing objects describing each added node.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getaddednodeinfo">getaddednodeinfo</a>
+   */
+  List<NodeInfo> getAddedNodeInfo(boolean details, String node);
 
+  /**
+   * The submitblock RPC accepts a block, verifies it is a valid addition to the block chain, and broadcasts it to the network.
+   * 
+   * @param hexData The full block to submit in serialized block format as hex
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#submitblock">submitblock</a>
+   */
   void submitBlock(String hexData);
 
+  /**
+   * The gettransaction RPC gets detailed information about an in-wallet transaction.
+   *  
+   * @param txId The TXID of the transaction to get details about.
+   *  
+   * @see <a href="https://bitcoin.org/en/developer-reference#gettransaction">gettransaction</a>
+   */
+  Transaction getTransaction(String txId);
+  
+  /**
+   * The gettxout RPC returns details about an unspent transaction output (UTXO).
+   * 
+   * @param txId The TXID of the transaction containing the output to get, encoded as hex in RPC byte order
+   * @param vout The output index number (vout) of the output within the transaction
+   * 
+   * @return Information about the output.
+   *  
+   * @see <a href="https://bitcoin.org/en/developer-reference#gettxout">gettxout</a>
+   */
   TxOut getTxOut(String txId, long vout);
 
-  public static interface SmartFeeResult extends Serializable {
+  static interface SmartFeeResult extends Serializable {
 
     double feeRate();
 
     int blocks();
   }
 
+  /**
+   * Estimates the approximate fee per kilobyte needed for a transaction to begin confirmation within conf_target blocks if possible 
+   * and return the number of blocks for which the estimate is valid. Uses virtual transaction size as defined in BIP 141 (witness data is discounted).
+   * 
+   * @param blocks Confirmation target in blocks
+   * @return estimate fee rate in BTC/kB
+   * 
+   * [TODO] Add to https://bitcoin.org/en/developer-reference
+   */
   SmartFeeResult getEstimateSmartFee(int blocks);
 }
