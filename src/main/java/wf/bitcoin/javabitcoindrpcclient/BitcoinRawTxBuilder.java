@@ -23,6 +23,7 @@ public class BitcoinRawTxBuilder {
   }
   public Set<BitcoindRpcClient.TxInput> inputs = new LinkedHashSet<>();
   public List<BitcoindRpcClient.TxOutput> outputs = new ArrayList<>();
+  public List<String> privateKeys;
 
   private class Input extends BitcoindRpcClient.BasicTxInput {
 
@@ -114,13 +115,21 @@ public class BitcoinRawTxBuilder {
       out(address, BitcoinUtil.normalizeAmount(is - os));
     return this;
   }
+  
+  public BitcoinRawTxBuilder addPrivateKey(String privateKey)
+  {
+	  if ( privateKeys == null )
+		  privateKeys = new ArrayList<String>();
+	  privateKeys.add(privateKey);
+	  return this;
+  }
 
   public String create() throws GenericRpcException {
     return bitcoin.createRawTransaction(new ArrayList<>(inputs), outputs);
   }
 
   public String sign() throws GenericRpcException {
-    return bitcoin.signRawTransaction(create(), null, null);
+    return bitcoin.signRawTransaction(create(), null, privateKeys);
   }
 
   public String send() throws GenericRpcException {
