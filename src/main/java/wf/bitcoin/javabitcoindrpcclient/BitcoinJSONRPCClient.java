@@ -273,8 +273,8 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
-  public String getAccountAddress(String address) throws GenericRpcException {
-    return (String) query("getaccountaddress", address);
+  public String getAccountAddress(String account) throws GenericRpcException {
+    return (String) query("getaccountaddress", account);
   }
 
   @Override
@@ -1313,7 +1313,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
   }
 
-  public class DecodedScriptImpl extends MapWrapper implements DecodedScript, Serializable {
+  private class DecodedScriptImpl extends MapWrapper implements DecodedScript, Serializable {
 
     public DecodedScriptImpl(Map m) {
       super(m);
@@ -1599,47 +1599,59 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
     @Override
     protected Unspent wrap(final Map m) {
-      return new Unspent() {
-
-        @Override
-        public String txid() {
-          return mapStr(m, "txid");
-        }
-
-        @Override
-        public int vout() {
-          return mapInt(m, "vout");
-        }
-
-        @Override
-        public String address() {
-          return mapStr(m, "address");
-        }
-
-        @Override
-        public String scriptPubKey() {
-          return mapStr(m, "scriptPubKey");
-        }
-
-        @Override
-        public String account() {
-          return mapStr(m, "account");
-        }
-
-        @Override
-        public double amount() {
-          return MapWrapper.mapDouble(m, "amount");
-        }
-
-        @Override
-        public int confirmations() {
-          return mapInt(m, "confirmations");
-        }
-
-      };
+      return new UnspentWrapper(m);
     }
   }
 
+  private class UnspentWrapper implements Unspent {
+    
+    final Map m;
+    
+    UnspentWrapper(Map m) {
+      this.m = m;
+    }
+
+    @Override
+    public String txid() {
+      return mapStr(m, "txid");
+    }
+
+    @Override
+    public int vout() {
+      return mapInt(m, "vout");
+    }
+
+    @Override
+    public String address() {
+      return mapStr(m, "address");
+    }
+
+    @Override
+    public String scriptPubKey() {
+      return mapStr(m, "scriptPubKey");
+    }
+
+    @Override
+    public String account() {
+      return mapStr(m, "account");
+    }
+
+    @Override
+    public double amount() {
+      return MapWrapper.mapDouble(m, "amount");
+    }
+
+    @Override
+    public int confirmations() {
+      return mapInt(m, "confirmations");
+    }
+
+    @Override
+    public String toString() {
+      return m.toString();
+    }
+  }
+  
   @Override
   public List<Unspent> listUnspent() throws GenericRpcException {
     return new UnspentListWrapper((List) query("listunspent"));
@@ -1661,43 +1673,43 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
-  public boolean move(String fromAccount, String toBitcoinAddress, double amount) throws GenericRpcException {
-    return (boolean) query("move", fromAccount, toBitcoinAddress, amount);
+  public boolean move(String fromAccount, String toAddress, double amount) throws GenericRpcException {
+    return (boolean) query("move", fromAccount, toAddress, amount);
   }
 
   @Override
-  public boolean move(String fromAccount, String toBitcoinAddress, double amount, String comment) throws GenericRpcException {
-    return (boolean) query("move", fromAccount, toBitcoinAddress, amount, 0, comment);
+  public boolean move(String fromAccount, String toAddress, double amount, String comment) throws GenericRpcException {
+    return (boolean) query("move", fromAccount, toAddress, amount, 0, comment);
   }
 
   @Override
-  public boolean move(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws GenericRpcException {
-    return (boolean) query("move", fromAccount, toBitcoinAddress, amount, minConf);
+  public boolean move(String fromAccount, String toAddress, double amount, int minConf) throws GenericRpcException {
+    return (boolean) query("move", fromAccount, toAddress, amount, minConf);
   }
 
   @Override
-  public boolean move(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment) throws GenericRpcException {
-    return (boolean) query("move", fromAccount, toBitcoinAddress, amount, minConf, comment);
+  public boolean move(String fromAccount, String toAddress, double amount, int minConf, String comment) throws GenericRpcException {
+    return (boolean) query("move", fromAccount, toAddress, amount, minConf, comment);
   }
 
   @Override
-  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount) throws GenericRpcException {
-    return (String) query("sendfrom", fromAccount, toBitcoinAddress, amount);
+  public String sendFrom(String fromAccount, String toAddress, double amount) throws GenericRpcException {
+    return (String) query("sendfrom", fromAccount, toAddress, amount);
   }
 
   @Override
-  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf) throws GenericRpcException {
-    return (String) query("sendfrom", fromAccount, toBitcoinAddress, amount, minConf);
+  public String sendFrom(String fromAccount, String toAddress, double amount, int minConf) throws GenericRpcException {
+    return (String) query("sendfrom", fromAccount, toAddress, amount, minConf);
   }
 
   @Override
-  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment) throws GenericRpcException {
-    return (String) query("sendfrom", fromAccount, toBitcoinAddress, amount, minConf, comment);
+  public String sendFrom(String fromAccount, String toAddress, double amount, int minConf, String comment) throws GenericRpcException {
+    return (String) query("sendfrom", fromAccount, toAddress, amount, minConf, comment);
   }
 
   @Override
-  public String sendFrom(String fromAccount, String toBitcoinAddress, double amount, int minConf, String comment, String commentTo) throws GenericRpcException {
-    return (String) query("sendfrom", fromAccount, toBitcoinAddress, amount, minConf, comment, commentTo);
+  public String sendFrom(String fromAccount, String toAddress, double amount, int minConf, String comment, String commentTo) throws GenericRpcException {
+    return (String) query("sendfrom", fromAccount, toAddress, amount, minConf, comment, commentTo);
   }
 
   @Override
@@ -1725,23 +1737,26 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
-  public String signRawTransaction(String hex, List<ExtendedTxInput> inputs, List<String> privateKeys) throws GenericRpcException {
+  public String signRawTransaction(String hex, List<? extends TxInput> inputs, List<String> privateKeys) throws GenericRpcException {
     return signRawTransaction(hex, inputs, privateKeys, "ALL");
   }
 
-  public String signRawTransaction(String hex, List<ExtendedTxInput> inputs, List<String> privateKeys, String sigHashType) {
+  public String signRawTransaction(String hex, List<? extends TxInput> inputs, List<String> privateKeys, String sigHashType) {
     List<Map> pInputs = null;
 
     if (inputs != null) {
       pInputs = new ArrayList<>();
-      for (final ExtendedTxInput txInput : inputs) {
+      for (final TxInput txInput : inputs) {
         pInputs.add(new LinkedHashMap() {
           {
             put("txid", txInput.txid());
             put("vout", txInput.vout());
             put("scriptPubKey", txInput.scriptPubKey());
-            put("redeemScript", txInput.redeemScript());
-            put("amount", txInput.amount());
+            if (txInput instanceof ExtendedTxInput) {
+              ExtendedTxInput extin = (ExtendedTxInput) txInput;
+              put("redeemScript", extin.redeemScript());
+              put("amount", extin.amount());
+            }
           }
         });
       }

@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.TxInput;
+
 /**
  *
  * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com Small modifications by
@@ -1212,7 +1214,7 @@ public interface BitcoindRpcClient {
    * 
    * @see <a href="https://bitcoin.org/en/developer-reference#signrawtransaction">signrawtransaction</a>
    */
-  String signRawTransaction(String hex, List<ExtendedTxInput> inputs, List<String> privateKeys) throws GenericRpcException;
+  String signRawTransaction(String hex, List<? extends TxInput> inputs, List<String> privateKeys) throws GenericRpcException;
 
   static interface AddressValidationResult extends Serializable {
 
