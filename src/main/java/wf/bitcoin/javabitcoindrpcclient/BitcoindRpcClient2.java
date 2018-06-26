@@ -3,11 +3,19 @@ package wf.bitcoin.javabitcoindrpcclient;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * an extended client used to consume APIS, such as 'getaddressutxo',
+ * which are provided by some btc nodes which supports 'addressindex'. <br/>
+ * taking a look at <a href="https://github.com/satoshilabs/bitcoin">satoshilabs/bitcoin</a> 
+ * 
+ * @author frankchen
+ * @create 2018年6月21日 上午10:38:17
+ */
 public interface BitcoindRpcClient2 extends BitcoindRpcClient
 {
     /**
      * the result returned by
-     * {@link BitcoinJSONRPCClientExt#getAddressBalance(String)}
+     * {@link BitcoinJSONRPCClient2#getAddressBalance(String)}
      * 
      * @author frankchen
      * @create 2018年6月21日 上午10:38:17
@@ -40,12 +48,11 @@ public interface BitcoindRpcClient2 extends BitcoindRpcClient
         }
     }
 
-    // "address": "mse5PYo8iCevsv2DyFFvna8msQFnB8b7Bd",
-    // "txid": "2278c94ca3b59ee2ab9b7c863d745002581a401efc26aed3963a120cccf8a4a7",
-    // "outputIndex": 1,
-    // "script": "76a91484fa57f18e3e7b40eb84097cce323b6f248857b388ac",
-    // "satoshis": 53500000,
-    // "height": 1298221
+    /**
+     * the result return by {@link BitcoinJSONRPCClient2#getAddressUtxo(String)}
+     * @author frankchen
+     * @create 2018年6月21日 上午10:38:17
+     */
     public class AddressUtxo
     {
         private String address;
@@ -70,6 +77,9 @@ public interface BitcoindRpcClient2 extends BitcoindRpcClient
             return address;
         }
 
+        /**
+         * the txid of this uxto
+         */
         public String getTxid()
         {
             return txid;
@@ -90,6 +100,10 @@ public interface BitcoindRpcClient2 extends BitcoindRpcClient
             return satoshis;
         }
 
+        /**
+         * height of block in which this utxo is
+         * @return
+         */
         public long getHeight()
         {
             return height;
@@ -114,11 +128,17 @@ public interface BitcoindRpcClient2 extends BitcoindRpcClient
     
 
     /**
-     * API provided by bitcoin which supports 'addressindex' option 
-     * @param address
-     * @return balance is in unit of satoshis
+     * get the balance of specified address
      */
     AddressBalance getAddressBalance(String address);
+    
+    /**
+     * get all the utxo list of a specified address
+     */
     List<AddressUtxo> getAddressUtxo(String address);
+    
+    /**
+     * check whether the node is running in a test net or not 
+     */
     boolean isTestNet();
 }

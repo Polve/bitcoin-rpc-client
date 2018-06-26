@@ -5,22 +5,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * an encapsulation of APIs provided by BitPay
- * 
- * internal use only
- * 
  * @author frankchen
  * @create 2018年5月24日 下午3:00:04
  */
-public class BitcoinJSONRPCClientExt extends BitcoinJSONRPCClient implements BitcoindRpcClient2
+public class BitcoinJSONRPCClient2 extends BitcoinJSONRPCClient implements BitcoindRpcClient2
 {
-    public BitcoinJSONRPCClientExt(URL url)
+    public BitcoinJSONRPCClient2(URL url)
     {
         super(url);
     }
 
     /**
-     * API provided by bitpay's bitcored
      * @param address
      * @return balance is in unit of satoshis
      */
