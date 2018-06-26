@@ -81,13 +81,15 @@ public class BitcoinRPCException extends GenericRpcException {
     return rpcParams;
   }
 
+  /**
+   * @return the HTTP response message
+   */
   public String getResponseMessage() {
     return responseMessage;
   }
 
   /**
-   * the msg from bitcoind
-   * @return
+   * @return response message from bitcored
    */
   public String getResponse() {
       return this.response;
