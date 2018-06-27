@@ -26,8 +26,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.TxInput;
-
 /**
  *
  * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com Small modifications by
@@ -57,6 +55,7 @@ public interface BitcoindRpcClient {
     public String scriptPubKey();
   }
 
+  @SuppressWarnings("serial")
   public static class BasicTxInput implements TxInput {
 
     public String txid;
@@ -90,6 +89,7 @@ public interface BitcoindRpcClient {
 
   }
 
+  @SuppressWarnings("serial")
   public static class ExtendedTxInput extends BasicTxInput {
 
     public String redeemScript;
@@ -126,6 +126,7 @@ public interface BitcoindRpcClient {
     public double amount();
   }
 
+  @SuppressWarnings("serial")
   public static class BasicTxOutput implements TxOutput {
 
     public String address;
@@ -629,6 +630,15 @@ public interface BitcoindRpcClient {
    * @see <a href="https://bitcoin.org/en/developer-reference#getnewaddress">getnewaddress</a>
    */
   String getNewAddress(String account) throws GenericRpcException;
+
+  /**
+   * The getnewaddress RPC returns a new Bitcoin address for receiving payments. 
+   * If an account is specified, payments received with the address will be credited to that account.
+   * The address type to use. Options are "legacy", "p2sh-segwit", and "bech32".
+   *  
+   * @see <a href="https://bitcoin.org/en/developer-reference#getnewaddress">getnewaddress</a>
+   */
+  String getNewAddress(String account, String addressType) throws GenericRpcException;
 
   /**
    * The getrawmempool RPC returns all transaction identifiers (TXIDs) in the memory pool as a JSON array, 
