@@ -661,6 +661,12 @@ public interface BitcoindRpcClient {
 
     String hash();
 
+    /**
+     * get the height of block in which this transaction is</br>
+     * <b>PAY ATTENSION</b> this properties only works with bitcoind nodes of which version is under 0.15
+     */
+    long height();
+    
     /*
      *
      */
@@ -1658,4 +1664,48 @@ public interface BitcoindRpcClient {
    * [TODO] Add to https://bitcoin.org/en/developer-reference
    */
   SmartFeeResult getEstimateSmartFee(int blocks);
+  
+  /**
+   * the result returned by
+   * {@link BitcoinJSONRPCClient#getAddressBalance(String)}
+   * 
+   * @author frankchen
+   * @create 2018年6月21日 上午10:38:17
+   */
+  static interface AddressBalance
+  {
+      long getBalance();
+      long getReceived();
+  }
+
+  /**
+   * the result return by {@link BitcoinJSONRPCClient#getAddressUtxo(String)}
+   * @author frankchen
+   * @create 2018年6月21日 上午10:38:17
+   */
+  static interface AddressUtxo
+  {
+      String getAddress();
+      String getTxid();
+      int getOutputIndex();
+      String getScript();
+      long getSatoshis();
+      long getHeight();
+  }
+
+  /**
+   * get the balance of specified address</br>
+   * <b>PAY ATTENTION</b>
+   * This API only works on some bitcoind nodes which support <i>addressindex</i> option</br>
+   * <a href="https://github.com/satoshilabs/bitcoin">satoshilabs/bitcoin</a> is such a kind of these nodes
+   */
+  AddressBalance getAddressBalance(String address);
+  
+  /**
+   * get all the utxo list of a specified address
+   * <b>PAY ATTENTION</b>
+   * This API only works on some bitcoind nodes which support <i>addressindex</i> option</br>
+   * <a href="https://github.com/satoshilabs/bitcoin">satoshilabs/bitcoin</a> is such a kind of these nodes
+   */
+  List<AddressUtxo> getAddressUtxo(String address);
 }
