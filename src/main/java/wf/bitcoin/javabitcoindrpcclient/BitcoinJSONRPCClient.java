@@ -2232,9 +2232,6 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
           return address;
       }
 
-      /**
-       * the txid of this uxto
-       */
       public String getTxid()
       {
           return txid;
@@ -2255,10 +2252,6 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
           return satoshis;
       }
 
-      /**
-       * height of block in which this utxo is
-       * @return
-       */
       public long getHeight()
       {
           return height;
@@ -2267,13 +2260,11 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   
   private static class AddressUtxoList extends ListMapWrapper<AddressUtxo>
   {
-      @SuppressWarnings("rawtypes")
       public AddressUtxoList(List<Map> list)
       {
           super((List<Map>)list);
       }
 
-      @SuppressWarnings({ "rawtypes", "unchecked" })
       @Override
       protected AddressUtxo wrap(Map m)
       {
@@ -2281,20 +2272,11 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       }
   }
   
-  /**
-   * @param address
-   * @return balance is in unit of satoshis
-   */
-  @SuppressWarnings("unchecked")
   public AddressBalance getAddressBalance(String address)
   {
       return new AddressBalanceWrapper((Map<String, Object>)query("getaddressbalance", address));
   }
 
-  /**
-   * @param address public key address in base58check encoding
-   */
-  @SuppressWarnings({ "unchecked", "rawtypes" })
   public List<AddressUtxo> getAddressUtxo(String address)
   {
       return new AddressUtxoList((List<Map>)query("getaddressutxos", address));
