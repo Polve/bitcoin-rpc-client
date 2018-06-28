@@ -4,6 +4,7 @@
  */
 package wf.bitcoin.javabitcoindrpcclient;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -62,29 +63,27 @@ public class BitcoinRawTxBuilder {
     return this;
   }
 
-  public BitcoinRawTxBuilder out(String address, double amount) {
-    if (amount <= 0d)
-      return this;
+  public BitcoinRawTxBuilder out(String address, BigDecimal amount) {
     outputs.add(new BitcoindRpcClient.BasicTxOutput(address, amount));
     return this;
   }
 
-  public BitcoinRawTxBuilder in(double value) throws GenericRpcException {
+  public BitcoinRawTxBuilder in(BigDecimal value) throws GenericRpcException {
     return in(value, 6);
   }
 
-  public BitcoinRawTxBuilder in(double value, int minConf) throws GenericRpcException {
+  public BitcoinRawTxBuilder in(BigDecimal value, int minConf) throws GenericRpcException {
     List<BitcoindRpcClient.Unspent> unspent = bitcoin.listUnspent(minConf);
-    double v = value;
+    BigDecimal v = value;
     for (BitcoindRpcClient.Unspent o : unspent) {
       if (!inputs.contains(new Input(o))) {
         in(o);
-        v = BitcoinUtil.normalizeAmount(v - o.amount());
+        v = v.subtract(o.amount());
       }
-      if (v < 0)
+      if (v.compareTo(BigDecimal.ZERO) < 0)
         break;
     }
-    if (v > 0)
+    if (BigDecimal.ZERO.compareTo(v) < 0)
       throw new GenericRpcException("Not enough bitcoins (" + v + "/" + value + ")");
     return this;
   }
@@ -101,18 +100,18 @@ public class BitcoinRawTxBuilder {
   }
 
   public BitcoinRawTxBuilder outChange(String address) throws GenericRpcException {
-    return outChange(address, 0d);
+    return outChange(address, BigDecimal.ZERO);
   }
 
-  public BitcoinRawTxBuilder outChange(String address, double fee) throws GenericRpcException {
-    double is = 0d;
+  public BitcoinRawTxBuilder outChange(String address, BigDecimal fee) throws GenericRpcException {
+    BigDecimal is = BigDecimal.ZERO;
     for (BitcoindRpcClient.TxInput i : inputs)
-      is = BitcoinUtil.normalizeAmount(is + tx(i.txid()).vOut().get(i.vout()).value());
-    double os = fee;
+      is = is.add(tx(i.txid()).vOut().get(i.vout()).value());
+    BigDecimal os = fee;
     for (BitcoindRpcClient.TxOutput o : outputs)
-      os = BitcoinUtil.normalizeAmount(os + o.amount());
-    if (os < is)
-      out(address, BitcoinUtil.normalizeAmount(is - os));
+      os = os.add(o.amount());
+    if (os.compareTo(is) < 0)
+      out(address, is.subtract(os));
     return this;
   }
   
