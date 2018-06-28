@@ -1311,6 +1311,12 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       return mapCTime("blocktime");
     }
 
+    @Override
+    public long height()
+    {
+        return mapLong("height");
+    }
+
   }
 
   private class DecodedScriptImpl extends MapWrapper implements DecodedScript, Serializable {
@@ -2188,4 +2194,106 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return new TxOutWrapper((Map) query("gettxout", txId, vout, includemempool));
   }
 
+  
+  /**
+   * the result returned by
+   * {@link BitcoinJSONRPCClient#getAddressBalance(String)}
+   * 
+   * @author frankchen
+   * @create 2018年6月21日 上午10:38:17
+   */
+  private static class AddressBalanceWrapper extends MapWrapper implements AddressBalance, Serializable
+  {
+      public AddressBalanceWrapper(Map<String, Object> r)
+      {
+          super(r);
+      }
+
+      public long getBalance()
+      {
+          return this.mapLong("balance");
+      }
+
+      public long getReceived()
+      {
+          return this.mapLong("received");
+      }
+  }
+
+  /**
+   * the result return by {@link BitcoinJSONRPCClient#getAddressUtxo(String)}
+   */
+  private static class AddressUtxoWrapper implements AddressUtxo
+  {
+      private String address;
+      private String txid;
+      private int    outputIndex;
+      private String script;
+      private long   satoshis;
+      private long   height;
+
+      public AddressUtxoWrapper(Map<String, Object> result)
+      {
+          address = result.getOrDefault("address", "").toString();
+          txid = result.getOrDefault("txid", "").toString();
+          outputIndex = ((Number) result.getOrDefault("outputIndex", "")).intValue();
+          script = result.getOrDefault("script", "").toString();
+          satoshis = ((Number) result.getOrDefault("satoshis", 0)).longValue();
+          height = ((Number) result.getOrDefault("height", -1)).longValue();
+      }
+
+      public String getAddress()
+      {
+          return address;
+      }
+
+      public String getTxid()
+      {
+          return txid;
+      }
+
+      public int getOutputIndex()
+      {
+          return outputIndex;
+      }
+
+      public String getScript()
+      {
+          return script;
+      }
+
+      public long getSatoshis()
+      {
+          return satoshis;
+      }
+
+      public long getHeight()
+      {
+          return height;
+      }
+  }
+  
+  private static class AddressUtxoList extends ListMapWrapper<AddressUtxo>
+  {
+      public AddressUtxoList(List<Map> list)
+      {
+          super((List<Map>)list);
+      }
+
+      @Override
+      protected AddressUtxo wrap(Map m)
+      {
+          return new AddressUtxoWrapper(m);
+      }
+  }
+  
+  public AddressBalance getAddressBalance(String address)
+  {
+      return new AddressBalanceWrapper((Map<String, Object>)query("getaddressbalance", address));
+  }
+
+  public List<AddressUtxo> getAddressUtxo(String address)
+  {
+      return new AddressUtxoList((List<Map>)query("getaddressutxos", address));
+  }
 }
