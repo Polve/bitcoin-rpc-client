@@ -1089,6 +1089,11 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  public String getNewAddress(String account, String addressType) throws GenericRpcException {
+    return (String) query("getnewaddress", account, addressType);
+  }
+
+  @Override
   public List<String> getRawMemPool() throws GenericRpcException {
     return (List<String>) query("getrawmempool");
   }
