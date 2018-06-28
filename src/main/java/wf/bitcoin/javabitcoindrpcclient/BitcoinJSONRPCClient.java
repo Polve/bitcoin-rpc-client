@@ -20,6 +20,8 @@
  */
 package wf.bitcoin.javabitcoindrpcclient;
 
+import static wf.bitcoin.javabitcoindrpcclient.MapWrapper.mapBigDecimal;
+import static wf.bitcoin.javabitcoindrpcclient.MapWrapper.mapHex;
 import static wf.bitcoin.javabitcoindrpcclient.MapWrapper.mapInt;
 import static wf.bitcoin.javabitcoindrpcclient.MapWrapper.mapStr;
 
@@ -55,6 +57,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.LockedUnspent;
 import wf.bitcoin.krotjson.Base64Coder;
+import wf.bitcoin.krotjson.HexCoder;
 import wf.bitcoin.krotjson.JSON;
 
 /**
@@ -259,10 +262,14 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       });
     }
 
-    Map<String, BigDecimal> pOutputs = new LinkedHashMap();
+    Map<String, Object> pOutputs = new LinkedHashMap<>();
     
     for (TxOutput txOutput : outputs) {
       pOutputs.put(txOutput.address(), txOutput.amount());
+      if (txOutput.data() != null) {
+        String hex = HexCoder.encode(txOutput.data());
+        pOutputs.put("data", hex);
+      }
     }
 
     return (String) query("createrawtransaction", pInputs, pOutputs);
@@ -1693,7 +1700,12 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
     @Override
     public BigDecimal amount() {
-      return MapWrapper.mapBigDecimal(m, "amount");
+      return mapBigDecimal(m, "amount");
+    }
+
+    @Override
+    public byte[] data() {
+      return mapHex(m, "data");
     }
 
     @Override

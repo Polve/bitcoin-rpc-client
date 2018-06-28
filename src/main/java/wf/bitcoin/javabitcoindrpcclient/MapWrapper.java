@@ -22,6 +22,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Map;
 
+import wf.bitcoin.krotjson.HexCoder;
+
 /**
  *
  * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com
@@ -58,6 +60,10 @@ class MapWrapper {
     return mapBigDecimal(m, key);
   }
 
+  public byte[] mapHex(String key) {
+    return mapHex(m, key);
+  }
+
   public static boolean mapBool(Map m, String key) {
     return ((Boolean) m.get(key));
   }
@@ -83,6 +89,11 @@ class MapWrapper {
   public static Date mapCTime(Map m, String key) {
     Object v = m.get(key);
     return v == null ? null : new Date(mapLong(m, key) * 1000);
+  }
+
+  public static byte[] mapHex(Map m, String key) {
+    Object v = m.get(key);
+    return v == null ? null : HexCoder.decode((String) v);
   }
 
   @Override

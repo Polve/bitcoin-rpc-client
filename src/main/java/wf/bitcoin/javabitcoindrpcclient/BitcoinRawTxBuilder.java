@@ -64,7 +64,11 @@ public class BitcoinRawTxBuilder {
   }
 
   public BitcoinRawTxBuilder out(String address, BigDecimal amount) {
-    outputs.add(new BitcoindRpcClient.BasicTxOutput(address, amount));
+    return out(address, amount, null);
+  }
+
+  public BitcoinRawTxBuilder out(String address, BigDecimal amount, byte[] data) {
+    outputs.add(new BitcoindRpcClient.BasicTxOutput(address, amount, data));
     return this;
   }
 

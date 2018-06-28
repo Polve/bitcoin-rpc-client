@@ -124,17 +124,25 @@ public interface BitcoindRpcClient {
     public String address();
 
     public BigDecimal amount();
+    
+    public byte[] data();
   }
 
   @SuppressWarnings("serial")
   public static class BasicTxOutput implements TxOutput {
 
-    public String address;
-    public BigDecimal amount;
+    public final String address;
+    public final BigDecimal amount;
+    public final byte[] data;
 
     public BasicTxOutput(String address, BigDecimal amount) {
+      this(address, amount, null);
+    }
+
+    public BasicTxOutput(String address, BigDecimal amount, byte[] data) {
       this.address = address;
       this.amount = amount;
+      this.data = data;
     }
 
     @Override
@@ -145,6 +153,11 @@ public interface BitcoindRpcClient {
     @Override
     public BigDecimal amount() {
       return amount;
+    }
+
+    @Override
+    public byte[] data() {
+      return data;
     }
   }
 
@@ -686,9 +699,6 @@ public interface BitcoindRpcClient {
      */
     long height();
     
-    /*
-     *
-     */
     interface In extends TxInput, Serializable {
 
       Map<String, Object> scriptSig();
