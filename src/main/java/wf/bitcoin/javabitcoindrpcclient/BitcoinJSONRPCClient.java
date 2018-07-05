@@ -2251,12 +2251,17 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
       public AddressUtxoWrapper(Map<String, Object> result)
       {
-          address = result.getOrDefault("address", "").toString();
-          txid = result.getOrDefault("txid", "").toString();
-          outputIndex = ((Number) result.getOrDefault("outputIndex", "")).intValue();
-          script = result.getOrDefault("script", "").toString();
-          satoshis = ((Number) result.getOrDefault("satoshis", 0)).longValue();
-          height = ((Number) result.getOrDefault("height", -1)).longValue();
+          address = getOrDefault(result, "address", "").toString();
+          txid = getOrDefault(result, "txid", "").toString();
+          outputIndex = getOrDefault(result, "outputIndex", 0);
+          script = getOrDefault(result, "script", "").toString();
+          satoshis = getOrDefault(result, "satoshis", 0L);
+          height = getOrDefault(result, "height", -1L);
+      }
+      
+      <T extends Object> T getOrDefault(Map<String, Object> result, String key, T defval) {
+        T val = (T) result.get(key);
+        return val != null ? val : defval;
       }
 
       public String getAddress()
