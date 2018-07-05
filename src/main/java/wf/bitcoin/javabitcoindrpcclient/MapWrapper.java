@@ -36,15 +36,15 @@ class MapWrapper {
     this.m = m;
   }
 
-  public boolean mapBool(String key) {
+  public Boolean mapBool(String key) {
     return mapBool(m, key);
   }
 
-  public int mapInt(String key) {
+  public Integer mapInt(String key) {
     return mapInt(m, key);
   }
 
-  public long mapLong(String key) {
+  public Long mapLong(String key) {
     return mapLong(m, key);
   }
 
@@ -64,8 +64,9 @@ class MapWrapper {
     return mapHex(m, key);
   }
 
-  public static boolean mapBool(Map m, String key) {
-    return ((Boolean) m.get(key));
+  public static Boolean mapBool(Map m, String key) {
+    Object val = m.get(key);
+    return val instanceof Boolean ? (Boolean) val : Boolean.FALSE;
   }
 
   public static BigDecimal mapBigDecimal(Map m, String key) {
@@ -73,12 +74,14 @@ class MapWrapper {
     return val instanceof BigDecimal ? (BigDecimal) val : new BigDecimal((String) val);
   }
 
-  public static int mapInt(Map m, String key) {
-    return ((Number) m.get(key)).intValue();
+  public static Integer mapInt(Map m, String key) {
+    Object val = m.get(key);
+    return val instanceof Number ? ((Number) val).intValue() : null;
   }
 
-  public static long mapLong(Map m, String key) {
-    return ((Number) m.get(key)).longValue();
+  public static Long mapLong(Map m, String key) {
+    Object val = m.get(key);
+    return val instanceof Number ? ((Number) val).longValue() : null;
   }
 
   public static String mapStr(Map m, String key) {

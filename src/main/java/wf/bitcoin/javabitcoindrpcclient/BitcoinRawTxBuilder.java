@@ -28,7 +28,7 @@ public class BitcoinRawTxBuilder {
 
   private class Input extends BitcoindRpcClient.BasicTxInput {
 
-    public Input(String txid, int vout) {
+    public Input(String txid, Integer vout) {
       super(txid, vout);
     }
 

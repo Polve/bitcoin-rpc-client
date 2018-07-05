@@ -50,7 +50,7 @@ public interface BitcoindRpcClient {
 
     public String txid();
 
-    public int vout();
+    public Integer vout();
 
     public String scriptPubKey();
   }
@@ -59,15 +59,15 @@ public interface BitcoindRpcClient {
   public static class BasicTxInput implements TxInput {
 
     public String txid;
-    public int vout;
+    public Integer vout;
     public String scriptPubKey;
 
-    public BasicTxInput(String txid, int vout) {
+    public BasicTxInput(String txid, Integer vout) {
       this.txid = txid;
       this.vout = vout;
     }
 
-    public BasicTxInput(String txid, int vout, String scriptPubKey) {
+    public BasicTxInput(String txid, Integer vout, String scriptPubKey) {
       this(txid, vout);
       this.scriptPubKey = scriptPubKey;
     }
@@ -78,7 +78,7 @@ public interface BitcoindRpcClient {
     }
 
     @Override
-    public int vout() {
+    public Integer vout() {
       return vout;
     }
 
@@ -978,6 +978,8 @@ public interface BitcoindRpcClient {
 
     String commentTo();
 
+    boolean generated();
+    
     RawTransaction raw();
   }
 
