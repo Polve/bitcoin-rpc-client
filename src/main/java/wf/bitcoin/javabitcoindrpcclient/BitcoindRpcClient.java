@@ -741,7 +741,10 @@ public interface BitcoindRpcClient {
 
     String blockHash();
 
-    int confirmations();
+    /**
+     * @return null if this tx has not been included in a block
+     */
+    Integer confirmations();
 
     Date time();
 
