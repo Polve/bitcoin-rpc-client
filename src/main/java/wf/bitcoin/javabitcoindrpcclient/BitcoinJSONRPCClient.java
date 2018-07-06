@@ -1306,8 +1306,9 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     @Override
-    public int confirmations() {
-      return mapInt("confirmations");
+    public Integer confirmations() {
+      Object o = m.get("confirmations");
+      return o == null ? null : ((Number)o).intValue();
     }
 
     @Override
