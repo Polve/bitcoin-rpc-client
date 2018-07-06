@@ -1194,6 +1194,10 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
         return mapStr("scriptPubKey");
       }
 
+      @Override
+      public String address() {
+          return mapStr("address");
+      }
     }
 
     @Override
