@@ -691,6 +691,14 @@ public interface BitcoindRpcClient {
       RawTransaction getTransaction();
 
       Out getTransactionOutput();
+      
+      /**
+       * get the spent address, which is specified in the 'scriptPubKey' in the connected output of this tx </br>
+       * <b>PAY ATTENTION</b> This property is only supported by those bitcoind which supports a '-spentindex' option<br/>
+       * For more information about 'spentindex', take a look at <a href="https://github.com/satoshilabs/bitcoin">satoshilabs/bitcoin</a>
+       * or <a href="https://github.com/bitpay/bitcoin">bitpay/bitcoin</a>
+       */
+      String address();
     }
 
     /**
