@@ -26,24 +26,24 @@ import java.util.Map;
  * @create 2018年7月9日 下午8:58:13
  */
 public class BitcoinRPCError {
-	private int code;
-	private String message;
+    private int code;
+    private String message;
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public BitcoinRPCError(Map errorMap) {
-		this.code = (int) errorMap.getOrDefault("code", 0);
-		this.message = (String) errorMap.get("message");
-	}
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public BitcoinRPCError(Map errorMap) {
+        this.code = (int) errorMap.getOrDefault("code", 0);
+        this.message = (String) errorMap.get("message");
+    }
 
-	/**
-	 * get the code returned by the bitcoind.<br/>
-	 * some of the error codes are defined in {@link BitcoinRPCErrorCode}
-	 */
-	public int getCode() {
-		return code;
-	}
+    /**
+     * get the code returned by the bitcoind.<br/>
+     * some of the error codes are defined in {@link BitcoinRPCErrorCode}
+     */
+    public int getCode() {
+        return code;
+    }
 
-	public String getMessage() {
-		return message;
-	}
+    public String getMessage() {
+        return message;
+    }
 }
