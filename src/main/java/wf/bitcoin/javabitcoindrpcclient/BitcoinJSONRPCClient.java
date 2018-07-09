@@ -184,6 +184,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return o.toByteArray();
   }
 
+  @SuppressWarnings("rawtypes")
   public Object loadResponse(InputStream in, Object expectedID, boolean close) throws IOException, GenericRpcException {
     try {
       String r = new String(loadStream(in, close), QUERY_CHARSET);
@@ -195,7 +196,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
           throw new BitcoinRPCException("Wrong response ID (expected: " + String.valueOf(expectedID) + ", response: " + response.get("id") + ")");
 
         if (response.get("error") != null)
-          throw new GenericRpcException(JSON.stringify(response.get("error")));
+          throw new BitcoinRPCException(new BitcoinRPCError((Map)response.get("error")));
 
         return response.get("result");
       } catch (ClassCastException ex) {
