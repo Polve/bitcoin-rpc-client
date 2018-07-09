@@ -17,18 +17,23 @@
  */
 package wf.bitcoin.javabitcoindrpcclient;
 
+import java.util.Map;
+
+import wf.bitcoin.krotjson.JSON;
+
 /**
  *
  * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com
  * @author Alessandro Polverini
  */
 public class BitcoinRPCException extends GenericRpcException {
-
+  
   private String rpcMethod;
   private String rpcParams;
   private int responseCode;
   private String responseMessage;
   private String response;
+  private BitcoinRPCError rpcError;
 
   /**
    * Creates a new instance of <code>BitcoinRPCException</code> with response
@@ -40,15 +45,28 @@ public class BitcoinRPCException extends GenericRpcException {
    * @param responseMessage the HTTP response message
    * @param response the error stream received
    */
-  public BitcoinRPCException(String method, String params, int responseCode, String responseMessage, String response) {
+  @SuppressWarnings("rawtypes")
+  public BitcoinRPCException(String method, 
+                             String params, 
+                             int    responseCode, 
+                             String responseMessage, 
+                             String response) {
     super("RPC Query Failed (method: " + method + ", params: " + params + ", response code: " + responseCode + " responseMessage " + responseMessage + ", response: " + response);
     this.rpcMethod = method;
     this.rpcParams = params;
     this.responseCode = responseCode;
     this.responseMessage = responseMessage;
     this.response = response;
+    if ( responseCode == 500 ) { 
+        // Bitcoind application error when handle the request
+        // extract code/message for callers to handle
+        Map error = (Map) ((Map)JSON.parse(response)).get("error");
+        if ( error != null ) {
+            rpcError = new BitcoinRPCError(error);
+        }
+    }
   }
-
+  
   public BitcoinRPCException(String method, String params, Throwable cause) {
     super("RPC Query Failed (method: " + method + ", params: " + params + ")", cause);
     this.rpcMethod = method;
@@ -65,6 +83,11 @@ public class BitcoinRPCException extends GenericRpcException {
     super(msg);
   }
 
+  public BitcoinRPCException(BitcoinRPCError error) {
+      super(error.getMessage());
+      this.rpcError  = error;
+  }
+  
   public BitcoinRPCException(String message, Throwable cause) {
     super(message, cause);
   }
@@ -93,5 +116,12 @@ public class BitcoinRPCException extends GenericRpcException {
    */
   public String getResponse() {
       return this.response;
+  }
+  
+  /**
+   * @return response message from bitcored
+   */
+  public BitcoinRPCError getRPCError() {
+      return this.rpcError;
   }
 }
