@@ -230,8 +230,14 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       conn.getOutputStream().write(r);
       conn.getOutputStream().close();
       int responseCode = conn.getResponseCode();
-      if (responseCode != 200)
-        throw new BitcoinRPCException(method, Arrays.deepToString(o), responseCode, conn.getResponseMessage(), new String(loadStream(conn.getErrorStream(), true)));
+      if (responseCode != 200) {
+        InputStream errorStream = conn.getErrorStream();
+        throw new BitcoinRPCException(method, 
+                                      Arrays.deepToString(o), 
+                                      responseCode, 
+                                      conn.getResponseMessage(), 
+                                      errorStream == null ? null : new String(loadStream(errorStream, true)));
+      }
       return loadResponse(conn.getInputStream(), "1", true);
     } catch (IOException ex) {
       throw new BitcoinRPCException(method, Arrays.deepToString(o), ex);
