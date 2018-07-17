@@ -29,9 +29,10 @@ public class BitcoinRPCError {
     private int code;
     private String message;
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({ "rawtypes" })
     public BitcoinRPCError(Map errorMap) {
-        this.code = (int) errorMap.getOrDefault("code", 0);
+        Number n = (Number) errorMap.get("code");
+        this.code    = n != null ? n.intValue() : 0;
         this.message = (String) errorMap.get("message");
     }
 
