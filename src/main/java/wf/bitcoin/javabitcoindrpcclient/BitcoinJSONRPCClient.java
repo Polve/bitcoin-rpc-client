@@ -39,6 +39,7 @@ import java.nio.charset.Charset;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -1695,6 +1696,13 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return new UnspentListWrapper((List) query("listunspent", minConf, maxConf, addresses));
   }
 
+  public boolean lockUnspent(boolean unlock, String txid, int vout) throws GenericRpcException {
+    Map<String, Object> params = new LinkedHashMap<>();
+    params.put("txid", txid);
+    params.put("vout", vout);
+    return (boolean) query("lockunspent", unlock, Arrays.asList(params).toArray());
+  }
+
   @Override
   public boolean move(String fromAccount, String toAddress, double amount) throws GenericRpcException {
     return (boolean) query("move", fromAccount, toAddress, amount);
@@ -2251,12 +2259,17 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
       public AddressUtxoWrapper(Map<String, Object> result)
       {
-          address = result.getOrDefault("address", "").toString();
-          txid = result.getOrDefault("txid", "").toString();
-          outputIndex = ((Number) result.getOrDefault("outputIndex", "")).intValue();
-          script = result.getOrDefault("script", "").toString();
-          satoshis = ((Number) result.getOrDefault("satoshis", 0)).longValue();
-          height = ((Number) result.getOrDefault("height", -1)).longValue();
+          address = getOrDefault(result, "address", "").toString();
+          txid = getOrDefault(result, "txid", "").toString();
+          outputIndex = getOrDefault(result, "outputIndex", 0);
+          script = getOrDefault(result, "script", "").toString();
+          satoshis = getOrDefault(result, "satoshis", 0L);
+          height = getOrDefault(result, "height", -1L);
+      }
+      
+      <T extends Object> T getOrDefault(Map<String, Object> result, String key, T defval) {
+        T val = (T) result.get(key);
+        return val != null ? val : defval;
       }
 
       public String getAddress()
