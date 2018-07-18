@@ -39,6 +39,7 @@ import java.nio.charset.Charset;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -1693,6 +1694,13 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   @Override
   public List<Unspent> listUnspent(int minConf, int maxConf, String... addresses) throws GenericRpcException {
     return new UnspentListWrapper((List) query("listunspent", minConf, maxConf, addresses));
+  }
+
+  public boolean lockUnspent(boolean unlock, String txid, int vout) throws GenericRpcException {
+    Map<String, Object> params = new LinkedHashMap<>();
+    params.put("txid", txid);
+    params.put("vout", vout);
+    return (boolean) query("lockunspent", unlock, Arrays.asList(params).toArray());
   }
 
   @Override

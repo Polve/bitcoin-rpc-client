@@ -1096,6 +1096,20 @@ public interface BitcoindRpcClient {
   List<Unspent> listUnspent(int minConf, int maxConf, String... addresses) throws GenericRpcException;
 
   /**
+   * The lockunspent RPC temporarily locks or unlocks specified transaction outputs. 
+   * A locked transaction output will not be chosen by automatic coin selection when spending bitcoins.
+   * 
+   * @param unlock Set to false to lock the outputs specified in the following parameter. Set to true to unlock the outputs specified.
+   * @param txid The TXID of the transaction containing the output to lock or unlock, encoded as hex.
+   * @param vout The output index number (vout) of the output to lock or unlock. 
+   * 
+   * @return true if successful.
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#lockunspent">lockunspent</a>
+   */
+  boolean lockUnspent(boolean unlock, String txid, int vout) throws GenericRpcException;
+
+  /**
    * The move RPC moves a specified amount from one account in your wallet to another using an off-block-chain transaction.
    * 
    * @param fromAccount The name of the account to move the funds from
