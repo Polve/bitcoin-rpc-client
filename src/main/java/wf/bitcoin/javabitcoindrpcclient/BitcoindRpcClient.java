@@ -870,6 +870,17 @@ public interface BitcoindRpcClient {
    */
   Map<String, Number> listAccounts(int minConf) throws GenericRpcException;
 
+  /**
+   * The listaccounts RPC lists accounts and their balances.
+   *
+   * @param minConf The minimum number of confirmations an externally-generated transaction must have before it is counted towards the balance.
+   * @param watchonly Include balances in watch-only addresses.
+   * @return Map that has account names as keys, account balances as values
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#listaccounts">listaccounts</a>
+   */
+  Map<String, Number> listAccounts(int minConf, boolean watchonly) throws GenericRpcException;
+
   static interface ReceivedAddress extends Serializable {
 
     String address();
