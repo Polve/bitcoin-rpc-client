@@ -1475,13 +1475,21 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Map<String, Number> listAccounts() throws GenericRpcException {
-    return (Map) query("listaccounts");
+    return (Map<String, Number>) query("listaccounts");
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Map<String, Number> listAccounts(int minConf) throws GenericRpcException {
-    return (Map) query("listaccounts", minConf);
+    return (Map<String, Number>) query("listaccounts", minConf);
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public Map<String, Number> listAccounts(int minConf, boolean watchonly) throws GenericRpcException {
+    return (Map<String, Number>) query("listaccounts", minConf, watchonly);
   }
 
   private static class ReceivedAddressListWrapper extends AbstractList<ReceivedAddress> {
