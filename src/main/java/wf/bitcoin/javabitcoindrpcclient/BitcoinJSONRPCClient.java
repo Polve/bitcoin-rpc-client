@@ -53,6 +53,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.LockedUnspent;
 import wf.bitcoin.krotjson.Base64Coder;
 import wf.bitcoin.krotjson.JSON;
 
@@ -1537,6 +1538,31 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     public int size() {
       return wrappedList.size();
     }
+  }
+
+  @Override
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  public List<LockedUnspent> listLockUnspent() {
+    
+    return new ListMapWrapper<LockedUnspent>((List<Map>) query("listlockunspent")) {
+      
+      @SuppressWarnings({ "serial" })
+      protected LockedUnspent wrap(final Map m) {
+        
+        return new LockedUnspent() {
+
+          @Override
+          public String txId() {
+            return (String) m.get("txid");
+          }
+
+          @Override
+          public int vout() {
+            return ((Long) m.get("vout")).intValue();
+          }
+        };
+      }
+    };
   }
 
   @Override
