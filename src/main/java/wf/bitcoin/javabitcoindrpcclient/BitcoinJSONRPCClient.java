@@ -311,7 +311,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
-  public SmartFeeResult getEstimateSmartFee(int blocks) {
+  public SmartFeeResult estimateSmartFee(int blocks) {
     return new SmartFeeResultMapWrapper((Map) query("estimatesmartfee", blocks));
   }
 
@@ -1955,12 +1955,12 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 ////        System.out.println(b.listReceivedByAddress());
 //    }
   @Override
-  public BigDecimal getEstimateFee(int nBlocks) throws GenericRpcException {
+  public BigDecimal estimateFee(int nBlocks) throws GenericRpcException {
     return (BigDecimal) query("estimatefee", nBlocks);
   }
 
   @Override
-  public BigDecimal getEstimatePriority(int nBlocks) throws GenericRpcException {
+  public BigDecimal estimatePriority(int nBlocks) throws GenericRpcException {
     return (BigDecimal) query("estimatepriority", nBlocks);
   }
 
