@@ -21,6 +21,7 @@ package wf.bitcoin.krotjson;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -223,7 +224,7 @@ public class CrippledJavaScriptParser {
                 psc = sc;
             }
             //System.out.println("Str: " + b.toString() + "; Rem: " + jsExpr);
-            return dot || exp ? (Object)Double.parseDouble(b.toString()) : (Object)Long.parseLong(b.toString());
+            return dot || exp ? (Object)new BigDecimal(b.toString()) : (Object)Long.parseLong(b.toString());
         }
         for (Keyword keyword : keywords) {
         	int keywordlen = keyword.keywordFromSecond.length();

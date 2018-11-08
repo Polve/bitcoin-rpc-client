@@ -20,6 +20,8 @@
  */
 package wf.bitcoin.javabitcoindrpcclient;
 
+import static wf.bitcoin.javabitcoindrpcclient.MapWrapper.mapBigDecimal;
+import static wf.bitcoin.javabitcoindrpcclient.MapWrapper.mapHex;
 import static wf.bitcoin.javabitcoindrpcclient.MapWrapper.mapInt;
 import static wf.bitcoin.javabitcoindrpcclient.MapWrapper.mapStr;
 
@@ -55,6 +57,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.LockedUnspent;
 import wf.bitcoin.krotjson.Base64Coder;
+import wf.bitcoin.krotjson.HexCoder;
 import wf.bitcoin.krotjson.JSON;
 
 /**
@@ -259,13 +262,14 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       });
     }
 
-    Map<String, Double> pOutputs = new LinkedHashMap();
-
-    Double oldValue;
+    Map<String, Object> pOutputs = new LinkedHashMap<>();
+    
     for (TxOutput txOutput : outputs) {
-      if ((oldValue = pOutputs.put(txOutput.address(), txOutput.amount())) != null)
-        pOutputs.put(txOutput.address(), BitcoinUtil.normalizeAmount(oldValue + txOutput.amount()));
-//                throw new BitcoinRpcException("Duplicate output");
+      pOutputs.put(txOutput.address(), txOutput.amount());
+      if (txOutput.data() != null) {
+        String hex = HexCoder.encode(txOutput.data());
+        pOutputs.put("data", hex);
+      }
     }
 
     return (String) query("createrawtransaction", pInputs, pOutputs);
@@ -292,18 +296,18 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
-  public double getBalance() throws GenericRpcException {
-    return ((Number) query("getbalance")).doubleValue();
+  public BigDecimal getBalance() throws GenericRpcException {
+    return (BigDecimal) query("getbalance");
   }
 
   @Override
-  public double getBalance(String account) throws GenericRpcException {
-    return ((Number) query("getbalance", account)).doubleValue();
+  public BigDecimal getBalance(String account) throws GenericRpcException {
+    return (BigDecimal) query("getbalance", account);
   }
 
   @Override
-  public double getBalance(String account, int minConf) throws GenericRpcException {
-    return ((Number) query("getbalance", account, minConf)).doubleValue();
+  public BigDecimal getBalance(String account, int minConf) throws GenericRpcException {
+    return (BigDecimal) query("getbalance", account, minConf);
   }
 
   @Override
@@ -318,8 +322,8 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     @Override
-    public double balance() {
-      return mapDouble("balance");
+    public BigDecimal balance() {
+      return mapBigDecimal("balance");
     }
 
     @Override
@@ -333,8 +337,8 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     @Override
-    public double difficulty() {
-      return mapDouble("difficulty");
+    public BigDecimal difficulty() {
+      return mapBigDecimal("difficulty");
     }
 
     @Override
@@ -353,8 +357,8 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     @Override
-    public double payTxFee() {
-      return mapDouble("paytxfee");
+    public BigDecimal payTxFee() {
+      return mapBigDecimal("paytxfee");
     }
 
     @Override
@@ -368,8 +372,8 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     @Override
-    public double relayFee() {
-      return mapDouble("relayfee");
+    public BigDecimal relayFee() {
+      return mapBigDecimal("relayfee");
     }
 
     @Override
@@ -679,13 +683,13 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     @Override
-    public double amount() {
-      return mapDouble(m, "amount");
+    public BigDecimal amount() {
+      return mapBigDecimal(m, "amount");
     }
 
     @Override
-    public double fee() {
-      return mapDouble(m, "fee");
+    public BigDecimal fee() {
+      return mapBigDecimal(m, "fee");
     }
 
     @Override
@@ -733,6 +737,11 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       return mapStr(m, "to");
     }
 
+    @Override
+    public boolean generated() {
+      return mapBool(m, "generated");
+    }
+
     private RawTransaction raw = null;
 
     @Override
@@ -741,7 +750,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
         try {
           raw = getRawTransaction(txId());
         } catch (GenericRpcException ex) {
-          throw new RuntimeException(ex);
+          logger.warning(ex.getMessage());
         }
       return raw;
     }
@@ -838,8 +847,8 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     @Override
-    public double difficulty() {
-      return mapDouble("difficulty");
+    public BigDecimal difficulty() {
+      return mapBigDecimal("difficulty");
     }
 
     @Override
@@ -848,8 +857,8 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     @Override
-    public double networkHashps() {
-      return Double.valueOf(mapStr("networkhashps"));
+    public BigDecimal networkHashps() {
+      return mapBigDecimal("networkhashps");
     }
 
     @Override
@@ -890,13 +899,13 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     @Override
-    public double difficulty() {
-      return mapDouble("difficulty");
+    public BigDecimal difficulty() {
+      return mapBigDecimal("difficulty");
     }
 
     @Override
-    public double verificationProgress() {
-      return mapDouble("verificationprogress");
+    public BigDecimal verificationProgress() {
+      return mapBigDecimal("verificationprogress");
     }
 
     @Override
@@ -912,8 +921,8 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     @Override
-    public double feeRate() {
-      return mapDouble("feerate");
+    public BigDecimal feeRate() {
+      return mapBigDecimal("feerate");
     }
 
     @Override
@@ -985,8 +994,8 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     @Override
-    public double difficulty() {
-      return mapDouble("difficulty");
+    public BigDecimal difficulty() {
+      return mapBigDecimal("difficulty");
     }
 
     @Override
@@ -1170,7 +1179,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       }
 
       @Override
-      public int vout() {
+      public Integer vout() {
         return mapInt("vout");
       }
 
@@ -1233,8 +1242,8 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       }
 
       @Override
-      public double value() {
-        return mapDouble("value");
+      public BigDecimal value() {
+        return mapBigDecimal("value");
       }
 
       @Override
@@ -1445,13 +1454,13 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
-  public double getReceivedByAddress(String address) throws GenericRpcException {
-    return ((Number) query("getreceivedbyaddress", address)).doubleValue();
+  public BigDecimal getReceivedByAddress(String address) throws GenericRpcException {
+    return (BigDecimal) query("getreceivedbyaddress", address);
   }
 
   @Override
-  public double getReceivedByAddress(String address, int minConf) throws GenericRpcException {
-    return ((Number) query("getreceivedbyaddress", address, minConf)).doubleValue();
+  public BigDecimal getReceivedByAddress(String address, int minConf) throws GenericRpcException {
+    return (BigDecimal) query("getreceivedbyaddress", address, minConf);
   }
 
   @Override
@@ -1517,8 +1526,8 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
         }
 
         @Override
-        public double amount() {
-          return ((Number) e.get("amount")).doubleValue();
+        public BigDecimal amount() {
+          return (BigDecimal) e.get("amount");
         }
 
         @Override
@@ -1675,7 +1684,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     @Override
-    public int vout() {
+    public Integer vout() {
       return mapInt(m, "vout");
     }
 
@@ -1695,8 +1704,13 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     @Override
-    public double amount() {
-      return MapWrapper.mapDouble(m, "amount");
+    public BigDecimal amount() {
+      return mapBigDecimal(m, "amount");
+    }
+
+    @Override
+    public byte[] data() {
+      return mapHex(m, "data");
     }
 
     @Override
@@ -1738,42 +1752,42 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
-  public boolean move(String fromAccount, String toAddress, double amount) throws GenericRpcException {
+  public boolean move(String fromAccount, String toAddress, BigDecimal amount) throws GenericRpcException {
     return (boolean) query("move", fromAccount, toAddress, amount);
   }
 
   @Override
-  public boolean move(String fromAccount, String toAddress, double amount, String comment) throws GenericRpcException {
+  public boolean move(String fromAccount, String toAddress, BigDecimal amount, String comment) throws GenericRpcException {
     return (boolean) query("move", fromAccount, toAddress, amount, 0, comment);
   }
 
   @Override
-  public boolean move(String fromAccount, String toAddress, double amount, int minConf) throws GenericRpcException {
+  public boolean move(String fromAccount, String toAddress, BigDecimal amount, int minConf) throws GenericRpcException {
     return (boolean) query("move", fromAccount, toAddress, amount, minConf);
   }
 
   @Override
-  public boolean move(String fromAccount, String toAddress, double amount, int minConf, String comment) throws GenericRpcException {
+  public boolean move(String fromAccount, String toAddress, BigDecimal amount, int minConf, String comment) throws GenericRpcException {
     return (boolean) query("move", fromAccount, toAddress, amount, minConf, comment);
   }
 
   @Override
-  public String sendFrom(String fromAccount, String toAddress, double amount) throws GenericRpcException {
+  public String sendFrom(String fromAccount, String toAddress, BigDecimal amount) throws GenericRpcException {
     return (String) query("sendfrom", fromAccount, toAddress, amount);
   }
 
   @Override
-  public String sendFrom(String fromAccount, String toAddress, double amount, int minConf) throws GenericRpcException {
+  public String sendFrom(String fromAccount, String toAddress, BigDecimal amount, int minConf) throws GenericRpcException {
     return (String) query("sendfrom", fromAccount, toAddress, amount, minConf);
   }
 
   @Override
-  public String sendFrom(String fromAccount, String toAddress, double amount, int minConf, String comment) throws GenericRpcException {
+  public String sendFrom(String fromAccount, String toAddress, BigDecimal amount, int minConf, String comment) throws GenericRpcException {
     return (String) query("sendfrom", fromAccount, toAddress, amount, minConf, comment);
   }
 
   @Override
-  public String sendFrom(String fromAccount, String toAddress, double amount, int minConf, String comment, String commentTo) throws GenericRpcException {
+  public String sendFrom(String fromAccount, String toAddress, BigDecimal amount, int minConf, String comment, String commentTo) throws GenericRpcException {
     return (String) query("sendfrom", fromAccount, toAddress, amount, minConf, comment, commentTo);
   }
 
@@ -1783,17 +1797,17 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
-  public String sendToAddress(String toAddress, double amount) throws GenericRpcException {
+  public String sendToAddress(String toAddress, BigDecimal amount) throws GenericRpcException {
     return (String) query("sendtoaddress", toAddress, amount);
   }
 
   @Override
-  public String sendToAddress(String toAddress, double amount, String comment) throws GenericRpcException {
+  public String sendToAddress(String toAddress, BigDecimal amount, String comment) throws GenericRpcException {
     return (String) query("sendtoaddress", toAddress, amount, comment);
   }
 
   @Override
-  public String sendToAddress(String toAddress, double amount, String comment, String commentTo) throws GenericRpcException {
+  public String sendToAddress(String toAddress, BigDecimal amount, String comment, String commentTo) throws GenericRpcException {
     return (String) query("sendtoaddress", toAddress, amount, comment, commentTo);
   }
 
@@ -1941,13 +1955,13 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 ////        System.out.println(b.listReceivedByAddress());
 //    }
   @Override
-  public double getEstimateFee(int nBlocks) throws GenericRpcException {
-    return ((Number) query("estimatefee", nBlocks)).doubleValue();
+  public BigDecimal getEstimateFee(int nBlocks) throws GenericRpcException {
+    return (BigDecimal) query("estimatefee", nBlocks);
   }
 
   @Override
-  public double getEstimatePriority(int nBlocks) throws GenericRpcException {
-    return ((Number) query("estimatepriority", nBlocks)).doubleValue();
+  public BigDecimal getEstimatePriority(int nBlocks) throws GenericRpcException {
+    return (BigDecimal) query("estimatepriority", nBlocks);
   }
 
   @Override
@@ -2018,8 +2032,8 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     @Override
-    public double getPingTime() {
-      return mapDouble("pingtime");
+    public BigDecimal getPingTime() {
+      return mapBigDecimal("pingtime");
     }
 
     @Override
@@ -2101,17 +2115,13 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
-  public double getUnconfirmedBalance() throws GenericRpcException {
-    return (double) query("getunconfirmedbalance");
+  public BigDecimal getUnconfirmedBalance() throws GenericRpcException {
+    return (BigDecimal) query("getunconfirmedbalance");
   }
 
   @Override
-  public double getDifficulty() throws GenericRpcException {
-    if (query("getdifficulty") instanceof Long) {
-      return ((Long) query("getdifficulty")).doubleValue();
-    } else {
-      return (double) query("getdifficulty");
-    }
+  public BigDecimal getDifficulty() throws GenericRpcException {
+    return (BigDecimal) query("getdifficulty");
   }
 
   @Override
@@ -2136,8 +2146,8 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
-  public double getNetworkHashPs() throws GenericRpcException {
-    return (Double) query("getnetworkhashps");
+  public BigDecimal getNetworkHashPs() throws GenericRpcException {
+    return (BigDecimal) query("getnetworkhashps");
   }
 
   @Override

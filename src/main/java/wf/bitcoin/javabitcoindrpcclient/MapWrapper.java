@@ -22,87 +22,86 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Map;
 
+import wf.bitcoin.krotjson.HexCoder;
+
 /**
  *
  * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com
  */
 class MapWrapper {
 
-    public final Map m;
+  public final Map m;
 
-    public MapWrapper(Map m) {
-        this.m = m;
-    }
+  public MapWrapper(Map m) {
+    this.m = m;
+  }
 
-    public boolean mapBool(String key) {
-        return mapBool(m, key);
-    }
+  public Boolean mapBool(String key) {
+    return mapBool(m, key);
+  }
 
-    public float mapFloat(String key) {
-        return mapFloat(m, key);
-    }
+  public Integer mapInt(String key) {
+    return mapInt(m, key);
+  }
 
-    public double mapDouble(String key) {
-        return mapDouble(m, key);
-    }
+  public Long mapLong(String key) {
+    return mapLong(m, key);
+  }
 
-    public int mapInt(String key) {
-        return mapInt(m, key);
-    }
+  public String mapStr(String key) {
+    return mapStr(m, key);
+  }
 
-    public long mapLong(String key) {
-        return mapLong(m, key);
-    }
+  public Date mapCTime(String key) {
+    return mapCTime(m, key);
+  }
 
-    public String mapStr(String key) {
-        return mapStr(m, key);
-    }
+  public BigDecimal mapBigDecimal(String key) {
+    return mapBigDecimal(m, key);
+  }
 
-    public Date mapCTime(String key) {
-        return mapCTime(m, key);
-    }
+  public byte[] mapHex(String key) {
+    return mapHex(m, key);
+  }
 
-    public BigDecimal mapBigDecimal(String key) {
-      return mapBigDecimal(m, key);
-    }
+  public static Boolean mapBool(Map m, String key) {
+    Object val = m.get(key);
+    return val instanceof Boolean ? (Boolean) val : Boolean.FALSE;
+  }
 
-    public static boolean mapBool(Map m, String key) {
-        return ((Boolean)m.get(key));
-    }
+  public static BigDecimal mapBigDecimal(Map m, String key) {
+    Object val = m.get(key);
+    return val instanceof BigDecimal ? (BigDecimal) val : new BigDecimal((String) val);
+  }
 
-    public static BigDecimal mapBigDecimal(Map m, String key) {
-      return new BigDecimal((String) m.get(key));
-    }
+  public static Integer mapInt(Map m, String key) {
+    Object val = m.get(key);
+    return val instanceof Number ? ((Number) val).intValue() : null;
+  }
 
-    public static float mapFloat(Map m, String key) {
-        return ((Number)m.get(key)).floatValue();
-    }
+  public static Long mapLong(Map m, String key) {
+    Object val = m.get(key);
+    return val instanceof Number ? ((Number) val).longValue() : null;
+  }
 
-    public static double mapDouble(Map m, String key) {
-        return ((Number)m.get(key)).doubleValue();
-    }
+  public static String mapStr(Map m, String key) {
+    Object v = m.get(key);
+    return v == null ? null : String.valueOf(v);
+  }
 
-    public static int mapInt(Map m, String key) {
-        return ((Number)m.get(key)).intValue();
-    }
+  public static Date mapCTime(Map m, String key) {
+    Object v = m.get(key);
+    return v == null ? null : new Date(mapLong(m, key) * 1000);
+  }
 
-    public static long mapLong(Map m, String key) {
-        return ((Number)m.get(key)).longValue();
-    }
+  public static byte[] mapHex(Map m, String key) {
+    Object v = m.get(key);
+    return v == null ? null : HexCoder.decode((String) v);
+  }
 
-    public static String mapStr(Map m, String key) {
-        Object v = m.get(key);
-        return v == null ? null : String.valueOf(v);
-    }
-
-    public static Date mapCTime(Map m, String key) {
-        Object v = m.get(key);
-        return v == null ? null : new Date(mapLong(m, key) * 1000);
-    }
-
-    @Override
-    public String toString() {
-        return String.valueOf(m);
-    }
+  @Override
+  public String toString() {
+    return String.valueOf(m);
+  }
 
 }
