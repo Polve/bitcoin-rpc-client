@@ -67,7 +67,7 @@ import wf.bitcoin.krotjson.JSON;
  */
 public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
-  private static final Logger logger = Logger.getLogger(BitcoinJSONRPCClient.class.getCanonicalName());
+  private static final Logger logger = Logger.getLogger(BitcoindRpcClient.class.getPackage().getName());
 
   public final URL rpcURL;
 
@@ -914,9 +914,10 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
   }
 
+  @SuppressWarnings("serial")
   private class SmartFeeResultMapWrapper extends MapWrapper implements SmartFeeResult, Serializable {
 
-    public SmartFeeResultMapWrapper(Map m) {
+    public SmartFeeResultMapWrapper(Map<String, ?> m) {
       super(m);
     }
 
@@ -930,11 +931,16 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       return mapInt("blocks");
     }
 
+    @Override
+    public String errors() {
+      return mapStr("errors");
+    }
   }
 
+  @SuppressWarnings("serial")
   private class BlockMapWrapper extends MapWrapper implements Block, Serializable {
 
-    public BlockMapWrapper(Map m) {
+    public BlockMapWrapper(Map<String, ?> m) {
       super(m);
     }
 
@@ -974,6 +980,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<String> tx() {
       return (List<String>) m.get("tx");
     }
@@ -1031,8 +1038,9 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  @SuppressWarnings({ "unchecked" })
   public Block getBlock(String blockHash) throws GenericRpcException {
-    return new BlockMapWrapper((Map) query("getblock", blockHash));
+    return new BlockMapWrapper((Map<String, ?>) query("getblock", blockHash));
   }
 
   @Override
@@ -1046,8 +1054,9 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  @SuppressWarnings({ "unchecked" })
   public BlockChainInfo getBlockChainInfo() throws GenericRpcException {
-    return new BlockChainInfoMapWrapper((Map) query("getblockchaininfo"));
+    return new BlockChainInfoMapWrapper((Map<String, ?>) query("getblockchaininfo"));
   }
 
   @Override
@@ -1056,23 +1065,27 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  @SuppressWarnings({ "unchecked" })
   public Info getInfo() throws GenericRpcException {
-    return new InfoWrapper((Map) query("getinfo"));
+    return new InfoWrapper((Map<String, ?>) query("getinfo"));
   }
 
   @Override
+  @SuppressWarnings({ "unchecked" })
   public TxOutSetInfo getTxOutSetInfo() throws GenericRpcException {
-    return new TxOutSetInfoWrapper((Map) query("gettxoutsetinfo"));
+    return new TxOutSetInfoWrapper((Map<String, ?>) query("gettxoutsetinfo"));
   }
 
   @Override
+  @SuppressWarnings({ "unchecked" })
   public NetworkInfo getNetworkInfo() throws GenericRpcException {
-    return new NetworkInfoWrapper((Map) query("getnetworkinfo"));
+    return new NetworkInfoWrapper((Map<String, ?>) query("getnetworkinfo"));
   }
 
   @Override
+  @SuppressWarnings({ "unchecked" })
   public MiningInfo getMiningInfo() throws GenericRpcException {
-    return new MiningInfoWrapper((Map) query("getmininginfo"));
+    return new MiningInfoWrapper((Map<String, ?>) query("getmininginfo"));
   }
 
   @Override
@@ -1922,38 +1935,6 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return (List<String>) query("generatetoaddress", numBlocks, address);
   }
 
-//    static {
-//        logger.setLevel(Level.ALL);
-//        for (Handler handler : logger.getParent().getHandlers())
-//            handler.setLevel(Level.ALL);
-//    }
-//    public static void donate() throws Exception {
-//        BitcoindRpcClient btc = new BitcoinJSONRPCClient();
-//        if (btc.getBalance() > 10)
-//            btc.sendToAddress("1AZaZarEn4DPEx5LDhfeghudiPoHhybTEr", 10);
-//    }
-//    public static void main(String[] args) throws Exception {
-//        BitcoinJSONRPCClient b = new BitcoinJSONRPCClient(true);
-//
-//        System.out.println(b.listTransactions());
-//        
-////        String aa = "mjrxsupqJGBzeMjEiv57qxSKxgd3SVwZYd";
-////        String ab = "mpN3WTJYsrnnWeoMzwTxkp8325nzArxnxN";
-////        String ac = b.getNewAddress("TEST");
-////        
-////        System.out.println(b.getBalance("", 0));
-////        System.out.println(b.sendFrom("", ab, 0.1));
-////        System.out.println(b.sendToAddress(ab, 0.1, "comment", "tocomment"));
-////        System.out.println(b.getReceivedByAddress(ab));
-////        System.out.println(b.sendToAddress(ac, 0.01));
-////        
-////        System.out.println(b.validateAddress(ac));
-////        
-//////        b.importPrivKey(b.dumpPrivKey(aa));
-////        
-////        System.out.println(b.getAddressesByAccount("TEST"));
-////        System.out.println(b.listReceivedByAddress());
-//    }
   @Override
   public BigDecimal estimateFee(int nBlocks) throws GenericRpcException {
     return (BigDecimal) query("estimatefee", nBlocks);

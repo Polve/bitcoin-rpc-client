@@ -30,9 +30,9 @@ import wf.bitcoin.krotjson.HexCoder;
  */
 class MapWrapper {
 
-  public final Map m;
+  public final Map<String, ?> m;
 
-  public MapWrapper(Map m) {
+  public MapWrapper(Map<String, ?> m) {
     this.m = m;
   }
 
@@ -64,39 +64,48 @@ class MapWrapper {
     return mapHex(m, key);
   }
 
-  public static Boolean mapBool(Map m, String key) {
+  public static Boolean mapBool(Map<String, ?> m, String key) {
     Object val = m.get(key);
-    return val instanceof Boolean ? (Boolean) val : Boolean.FALSE;
+    if (!(val instanceof Boolean)) return null;
+    return (Boolean) val;
   }
 
-  public static BigDecimal mapBigDecimal(Map m, String key) {
+  public static BigDecimal mapBigDecimal(Map<String, ?> m, String key) {
     Object val = m.get(key);
-    return val instanceof BigDecimal ? (BigDecimal) val : new BigDecimal((String) val);
+    if (val instanceof BigDecimal) return (BigDecimal) val;
+    String strVal = mapStr(m, key);
+    if (strVal == null) return null;
+    return new BigDecimal(strVal);
   }
 
-  public static Integer mapInt(Map m, String key) {
+  public static Integer mapInt(Map<String, ?> m, String key) {
     Object val = m.get(key);
-    return val instanceof Number ? ((Number) val).intValue() : null;
+    if (!(val instanceof Number)) return null;
+    return ((Number) val).intValue();
   }
 
-  public static Long mapLong(Map m, String key) {
+  public static Long mapLong(Map<String, ?> m, String key) {
     Object val = m.get(key);
-    return val instanceof Number ? ((Number) val).longValue() : null;
+    if (!(val instanceof Number)) return null;
+    return ((Number) val).longValue();
   }
 
-  public static String mapStr(Map m, String key) {
-    Object v = m.get(key);
-    return v == null ? null : String.valueOf(v);
+  public static String mapStr(Map<String, ?> m, String key) {
+    Object val = m.get(key);
+    if (val == null) return null;
+    return val.toString();
   }
 
-  public static Date mapCTime(Map m, String key) {
-    Object v = m.get(key);
-    return v == null ? null : new Date(mapLong(m, key) * 1000);
+  public static Date mapCTime(Map<String, ?> m, String key) {
+    Long longVal = mapLong(m, key);
+    if (longVal == null) return null;
+    return new Date(longVal * 1000);
   }
 
-  public static byte[] mapHex(Map m, String key) {
-    Object v = m.get(key);
-    return v == null ? null : HexCoder.decode((String) v);
+  public static byte[] mapHex(Map<String, ?> m, String key) {
+    String strVal = mapStr(m, key);
+    if (strVal == null) return null;
+    return HexCoder.decode(strVal);
   }
 
   @Override
