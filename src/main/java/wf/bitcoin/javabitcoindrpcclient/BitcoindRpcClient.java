@@ -1772,10 +1772,12 @@ public interface BitcoindRpcClient {
   }
 
   static interface SmartFeeResult extends Serializable {
+    
+    int blocks();
 
     BigDecimal feeRate();
 
-    int blocks();
+    String errors();
   }
 
   static interface Transaction extends Serializable {
