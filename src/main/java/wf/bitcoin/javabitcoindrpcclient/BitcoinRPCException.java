@@ -26,6 +26,7 @@ import wf.bitcoin.krotjson.JSON;
  * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com
  * @author Alessandro Polverini
  */
+@SuppressWarnings("serial")
 public class BitcoinRPCException extends GenericRpcException {
   
   private String rpcMethod;

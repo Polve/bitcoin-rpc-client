@@ -20,11 +20,6 @@
  */
 package wf.bitcoin.javabitcoindrpcclient;
 
-import static wf.bitcoin.javabitcoindrpcclient.MapWrapper.mapBigDecimal;
-import static wf.bitcoin.javabitcoindrpcclient.MapWrapper.mapHex;
-import static wf.bitcoin.javabitcoindrpcclient.MapWrapper.mapInt;
-import static wf.bitcoin.javabitcoindrpcclient.MapWrapper.mapStr;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,7 +36,6 @@ import java.nio.charset.Charset;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -55,7 +49,6 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
-import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.LockedUnspent;
 import wf.bitcoin.krotjson.Base64Coder;
 import wf.bitcoin.krotjson.HexCoder;
 import wf.bitcoin.krotjson.JSON;
@@ -69,28 +62,11 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
   private static final Logger logger = Logger.getLogger(BitcoindRpcClient.class.getPackage().getName());
 
-  public final URL rpcURL;
-
-  private URL noAuthURL;
-  private String authStr;
-
-  public BitcoinJSONRPCClient(String rpcUrl) throws MalformedURLException {
-    this(new URL(rpcUrl));
-  }
-
-  public BitcoinJSONRPCClient(URL rpc) {
-    this.rpcURL = rpc;
-    try {
-      noAuthURL = new URI(rpc.getProtocol(), null, rpc.getHost(), rpc.getPort(), rpc.getPath(), rpc.getQuery(), null).toURL();
-    } catch (MalformedURLException | URISyntaxException ex) {
-      throw new IllegalArgumentException(rpc.toString(), ex);
-    }
-    authStr = rpc.getUserInfo() == null ? null : String.valueOf(Base64Coder.encode(rpc.getUserInfo().getBytes(Charset.forName("ISO8859-1"))));
-  }
-
   public static final URL DEFAULT_JSONRPC_URL;
   public static final URL DEFAULT_JSONRPC_TESTNET_URL;
   public static final URL DEFAULT_JSONRPC_REGTEST_URL;
+  
+  public static final Charset QUERY_CHARSET = Charset.forName("ISO8859-1");
 
   static {
     String user = "user";
@@ -134,6 +110,25 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
   }
 
+  public final URL rpcURL;
+
+  private URL noAuthURL;
+  private String authStr;
+
+  public BitcoinJSONRPCClient(String rpcUrl) throws MalformedURLException {
+    this(new URL(rpcUrl));
+  }
+
+  public BitcoinJSONRPCClient(URL rpc) {
+    this.rpcURL = rpc;
+    try {
+      noAuthURL = new URI(rpc.getProtocol(), null, rpc.getHost(), rpc.getPort(), rpc.getPath(), rpc.getQuery(), null).toURL();
+    } catch (MalformedURLException | URISyntaxException ex) {
+      throw new IllegalArgumentException(rpc.toString(), ex);
+    }
+    authStr = rpc.getUserInfo() == null ? null : String.valueOf(Base64Coder.encode(rpc.getUserInfo().getBytes(Charset.forName("ISO8859-1"))));
+  }
+
   public BitcoinJSONRPCClient(boolean testNet) {
     this(testNet ? DEFAULT_JSONRPC_TESTNET_URL : DEFAULT_JSONRPC_URL);
   }
@@ -161,10 +156,9 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     this.sslSocketFactory = sslSocketFactory;
   }
 
-  public static final Charset QUERY_CHARSET = Charset.forName("ISO8859-1");
-
-  public byte[] prepareRequest(final String method, final Object... params) {
-    return JSON.stringify(new LinkedHashMap() {
+  @SuppressWarnings("serial")
+  protected byte[] prepareRequest(final String method, final Object... params) {
+    return JSON.stringify(new LinkedHashMap<String, Object>() {
       {
         put("method", method);
         put("params", params);
@@ -228,7 +222,6 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
           ((HttpsURLConnection) conn).setSSLSocketFactory(sslSocketFactory);
       }
 
-//            conn.connect();
       ((HttpURLConnection) conn).setRequestProperty("Authorization", "Basic " + authStr);
       byte[] r = prepareRequest(method, o);
       logger.log(Level.FINE, "Bitcoin JSON-RPC request:\n{0}", new String(r, QUERY_CHARSET));
@@ -250,11 +243,12 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  @SuppressWarnings("serial")
   public String createRawTransaction(List<TxInput> inputs, List<TxOutput> outputs) throws GenericRpcException {
-    List<Map> pInputs = new ArrayList<>();
+    List<Map<String, ?>> pInputs = new ArrayList<>();
 
     for (final TxInput txInput : inputs) {
-      pInputs.add(new LinkedHashMap() {
+      pInputs.add(new LinkedHashMap<String, Object>() {
         {
           put("txid", txInput.txid());
           put("vout", txInput.vout());
@@ -291,6 +285,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<String> getAddressesByAccount(String account) throws GenericRpcException {
     return (List<String>) query("getaddressesbyaccount", account);
   }
@@ -311,724 +306,9 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public SmartFeeResult estimateSmartFee(int blocks) {
-    return new SmartFeeResultMapWrapper((Map) query("estimatesmartfee", blocks));
-  }
-
-  private class InfoWrapper extends MapWrapper implements Info, Serializable {
-
-    public InfoWrapper(Map m) {
-      super(m);
-    }
-
-    @Override
-    public BigDecimal balance() {
-      return mapBigDecimal("balance");
-    }
-
-    @Override
-    public int blocks() {
-      return mapInt("blocks");
-    }
-
-    @Override
-    public int connections() {
-      return mapInt("connections");
-    }
-
-    @Override
-    public BigDecimal difficulty() {
-      return mapBigDecimal("difficulty");
-    }
-
-    @Override
-    public String errors() {
-      return mapStr("errors");
-    }
-
-    @Override
-    public long keyPoolOldest() {
-      return mapLong("keypoololdest");
-    }
-
-    @Override
-    public long keyPoolSize() {
-      return mapLong("keypoolsize");
-    }
-
-    @Override
-    public BigDecimal payTxFee() {
-      return mapBigDecimal("paytxfee");
-    }
-
-    @Override
-    public long protocolVersion() {
-      return mapLong("protocolversion");
-    }
-
-    @Override
-    public String proxy() {
-      return mapStr("proxy");
-    }
-
-    @Override
-    public BigDecimal relayFee() {
-      return mapBigDecimal("relayfee");
-    }
-
-    @Override
-    public boolean testnet() {
-      return mapBool("testnet");
-    }
-
-    @Override
-    public int timeOffset() {
-      return mapInt("timeoffset");
-    }
-
-    @Override
-    public long version() {
-      return mapLong("version");
-    }
-
-    @Override
-    public long walletVersion() {
-      return mapLong("walletversion");
-    }
-
-  }
-
-  private class TxOutSetInfoWrapper extends MapWrapper implements TxOutSetInfo, Serializable {
-
-    public TxOutSetInfoWrapper(Map m) {
-      super(m);
-    }
-
-    @Override
-    public long height() {
-      return mapInt("height");
-    }
-
-    @Override
-    public String bestBlock() {
-      return mapStr("bestBlock");
-    }
-
-    @Override
-    public long transactions() {
-      return mapInt("transactions");
-    }
-
-    @Override
-    public long txouts() {
-      return mapInt("txouts");
-    }
-
-    @Override
-    public long bytesSerialized() {
-      return mapInt("bytes_serialized");
-    }
-
-    @Override
-    public String hashSerialized() {
-      return mapStr("hash_serialized");
-    }
-
-    @Override
-    public BigDecimal totalAmount() {
-      return mapBigDecimal("total_amount");
-    }
-  }
-
-  private class WalletInfoWrapper extends MapWrapper implements WalletInfo, Serializable {
-
-    public WalletInfoWrapper(Map m) {
-      super(m);
-    }
-
-    @Override
-    public long walletVersion() {
-      return mapLong("walletversion");
-    }
-
-    @Override
-    public BigDecimal balance() {
-      return mapBigDecimal("balance");
-    }
-
-    @Override
-    public BigDecimal unconfirmedBalance() {
-      return mapBigDecimal("unconfirmed_balance");
-    }
-
-    @Override
-    public BigDecimal immatureBalance() {
-      return mapBigDecimal("immature_balance");
-    }
-
-    @Override
-    public long txCount() {
-      return mapLong("txcount");
-    }
-
-    @Override
-    public long keyPoolOldest() {
-      return mapLong("keypoololdest");
-    }
-
-    @Override
-    public long keyPoolSize() {
-      return mapLong("keypoolsize");
-    }
-
-    @Override
-    public long unlockedUntil() {
-      return mapLong("unlocked_until");
-    }
-
-    @Override
-    public BigDecimal payTxFee() {
-      return mapBigDecimal("paytxfee");
-    }
-
-    @Override
-    public String hdMasterKeyId() {
-      return mapStr("hdmasterkeyid");
-    }
-  }
-
-  private class NetworkInfoWrapper extends MapWrapper implements NetworkInfo, Serializable {
-
-    public NetworkInfoWrapper(Map m) {
-      super(m);
-    }
-
-    @Override
-    public long version() {
-      return mapLong("version");
-    }
-
-    @Override
-    public String subversion() {
-      return mapStr("subversion");
-    }
-
-    @Override
-    public long protocolVersion() {
-      return mapLong("protocolversion");
-    }
-
-    @Override
-    public String localServices() {
-      return mapStr("localservices");
-    }
-
-    @Override
-    public boolean localRelay() {
-      return mapBool("localrelay");
-    }
-
-    @Override
-    public long timeOffset() {
-      return mapLong("timeoffset");
-    }
-
-    @Override
-    public long connections() {
-      return mapLong("connections");
-    }
-
-    @Override
-    public List<Network> networks() {
-      List<Map> maps = (List<Map>) m.get("networks");
-      List<Network> networks = new LinkedList<Network>();
-      for (Map m : maps) {
-        Network net = new NetworkWrapper(m);
-        networks.add(net);
-      }
-      return networks;
-    }
-
-    @Override
-    public BigDecimal relayFee() {
-      return mapBigDecimal("relayfee");
-    }
-
-    @Override
-    public List<String> localAddresses() {
-      return (List<String>) m.get("localaddresses");
-    }
-
-    @Override
-    public String warnings() {
-      return mapStr("warnings");
-    }
-  }
-
-  private class NetworkWrapper extends MapWrapper implements Network, Serializable {
-
-    public NetworkWrapper(Map m) {
-      super(m);
-    }
-
-    @Override
-    public String name() {
-      return mapStr("name");
-    }
-
-    @Override
-    public boolean limited() {
-      return mapBool("limited");
-    }
-
-    @Override
-    public boolean reachable() {
-      return mapBool("reachable");
-    }
-
-    @Override
-    public String proxy() {
-      return mapStr("proxy");
-    }
-
-    @Override
-    public boolean proxyRandomizeCredentials() {
-      return mapBool("proxy_randomize_credentials");
-    }
-  }
-
-  private class MultiSigWrapper extends MapWrapper implements MultiSig, Serializable {
-
-    public MultiSigWrapper(Map m) {
-      super(m);
-    }
-
-    @Override
-    public String address() {
-      return mapStr("address");
-    }
-
-    @Override
-    public String redeemScript() {
-      return mapStr("redeemScript");
-    }
-  }
-
-  private class NodeInfoWrapper extends MapWrapper implements NodeInfo, Serializable {
-
-    public NodeInfoWrapper(Map m) {
-      super(m);
-    }
-
-    @Override
-    public String addedNode() {
-      return mapStr("addednode");
-    }
-
-    @Override
-    public boolean connected() {
-      return mapBool("connected");
-    }
-
-    @Override
-    public List<Address> addresses() {
-      List<Map> maps = (List<Map>) m.get("addresses");
-      List<Address> addresses = new LinkedList<Address>();
-      for (Map m : maps) {
-        Address add = new AddressWrapper(m);
-        addresses.add(add);
-      }
-      return addresses;
-    }
-  }
-
-  private class AddressWrapper extends MapWrapper implements Address, Serializable {
-
-    public AddressWrapper(Map m) {
-      super(m);
-    }
-
-    @Override
-    public String address() {
-      return mapStr("address");
-    }
-
-    @Override
-    public String connected() {
-      return mapStr("connected");
-    }
-  }
-
-  @SuppressWarnings("serial")
-  private class TransactionWrapper extends MapWrapper implements Transaction, Serializable {
-
-    @SuppressWarnings("rawtypes")
-    public TransactionWrapper(Map m) {
-      super(m);
-    }
-
-    @Override
-    public String account() {
-      return mapStr(m, "account");
-    }
-
-    @Override
-    public String address() {
-      return mapStr(m, "address");
-    }
-
-    @Override
-    public String category() {
-      return mapStr(m, "category");
-    }
-
-    @Override
-    public BigDecimal amount() {
-      return mapBigDecimal(m, "amount");
-    }
-
-    @Override
-    public BigDecimal fee() {
-      return mapBigDecimal(m, "fee");
-    }
-
-    @Override
-    public int confirmations() {
-      return mapInt(m, "confirmations");
-    }
-
-    @Override
-    public String blockHash() {
-      return mapStr(m, "blockhash");
-    }
-
-    @Override
-    public int blockIndex() {
-      return mapInt(m, "blockindex");
-    }
-
-    @Override
-    public Date blockTime() {
-      return mapCTime(m, "blocktime");
-    }
-
-    @Override
-    public String txId() {
-      return mapStr(m, "txid");
-    }
-
-    @Override
-    public Date time() {
-      return mapCTime(m, "time");
-    }
-
-    @Override
-    public Date timeReceived() {
-      return mapCTime(m, "timereceived");
-    }
-
-    @Override
-    public String comment() {
-      return mapStr(m, "comment");
-    }
-
-    @Override
-    public String commentTo() {
-      return mapStr(m, "to");
-    }
-
-    @Override
-    public boolean generated() {
-      return mapBool(m, "generated");
-    }
-
-    private RawTransaction raw = null;
-
-    @Override
-    public RawTransaction raw() {
-      if (raw == null)
-        try {
-          raw = getRawTransaction(txId());
-        } catch (GenericRpcException ex) {
-          logger.warning(ex.getMessage());
-        }
-      return raw;
-    }
-
-    @Override
-    public String toString() {
-      return m.toString();
-    }
-  }
-  
-  @SuppressWarnings("serial")
-  private class TxOutWrapper extends MapWrapper implements TxOut, Serializable {
-
-    @SuppressWarnings("rawtypes")
-    public TxOutWrapper(Map m) {
-      super(m);
-    }
-
-    @Override
-    public String bestBlock() {
-      return mapStr("bestblock");
-    }
-
-    @Override
-    public long confirmations() {
-      return mapLong("confirmations");
-    }
-
-    @Override
-    public BigDecimal value() {
-      return mapBigDecimal("value");
-    }
-
-    @Override
-    public String asm() {
-      return mapStr("asm");
-    }
-
-    @Override
-    public String hex() {
-      return mapStr("hex");
-    }
-
-    @Override
-    public long reqSigs() {
-      return mapLong("reqSigs");
-    }
-
-    @Override
-    public String type() {
-      return mapStr("type");
-    }
-
-    @Override
-    public List<String> addresses() {
-      return (List<String>) m.get("addresses");
-    }
-
-    @Override
-    public long version() {
-      return mapLong("version");
-    }
-
-    @Override
-    public boolean coinBase() {
-      return mapBool("coinbase");
-    }
-  }
-
-  private class MiningInfoWrapper extends MapWrapper implements MiningInfo, Serializable {
-
-    public MiningInfoWrapper(Map m) {
-      super(m);
-    }
-
-    @Override
-    public int blocks() {
-      return mapInt("blocks");
-    }
-
-    @Override
-    public int currentBlockSize() {
-      return mapInt("currentblocksize");
-    }
-
-    @Override
-    public int currentBlockWeight() {
-      return mapInt("currentblockweight");
-    }
-
-    @Override
-    public int currentBlockTx() {
-      return mapInt("currentblocktx");
-    }
-
-    @Override
-    public BigDecimal difficulty() {
-      return mapBigDecimal("difficulty");
-    }
-
-    @Override
-    public String errors() {
-      return mapStr("errors");
-    }
-
-    @Override
-    public BigDecimal networkHashps() {
-      return mapBigDecimal("networkhashps");
-    }
-
-    @Override
-    public int pooledTx() {
-      return mapInt("pooledtx");
-    }
-
-    @Override
-    public boolean testNet() {
-      return mapBool("testnet");
-    }
-
-    @Override
-    public String chain() {
-      return mapStr("chain");
-    }
-  }
-
-  private class BlockChainInfoMapWrapper extends MapWrapper implements BlockChainInfo, Serializable {
-
-    public BlockChainInfoMapWrapper(Map m) {
-      super(m);
-    }
-
-    @Override
-    public String chain() {
-      return mapStr("chain");
-    }
-
-    @Override
-    public int blocks() {
-      return mapInt("blocks");
-    }
-
-    @Override
-    public String bestBlockHash() {
-      return mapStr("bestblockhash");
-    }
-
-    @Override
-    public BigDecimal difficulty() {
-      return mapBigDecimal("difficulty");
-    }
-
-    @Override
-    public BigDecimal verificationProgress() {
-      return mapBigDecimal("verificationprogress");
-    }
-
-    @Override
-    public String chainWork() {
-      return mapStr("chainwork");
-    }
-  }
-
-  @SuppressWarnings("serial")
-  private class SmartFeeResultMapWrapper extends MapWrapper implements SmartFeeResult, Serializable {
-
-    public SmartFeeResultMapWrapper(Map<String, ?> m) {
-      super(m);
-    }
-
-    @Override
-    public BigDecimal feeRate() {
-      return mapBigDecimal("feerate");
-    }
-
-    @Override
-    public int blocks() {
-      return mapInt("blocks");
-    }
-
-    @Override
-    public String errors() {
-      return mapStr("errors");
-    }
-  }
-
-  @SuppressWarnings("serial")
-  private class BlockMapWrapper extends MapWrapper implements Block, Serializable {
-
-    public BlockMapWrapper(Map<String, ?> m) {
-      super(m);
-    }
-
-    @Override
-    public String hash() {
-      return mapStr("hash");
-    }
-
-    @Override
-    public int confirmations() {
-      return mapInt("confirmations");
-    }
-
-    @Override
-    public int size() {
-      return mapInt("size");
-    }
-
-    @Override
-    public int height() {
-      return mapInt("height");
-    }
-
-    @Override
-    public int version() {
-      return mapInt("version");
-    }
-
-    @Override
-    public String merkleRoot() {
-      return mapStr("merkleroot");
-    }
-
-    @Override
-    public String chainwork() {
-      return mapStr("chainwork");
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<String> tx() {
-      return (List<String>) m.get("tx");
-    }
-
-    @Override
-    public Date time() {
-      return mapCTime("time");
-    }
-
-    @Override
-    public long nonce() {
-      return mapLong("nonce");
-    }
-
-    @Override
-    public String bits() {
-      return mapStr("bits");
-    }
-
-    @Override
-    public BigDecimal difficulty() {
-      return mapBigDecimal("difficulty");
-    }
-
-    @Override
-    public String previousHash() {
-      return mapStr("previousblockhash");
-    }
-
-    @Override
-    public String nextHash() {
-      return mapStr("nextblockhash");
-    }
-
-    @Override
-    public Block previous() throws GenericRpcException {
-      if (!m.containsKey("previousblockhash"))
-        return null;
-      return getBlock(previousHash());
-    }
-
-    @Override
-    public Block next() throws GenericRpcException {
-      if (!m.containsKey("nextblockhash"))
-        return null;
-      return getBlock(nextHash());
-    }
-
+    return new SmartFeeResultMapWrapper((Map<String, ?>) query("estimatesmartfee", blocks));
   }
 
   @Override
@@ -1089,10 +369,11 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<NodeInfo> getAddedNodeInfo(boolean dummy, String node) throws GenericRpcException {
-    List<Map> list = ((List<Map>) query("getaddednodeinfo", dummy, node));
+    List<Map<String, ?>> list = ((List<Map<String, ?>>) query("getaddednodeinfo", dummy, node));
     List<NodeInfo> nodeInfoList = new LinkedList<NodeInfo>();
-    for (Map m : list) {
+    for (Map<String, ?> m : list) {
       NodeInfoWrapper niw = new NodeInfoWrapper(m);
       nodeInfoList.add(niw);
     }
@@ -1100,13 +381,15 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public MultiSig createMultiSig(int nRequired, List<String> keys) throws GenericRpcException {
-    return new MultiSigWrapper((Map) query("createmultisig", nRequired, keys));
+    return new MultiSigWrapper((Map<String, ?>) query("createmultisig", nRequired, keys));
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public WalletInfo getWalletInfo() {
-    return new WalletInfoWrapper((Map) query("getwalletinfo"));
+    return new WalletInfoWrapper((Map<String, ?>) query("getwalletinfo"));
   }
 
   @Override
@@ -1125,6 +408,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<String> getRawMemPool() throws GenericRpcException {
     return (List<String>) query("getrawmempool");
   }
@@ -1139,331 +423,10 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return (String) query("getrawtransaction", txId);
   }
 
-  private class RawTransactionImpl extends MapWrapper implements RawTransaction, Serializable {
-
-    public RawTransactionImpl(Map<String, Object> tx) {
-      super(tx);
-    }
-
-    @Override
-    public String hex() {
-      return mapStr("hex");
-    }
-
-    @Override
-    public String txId() {
-      return mapStr("txid");
-    }
-
-    @Override
-    public int version() {
-      return mapInt("version");
-    }
-
-    @Override
-    public long lockTime() {
-      return mapLong("locktime");
-    }
-
-    @Override
-    public String hash() {
-      return mapStr("hash");
-    }
-
-    @Override
-    public long size() {
-      return mapLong("size");
-    }
-
-    @Override
-    public long vsize() {
-      return mapLong("vsize");
-    }
-
-    private class InImpl extends MapWrapper implements In, Serializable {
-
-      public InImpl(Map m) {
-        super(m);
-      }
-
-      @Override
-      public String txid() {
-        return mapStr("txid");
-      }
-
-      @Override
-      public Integer vout() {
-        return mapInt("vout");
-      }
-
-      @Override
-      public Map<String, Object> scriptSig() {
-        return (Map) m.get("scriptSig");
-      }
-
-      @Override
-      public long sequence() {
-        return mapLong("sequence");
-      }
-
-      @Override
-      public RawTransaction getTransaction() {
-        try {
-          return getRawTransaction(mapStr("txid"));
-        } catch (GenericRpcException ex) {
-          throw new RuntimeException(ex);
-        }
-      }
-
-      @Override
-      public Out getTransactionOutput() {
-        return getTransaction().vOut().get(mapInt("vout"));
-      }
-
-      @Override
-      public String scriptPubKey() {
-        return mapStr("scriptPubKey");
-      }
-
-      @Override
-      public String address() {
-          return mapStr("address");
-      }
-    }
-
-    @Override
-    public List<In> vIn() {
-      final List<Map<String, Object>> vIn = (List<Map<String, Object>>) m.get("vin");
-      return new AbstractList<In>() {
-
-        @Override
-        public In get(int index) {
-          return new InImpl(vIn.get(index));
-        }
-
-        @Override
-        public int size() {
-          return vIn.size();
-        }
-      };
-    }
-
-    private class OutImpl extends MapWrapper implements Out, Serializable {
-
-      public OutImpl(Map m) {
-        super(m);
-      }
-
-      @Override
-      public BigDecimal value() {
-        return mapBigDecimal("value");
-      }
-
-      @Override
-      public int n() {
-        return mapInt("n");
-      }
-
-      private class ScriptPubKeyImpl extends MapWrapper implements ScriptPubKey, Serializable {
-
-        public ScriptPubKeyImpl(Map m) {
-          super(m);
-        }
-
-        @Override
-        public String asm() {
-          return mapStr("asm");
-        }
-
-        @Override
-        public String hex() {
-          return mapStr("hex");
-        }
-
-        @Override
-        public int reqSigs() {
-          return mapInt("reqSigs");
-        }
-
-        @Override
-        public String type() {
-          return mapStr("type");
-        }
-
-        @Override
-        public List<String> addresses() {
-          return (List) m.get("addresses");
-        }
-
-      }
-
-      @Override
-      public ScriptPubKey scriptPubKey() {
-        return new ScriptPubKeyImpl((Map) m.get("scriptPubKey"));
-      }
-
-      @Override
-      public TxInput toInput() {
-        return new BasicTxInput(transaction().txId(), n());
-      }
-
-      @Override
-      public RawTransaction transaction() {
-        return RawTransactionImpl.this;
-      }
-
-    }
-
-    @Override
-    public List<Out> vOut() {
-      final List<Map<String, Object>> vOut = (List<Map<String, Object>>) m.get("vout");
-      return new AbstractList<Out>() {
-
-        @Override
-        public Out get(int index) {
-          return new OutImpl(vOut.get(index));
-        }
-
-        @Override
-        public int size() {
-          return vOut.size();
-        }
-      };
-    }
-
-    @Override
-    public String blockHash() {
-      return mapStr("blockhash");
-    }
-
-    @Override
-    public Integer confirmations() {
-      Object o = m.get("confirmations");
-      return o == null ? null : ((Number)o).intValue();
-    }
-
-    @Override
-    public Date time() {
-      return mapCTime("time");
-    }
-
-    @Override
-    public Date blocktime() {
-      return mapCTime("blocktime");
-    }
-
-    @Override
-    public long height()
-    {
-        return mapLong("height");
-    }
-
-  }
-
-  private class DecodedScriptImpl extends MapWrapper implements DecodedScript, Serializable {
-
-    public DecodedScriptImpl(Map m) {
-      super(m);
-    }
-
-    @Override
-    public String asm() {
-      return mapStr("asm");
-    }
-
-    @Override
-    public String hex() {
-      return mapStr("hex");
-    }
-
-    @Override
-    public String type() {
-      return mapStr("type");
-    }
-
-    @Override
-    public int reqSigs() {
-      return mapInt("reqSigs");
-    }
-
-    @Override
-    public List<String> addresses() {
-      return (List) m.get("addresses");
-    }
-
-    @Override
-    public String p2sh() {
-      return mapStr("p2sh");
-    }
-  }
-
-  public class NetTotalsImpl extends MapWrapper implements NetTotals, Serializable {
-
-    public NetTotalsImpl(Map m) {
-      super(m);
-    }
-
-    @Override
-    public long totalBytesRecv() {
-      return mapLong("totalbytesrecv");
-    }
-
-    @Override
-    public long totalBytesSent() {
-      return mapLong("totalbytessent");
-    }
-
-    @Override
-    public long timeMillis() {
-      return mapLong("timemillis");
-    }
-
-    public class uploadTargetImpl extends MapWrapper implements uploadTarget, Serializable {
-
-      public uploadTargetImpl(Map m) {
-        super(m);
-      }
-
-      @Override
-      public long timeFrame() {
-        return mapLong("timeframe");
-      }
-
-      @Override
-      public int target() {
-        return mapInt("target");
-      }
-
-      @Override
-      public boolean targetReached() {
-        return mapBool("targetreached");
-      }
-
-      @Override
-      public boolean serveHistoricalBlocks() {
-        return mapBool("servehistoricalblocks");
-      }
-
-      @Override
-      public long bytesLeftInCycle() {
-        return mapLong("bytesleftincycle");
-      }
-
-      @Override
-      public long timeLeftInCycle() {
-        return mapLong("timeleftincycle");
-      }
-    }
-
-    @Override
-    public NetTotals.uploadTarget uploadTarget() {
-      return new uploadTargetImpl((Map) m.get("uploadtarget"));
-    }
-  }
-
   @Override
+  @SuppressWarnings("unchecked")
   public RawTransaction getRawTransaction(String txId) throws GenericRpcException {
-    return new RawTransactionImpl((Map) query("getrawtransaction", txId, 1));
+    return new RawTransactionImpl((Map<String, Object>) query("getrawtransaction", txId, 1));
   }
 
   @Override
@@ -1515,246 +478,99 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return (Map<String, Number>) query("listaccounts", minConf, watchonly);
   }
 
-  private static class ReceivedAddressListWrapper extends AbstractList<ReceivedAddress> {
-
-    private final List<Map<String, Object>> wrappedList;
-
-    public ReceivedAddressListWrapper(List<Map<String, Object>> wrappedList) {
-      this.wrappedList = wrappedList;
-    }
-
-    @Override
-    public ReceivedAddress get(int index) {
-      final Map<String, Object> e = wrappedList.get(index);
-      return new ReceivedAddress() {
-
-        @Override
-        public String address() {
-          return (String) e.get("address");
-        }
-
-        @Override
-        public String account() {
-          return (String) e.get("account");
-        }
-
-        @Override
-        public BigDecimal amount() {
-          return (BigDecimal) e.get("amount");
-        }
-
-        @Override
-        public int confirmations() {
-          return ((Number) e.get("confirmations")).intValue();
-        }
-
-        @Override
-        public String toString() {
-          return e.toString();
-        }
-
-      };
-    }
-
-    @Override
-    public int size() {
-      return wrappedList.size();
-    }
-  }
-
   @Override
   @SuppressWarnings({ "unchecked", "rawtypes" })
   public List<LockedUnspent> listLockUnspent() {
     
-    return new ListMapWrapper<LockedUnspent>((List<Map>) query("listlockunspent")) {
-      
-      @SuppressWarnings({ "serial" })
+    return new ListMapWrapper<LockedUnspent>((List<Map<String, ?>>) query("listlockunspent")) {
       protected LockedUnspent wrap(final Map m) {
-        
-        return new LockedUnspent() {
-
-          @Override
-          public String txId() {
-            return (String) m.get("txid");
-          }
-
-          @Override
-          public int vout() {
-            return ((Long) m.get("vout")).intValue();
-          }
-        };
+        return new LockedUnspentWrapper(m);
       }
     };
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<ReceivedAddress> listReceivedByAddress() throws GenericRpcException {
-    return new ReceivedAddressListWrapper((List) query("listreceivedbyaddress"));
+    return new ReceivedAddressListWrapper((List<Map<String, ?>>) query("listreceivedbyaddress"));
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<ReceivedAddress> listReceivedByAddress(int minConf) throws GenericRpcException {
-    return new ReceivedAddressListWrapper((List) query("listreceivedbyaddress", minConf));
+    return new ReceivedAddressListWrapper((List<Map<String, ?>>) query("listreceivedbyaddress", minConf));
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<ReceivedAddress> listReceivedByAddress(int minConf, boolean includeEmpty) throws GenericRpcException {
-    return new ReceivedAddressListWrapper((List) query("listreceivedbyaddress", minConf, includeEmpty));
-  }
-
-  private class TransactionListMapWrapper extends ListMapWrapper<Transaction> {
-
-    public TransactionListMapWrapper(List<Map> list) {
-      super(list);
-    }
-
-    @Override
-    protected Transaction wrap(final Map m) {
-      return new TransactionWrapper(m);
-    }
-  }
-
-  private class TransactionsSinceBlockImpl implements TransactionsSinceBlock, Serializable {
-
-    public final List<Transaction> transactions;
-    public final String lastBlock;
-
-    public TransactionsSinceBlockImpl(Map r) {
-      this.transactions = new TransactionListMapWrapper((List) r.get("transactions"));
-      this.lastBlock = (String) r.get("lastblock");
-    }
-
-    @Override
-    public List<Transaction> transactions() {
-      return transactions;
-    }
-
-    @Override
-    public String lastBlock() {
-      return lastBlock;
-    }
-
+    return new ReceivedAddressListWrapper((List<Map<String, ?>>) query("listreceivedbyaddress", minConf, includeEmpty));
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public TransactionsSinceBlock listSinceBlock() throws GenericRpcException {
-    return new TransactionsSinceBlockImpl((Map) query("listsinceblock"));
+    return new TransactionsSinceBlockImpl((Map<String, ?>) query("listsinceblock"));
   }
 
   @Override
-  public TransactionsSinceBlock listSinceBlock(String blockHash) throws GenericRpcException {
-    return new TransactionsSinceBlockImpl((Map) query("listsinceblock", blockHash));
+  @SuppressWarnings("unchecked")
+ public TransactionsSinceBlock listSinceBlock(String blockHash) throws GenericRpcException {
+    return new TransactionsSinceBlockImpl((Map<String, ?>) query("listsinceblock", blockHash));
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public TransactionsSinceBlock listSinceBlock(String blockHash, int targetConfirmations) throws GenericRpcException {
-    return new TransactionsSinceBlockImpl((Map) query("listsinceblock", blockHash, targetConfirmations));
+    return new TransactionsSinceBlockImpl((Map<String, ?>) query("listsinceblock", blockHash, targetConfirmations));
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<Transaction> listTransactions() throws GenericRpcException {
-    return new TransactionListMapWrapper((List) query("listtransactions"));
+    return new TransactionListMapWrapper((List<Map<String, ?>>) query("listtransactions"));
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<Transaction> listTransactions(String account) throws GenericRpcException {
-    return new TransactionListMapWrapper((List) query("listtransactions", account));
+    return new TransactionListMapWrapper((List<Map<String, ?>>) query("listtransactions", account));
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<Transaction> listTransactions(String account, int count) throws GenericRpcException {
-    return new TransactionListMapWrapper((List) query("listtransactions", account, count));
+    return new TransactionListMapWrapper((List<Map<String, ?>>) query("listtransactions", account, count));
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<Transaction> listTransactions(String account, int count, int skip) throws GenericRpcException {
-    return new TransactionListMapWrapper((List) query("listtransactions", account, count, skip));
+    return new TransactionListMapWrapper((List<Map<String, ?>>) query("listtransactions", account, count, skip));
   }
 
-  private class UnspentListWrapper extends ListMapWrapper<Unspent> {
-
-    public UnspentListWrapper(List<Map> list) {
-      super(list);
-    }
-
-    @Override
-    protected Unspent wrap(final Map m) {
-      return new UnspentWrapper(m);
-    }
-  }
-
-  private class UnspentWrapper implements Unspent {
-    
-    final Map m;
-    
-    UnspentWrapper(Map m) {
-      this.m = m;
-    }
-
-    @Override
-    public String txid() {
-      return mapStr(m, "txid");
-    }
-
-    @Override
-    public Integer vout() {
-      return mapInt(m, "vout");
-    }
-
-    @Override
-    public String address() {
-      return mapStr(m, "address");
-    }
-
-    @Override
-    public String scriptPubKey() {
-      return mapStr(m, "scriptPubKey");
-    }
-
-    @Override
-    public String account() {
-      return mapStr(m, "account");
-    }
-
-    @Override
-    public BigDecimal amount() {
-      return mapBigDecimal(m, "amount");
-    }
-
-    @Override
-    public byte[] data() {
-      return mapHex(m, "data");
-    }
-
-    @Override
-    public int confirmations() {
-      return mapInt(m, "confirmations");
-    }
-
-    @Override
-    public String toString() {
-      return m.toString();
-    }
-  }
-  
   @Override
+  @SuppressWarnings("unchecked")
   public List<Unspent> listUnspent() throws GenericRpcException {
-    return new UnspentListWrapper((List) query("listunspent"));
+    return new UnspentListWrapper((List<Map<String, ?>>) query("listunspent"));
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<Unspent> listUnspent(int minConf) throws GenericRpcException {
-    return new UnspentListWrapper((List) query("listunspent", minConf));
+    return new UnspentListWrapper((List<Map<String, ?>>) query("listunspent", minConf));
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<Unspent> listUnspent(int minConf, int maxConf) throws GenericRpcException {
-    return new UnspentListWrapper((List) query("listunspent", minConf, maxConf));
+    return new UnspentListWrapper((List<Map<String, ?>>) query("listunspent", minConf, maxConf));
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<Unspent> listUnspent(int minConf, int maxConf, String... addresses) throws GenericRpcException {
-    return new UnspentListWrapper((List) query("listunspent", minConf, maxConf, addresses));
+    return new UnspentListWrapper((List<Map<String, ?>>) query("listunspent", minConf, maxConf, addresses));
   }
 
   public boolean lockUnspent(boolean unlock, String txid, int vout) throws GenericRpcException {
@@ -1833,13 +649,14 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return signRawTransaction(hex, inputs, privateKeys, "ALL");
   }
 
+  @SuppressWarnings({ "serial", "unchecked" })
   public String signRawTransaction(String hex, List<? extends TxInput> inputs, List<String> privateKeys, String sigHashType) {
-    List<Map> pInputs = null;
+    List<Map<String, ?>> pInputs = null;
 
     if (inputs != null) {
       pInputs = new ArrayList<>();
       for (final TxInput txInput : inputs) {
-        pInputs.add(new LinkedHashMap() {
+        pInputs.add(new LinkedHashMap<String, Object>() {
           {
             put("txid", txInput.txid());
             put("vout", txInput.vout());
@@ -1854,65 +671,25 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       }
     }
 
-    Map result = (Map) query("signrawtransaction", hex, pInputs, privateKeys, sigHashType); //if sigHashType is null it will return the default "ALL"
+    Map<String, ?> result = (Map<String, ?>) query("signrawtransaction", hex, pInputs, privateKeys, sigHashType); //if sigHashType is null it will return the default "ALL"
     if ((Boolean) result.get("complete"))
       return (String) result.get("hex");
     else
       throw new GenericRpcException("Incomplete");
   }
 
+  @SuppressWarnings("unchecked")
   public RawTransaction decodeRawTransaction(String hex) throws GenericRpcException {
-    Map result = (Map) query("decoderawtransaction", hex);
+    Map<String, ?> result = (Map<String, ?>) query("decoderawtransaction", hex);
     RawTransaction rawTransaction = new RawTransactionImpl(result);
     return rawTransaction.vOut().get(0).transaction();
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public AddressValidationResult validateAddress(String address) throws GenericRpcException {
-    final Map validationResult = (Map) query("validateaddress", address);
-    return new AddressValidationResult() {
-
-      @Override
-      public boolean isValid() {
-        return ((Boolean) validationResult.get("isvalid"));
-      }
-
-      @Override
-      public String address() {
-        return (String) validationResult.get("address");
-      }
-
-      @Override
-      public boolean isMine() {
-        return ((Boolean) validationResult.get("ismine"));
-      }
-
-      @Override
-      public boolean isScript() {
-        return ((Boolean) validationResult.get("isscript"));
-      }
-
-      @Override
-      public String pubKey() {
-        return (String) validationResult.get("pubkey");
-      }
-
-      @Override
-      public boolean isCompressed() {
-        return ((Boolean) validationResult.get("iscompressed"));
-      }
-
-      @Override
-      public String account() {
-        return (String) validationResult.get("account");
-      }
-
-      @Override
-      public String toString() {
-        return validationResult.toString();
-      }
-
-    };
+    final Map<String, ?> m = (Map<String, ?>) query("validateaddress", address);
+    return new AddressValidationResultWrapper(m);
   }
 
   @Override
@@ -1921,16 +698,19 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<String> generate(int numBlocks) throws BitcoinRPCException {
     return (List<String>) query("generate", numBlocks);
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<String> generate(int numBlocks, long maxTries) throws BitcoinRPCException {
     return (List<String>) query("generate", numBlocks, maxTries);
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<String> generateToAddress(int numBlocks, String address) throws BitcoinRPCException {
     return (List<String>) query("generatetoaddress", numBlocks, address);
   }
@@ -1956,116 +736,10 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
   }
 
-  private class PeerInfoWrapper extends MapWrapper implements PeerInfoResult, Serializable {
-
-    public PeerInfoWrapper(Map m) {
-      super(m);
-    }
-
-    @Override
-    public long getId() {
-      return mapLong("id");
-    }
-
-    @Override
-    public String getAddr() {
-      return mapStr("addr");
-    }
-
-    @Override
-    public String getAddrLocal() {
-      return mapStr("addrlocal");
-    }
-
-    @Override
-    public String getServices() {
-      return mapStr("services");
-    }
-
-    @Override
-    public long getLastSend() {
-      return mapLong("lastsend");
-    }
-
-    @Override
-    public long getLastRecv() {
-      return mapLong("lastrecv");
-    }
-
-    @Override
-    public long getBytesSent() {
-      return mapLong("bytessent");
-    }
-
-    @Override
-    public long getBytesRecv() {
-      return mapLong("bytesrecv");
-    }
-
-    @Override
-    public long getConnTime() {
-      return mapLong("conntime");
-    }
-
-    @Override
-    public int getTimeOffset() {
-      return mapInt("timeoffset");
-    }
-
-    @Override
-    public BigDecimal getPingTime() {
-      return mapBigDecimal("pingtime");
-    }
-
-    @Override
-    public long getVersion() {
-      return mapLong("version");
-    }
-
-    @Override
-    public String getSubVer() {
-      return mapStr("subver");
-    }
-
-    @Override
-    public boolean isInbound() {
-      return mapBool("inbound");
-    }
-
-    @Override
-    public int getStartingHeight() {
-      return mapInt("startingheight");
-    }
-
-    @Override
-    public long getBanScore() {
-      return mapLong("banscore");
-    }
-
-    @Override
-    public int getSyncedHeaders() {
-      return mapInt("synced_headers");
-    }
-
-    @Override
-    public int getSyncedBlocks() {
-      return mapInt("synced_blocks");
-    }
-
-    @Override
-    public boolean isWhiteListed() {
-      return mapBool("whitelisted");
-    }
-
-  }
-
   @Override
+  @SuppressWarnings("unchecked")
   public List<PeerInfoResult> getPeerInfo() throws GenericRpcException {
-    final List<Map> l = (List<Map>) query("getpeerinfo");
-//    final List<PeerInfoResult> res = new ArrayList<>(l.size());
-//    for (Map m : l)
-//      res.add(new PeerInfoWrapper(m));
-//    return res;
+    final List<Map<String, ?>> l = (List<Map<String, ?>>) query("getpeerinfo");
     return new AbstractList<PeerInfoResult>() {
 
       @Override
@@ -2106,13 +780,15 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
-  public NetTotals getNetTotals() throws GenericRpcException {
-    return new NetTotalsImpl((Map) query("getnettotals"));
+  @SuppressWarnings("unchecked")
+ public NetTotals getNetTotals() throws GenericRpcException {
+    return new NetTotalsImpl((Map<String, ?>) query("getnettotals"));
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public DecodedScript decodeScript(String hex) throws GenericRpcException {
-    return new DecodedScriptImpl((Map) query("decodescript", hex));
+    return new DecodedScriptImpl((Map<String, ?>) query("decodescript", hex));
   }
 
   @Override
@@ -2231,124 +907,1473 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Transaction getTransaction(String txId) {
-    return new TransactionWrapper((Map) query("gettransaction", txId));
+    return new TransactionWrapper((Map<String, ?>) query("gettransaction", txId));
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public TxOut getTxOut(String txId, long vout) throws GenericRpcException {
-    return new TxOutWrapper((Map) query("gettxout", txId, vout, true));
+    return new TxOutWrapper((Map<String, ?>) query("gettxout", txId, vout, true));
   }
 
+  @SuppressWarnings("unchecked")
   public TxOut getTxOut(String txId, long vout, boolean includemempool) throws GenericRpcException {
-    return new TxOutWrapper((Map) query("gettxout", txId, vout, includemempool));
+    return new TxOutWrapper((Map<String, ?>) query("gettxout", txId, vout, includemempool));
   }
 
-  
-  /**
-   * the result returned by
-   * {@link BitcoinJSONRPCClient#getAddressBalance(String)}
-   * 
-   * @author frankchen
-   * @create 2018年6月21日 上午10:38:17
-   */
+  @SuppressWarnings("unchecked")
+  public AddressBalance getAddressBalance(String address) {
+    return new AddressBalanceWrapper((Map<String, ?>) query("getaddressbalance", address));
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<AddressUtxo> getAddressUtxo(String address) {
+    return new AddressUtxoList((List<Map<String, ?>>) query("getaddressutxos", address));
+  }
+
+  @SuppressWarnings("serial")
   private static class AddressBalanceWrapper extends MapWrapper implements AddressBalance, Serializable
   {
-      public AddressBalanceWrapper(Map<String, Object> r)
-      {
-          super(r);
-      }
+    private AddressBalanceWrapper(Map<String, ?> r) {
+      super(r);
+    }
 
-      public long getBalance()
-      {
-          return this.mapLong("balance");
-      }
+    @Override
+    public long getBalance() {
+      return mapLong("balance");
+    }
 
-      public long getReceived()
-      {
-          return this.mapLong("received");
-      }
+    public long getReceived() {
+      return mapLong("received");
+    }
   }
 
-  /**
-   * the result return by {@link BitcoinJSONRPCClient#getAddressUtxo(String)}
-   */
-  private static class AddressUtxoWrapper implements AddressUtxo
-  {
-      private String address;
-      private String txid;
-      private int    outputIndex;
-      private String script;
-      private long   satoshis;
-      private long   height;
+  private static class AddressUtxoWrapper implements AddressUtxo {
+    private String address;
+    private String txid;
+    private int outputIndex;
+    private String script;
+    private long satoshis;
+    private long height;
 
-      public AddressUtxoWrapper(Map<String, Object> result)
-      {
-          address = getOrDefault(result, "address", "").toString();
-          txid = getOrDefault(result, "txid", "").toString();
-          outputIndex = getOrDefault(result, "outputIndex", 0);
-          script = getOrDefault(result, "script", "").toString();
-          satoshis = getOrDefault(result, "satoshis", 0L);
-          height = getOrDefault(result, "height", -1L);
-      }
-      
-      <T extends Object> T getOrDefault(Map<String, Object> result, String key, T defval) {
-        T val = (T) result.get(key);
-        return val != null ? val : defval;
-      }
+    private AddressUtxoWrapper(Map<String, ?> result) {
+      address = getOrDefault(result, "address", "").toString();
+      txid = getOrDefault(result, "txid", "").toString();
+      outputIndex = getOrDefault(result, "outputIndex", 0);
+      script = getOrDefault(result, "script", "").toString();
+      satoshis = getOrDefault(result, "satoshis", 0L);
+      height = getOrDefault(result, "height", -1L);
+    }
 
-      public String getAddress()
-      {
-          return address;
-      }
+    @SuppressWarnings("unchecked")
+    private <T extends Object> T getOrDefault(Map<String, ?> result, String key, T defval) {
+      T val = (T) result.get(key);
+      return val != null ? val : defval;
+    }
 
-      public String getTxid()
-      {
-          return txid;
-      }
+    public String getAddress() {
+      return address;
+    }
 
-      public int getOutputIndex()
-      {
-          return outputIndex;
-      }
+    public String getTxid() {
+      return txid;
+    }
 
-      public String getScript()
-      {
-          return script;
-      }
+    public int getOutputIndex() {
+      return outputIndex;
+    }
 
-      public long getSatoshis()
-      {
-          return satoshis;
-      }
+    public String getScript() {
+      return script;
+    }
 
-      public long getHeight()
-      {
-          return height;
-      }
+    public long getSatoshis() {
+      return satoshis;
+    }
+
+    public long getHeight() {
+      return height;
+    }
   }
   
-  private static class AddressUtxoList extends ListMapWrapper<AddressUtxo>
-  {
-      public AddressUtxoList(List<Map> list)
-      {
-          super((List<Map>)list);
+  private static class AddressUtxoList extends ListMapWrapper<AddressUtxo> {
+    
+    private AddressUtxoList(List<Map<String, ?>> list) {
+          super((List<Map<String, ?>>)list);
       }
 
       @Override
-      protected AddressUtxo wrap(Map m)
-      {
+      protected AddressUtxo wrap(Map<String, ?> m) {
           return new AddressUtxoWrapper(m);
       }
   }
   
-  public AddressBalance getAddressBalance(String address)
-  {
-      return new AddressBalanceWrapper((Map<String, Object>)query("getaddressbalance", address));
+  @SuppressWarnings("serial")
+  private class AddressValidationResultWrapper extends MapWrapper implements AddressValidationResult {
+
+    private AddressValidationResultWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public boolean isValid() {
+      return mapBool("isvalid");
+    }
+
+    @Override
+    public String address() {
+      return mapStr("address");
+    }
+
+    @Override
+    public boolean isMine() {
+      return mapBool("ismine");
+    }
+
+    @Override
+    public boolean isScript() {
+      return mapBool("isscript");
+    }
+
+    @Override
+    public String pubKey() {
+      return mapStr("pubkey");
+    }
+
+    @Override
+    public boolean isCompressed() {
+      return mapBool("iscompressed");
+    }
+
+    @Override
+    public String account() {
+      return mapStr("account");
+    }
+  };
+  
+  @SuppressWarnings("serial")
+  private class AddressWrapper extends MapWrapper implements Address, Serializable {
+
+    private AddressWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public String address() {
+      return mapStr("address");
+    }
+
+    @Override
+    public String connected() {
+      return mapStr("connected");
+    }
   }
 
-  public List<AddressUtxo> getAddressUtxo(String address)
-  {
-      return new AddressUtxoList((List<Map>)query("getaddressutxos", address));
+  @SuppressWarnings("serial")
+  private class BlockChainInfoMapWrapper extends MapWrapper implements BlockChainInfo, Serializable {
+
+    private BlockChainInfoMapWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public String chain() {
+      return mapStr("chain");
+    }
+
+    @Override
+    public int blocks() {
+      return mapInt("blocks");
+    }
+
+    @Override
+    public String bestBlockHash() {
+      return mapStr("bestblockhash");
+    }
+
+    @Override
+    public BigDecimal difficulty() {
+      return mapBigDecimal("difficulty");
+    }
+
+    @Override
+    public BigDecimal verificationProgress() {
+      return mapBigDecimal("verificationprogress");
+    }
+
+    @Override
+    public String chainWork() {
+      return mapStr("chainwork");
+    }
+  }
+
+  @SuppressWarnings("serial")
+  private class BlockMapWrapper extends MapWrapper implements Block, Serializable {
+
+    private BlockMapWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public String hash() {
+      return mapStr("hash");
+    }
+
+    @Override
+    public int confirmations() {
+      return mapInt("confirmations");
+    }
+
+    @Override
+    public int size() {
+      return mapInt("size");
+    }
+
+    @Override
+    public int height() {
+      return mapInt("height");
+    }
+
+    @Override
+    public int version() {
+      return mapInt("version");
+    }
+
+    @Override
+    public String merkleRoot() {
+      return mapStr("merkleroot");
+    }
+
+    @Override
+    public String chainwork() {
+      return mapStr("chainwork");
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<String> tx() {
+      return (List<String>) m.get("tx");
+    }
+
+    @Override
+    public Date time() {
+      return mapDate("time");
+    }
+
+    @Override
+    public long nonce() {
+      return mapLong("nonce");
+    }
+
+    @Override
+    public String bits() {
+      return mapStr("bits");
+    }
+
+    @Override
+    public BigDecimal difficulty() {
+      return mapBigDecimal("difficulty");
+    }
+
+    @Override
+    public String previousHash() {
+      return mapStr("previousblockhash");
+    }
+
+    @Override
+    public String nextHash() {
+      return mapStr("nextblockhash");
+    }
+
+    @Override
+    public Block previous() throws GenericRpcException {
+      if (!m.containsKey("previousblockhash"))
+        return null;
+      return getBlock(previousHash());
+    }
+
+    @Override
+    public Block next() throws GenericRpcException {
+      if (!m.containsKey("nextblockhash"))
+        return null;
+      return getBlock(nextHash());
+    }
+
+  }
+
+  @SuppressWarnings("serial")
+  private class DecodedScriptImpl extends MapWrapper implements DecodedScript, Serializable {
+
+    private DecodedScriptImpl(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public String asm() {
+      return mapStr("asm");
+    }
+
+    @Override
+    public String hex() {
+      return mapStr("hex");
+    }
+
+    @Override
+    public String type() {
+      return mapStr("type");
+    }
+
+    @Override
+    public int reqSigs() {
+      return mapInt("reqSigs");
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<String> addresses() {
+      return (List<String>) m.get("addresses");
+    }
+
+    @Override
+    public String p2sh() {
+      return mapStr("p2sh");
+    }
+  }
+
+  @SuppressWarnings("serial")
+  private class InfoWrapper extends MapWrapper implements Info, Serializable {
+
+    private InfoWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public BigDecimal balance() {
+      return mapBigDecimal("balance");
+    }
+
+    @Override
+    public int blocks() {
+      return mapInt("blocks");
+    }
+
+    @Override
+    public int connections() {
+      return mapInt("connections");
+    }
+
+    @Override
+    public BigDecimal difficulty() {
+      return mapBigDecimal("difficulty");
+    }
+
+    @Override
+    public String errors() {
+      return mapStr("errors");
+    }
+
+    @Override
+    public long keyPoolOldest() {
+      return mapLong("keypoololdest");
+    }
+
+    @Override
+    public long keyPoolSize() {
+      return mapLong("keypoolsize");
+    }
+
+    @Override
+    public BigDecimal payTxFee() {
+      return mapBigDecimal("paytxfee");
+    }
+
+    @Override
+    public long protocolVersion() {
+      return mapLong("protocolversion");
+    }
+
+    @Override
+    public String proxy() {
+      return mapStr("proxy");
+    }
+
+    @Override
+    public BigDecimal relayFee() {
+      return mapBigDecimal("relayfee");
+    }
+
+    @Override
+    public boolean testnet() {
+      return mapBool("testnet");
+    }
+
+    @Override
+    public int timeOffset() {
+      return mapInt("timeoffset");
+    }
+
+    @Override
+    public long version() {
+      return mapLong("version");
+    }
+
+    @Override
+    public long walletVersion() {
+      return mapLong("walletversion");
+    }
+
+  }
+
+  @SuppressWarnings("serial")
+  private class LockedUnspentWrapper extends MapWrapper implements LockedUnspent {
+
+    private LockedUnspentWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public String txId() {
+      return (String) m.get("txid");
+    }
+
+    @Override
+    public int vout() {
+      return ((Long) m.get("vout")).intValue();
+    }
+  }
+  
+  @SuppressWarnings("serial")
+  private class MiningInfoWrapper extends MapWrapper implements MiningInfo, Serializable {
+
+    private MiningInfoWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public int blocks() {
+      return mapInt("blocks");
+    }
+
+    @Override
+    public int currentBlockSize() {
+      return mapInt("currentblocksize");
+    }
+
+    @Override
+    public int currentBlockWeight() {
+      return mapInt("currentblockweight");
+    }
+
+    @Override
+    public int currentBlockTx() {
+      return mapInt("currentblocktx");
+    }
+
+    @Override
+    public BigDecimal difficulty() {
+      return mapBigDecimal("difficulty");
+    }
+
+    @Override
+    public String errors() {
+      return mapStr("errors");
+    }
+
+    @Override
+    public BigDecimal networkHashps() {
+      return mapBigDecimal("networkhashps");
+    }
+
+    @Override
+    public int pooledTx() {
+      return mapInt("pooledtx");
+    }
+
+    @Override
+    public boolean testNet() {
+      return mapBool("testnet");
+    }
+
+    @Override
+    public String chain() {
+      return mapStr("chain");
+    }
+  }
+
+  @SuppressWarnings("serial")
+  private class MultiSigWrapper extends MapWrapper implements MultiSig, Serializable {
+
+    private MultiSigWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public String address() {
+      return mapStr("address");
+    }
+
+    @Override
+    public String redeemScript() {
+      return mapStr("redeemScript");
+    }
+  }
+
+  @SuppressWarnings("serial")
+  private class NetTotalsImpl extends MapWrapper implements NetTotals, Serializable {
+
+    private NetTotalsImpl(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public long totalBytesRecv() {
+      return mapLong("totalbytesrecv");
+    }
+
+    @Override
+    public long totalBytesSent() {
+      return mapLong("totalbytessent");
+    }
+
+    @Override
+    public long timeMillis() {
+      return mapLong("timemillis");
+    }
+
+    private class uploadTargetImpl extends MapWrapper implements uploadTarget, Serializable {
+
+      public uploadTargetImpl(Map<String, ?> m) {
+        super(m);
+      }
+
+      @Override
+      public long timeFrame() {
+        return mapLong("timeframe");
+      }
+
+      @Override
+      public int target() {
+        return mapInt("target");
+      }
+
+      @Override
+      public boolean targetReached() {
+        return mapBool("targetreached");
+      }
+
+      @Override
+      public boolean serveHistoricalBlocks() {
+        return mapBool("servehistoricalblocks");
+      }
+
+      @Override
+      public long bytesLeftInCycle() {
+        return mapLong("bytesleftincycle");
+      }
+
+      @Override
+      public long timeLeftInCycle() {
+        return mapLong("timeleftincycle");
+      }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public NetTotals.uploadTarget uploadTarget() {
+      return new uploadTargetImpl((Map<String, ?>) m.get("uploadtarget"));
+    }
+  }
+
+  @SuppressWarnings("serial")
+  private class NetworkInfoWrapper extends MapWrapper implements NetworkInfo, Serializable {
+
+    private NetworkInfoWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public long version() {
+      return mapLong("version");
+    }
+
+    @Override
+    public String subversion() {
+      return mapStr("subversion");
+    }
+
+    @Override
+    public long protocolVersion() {
+      return mapLong("protocolversion");
+    }
+
+    @Override
+    public String localServices() {
+      return mapStr("localservices");
+    }
+
+    @Override
+    public boolean localRelay() {
+      return mapBool("localrelay");
+    }
+
+    @Override
+    public long timeOffset() {
+      return mapLong("timeoffset");
+    }
+
+    @Override
+    public long connections() {
+      return mapLong("connections");
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Network> networks() {
+      List<Map<String, ?>> maps = (List<Map<String, ?>>) m.get("networks");
+      List<Network> networks = new LinkedList<Network>();
+      for (Map<String, ?> m : maps) {
+        Network net = new NetworkWrapper(m);
+        networks.add(net);
+      }
+      return networks;
+    }
+
+    @Override
+    public BigDecimal relayFee() {
+      return mapBigDecimal("relayfee");
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<String> localAddresses() {
+      return (List<String>) m.get("localaddresses");
+    }
+
+    @Override
+    public String warnings() {
+      return mapStr("warnings");
+    }
+  }
+
+  @SuppressWarnings("serial")
+  private class NetworkWrapper extends MapWrapper implements Network, Serializable {
+
+    private NetworkWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public String name() {
+      return mapStr("name");
+    }
+
+    @Override
+    public boolean limited() {
+      return mapBool("limited");
+    }
+
+    @Override
+    public boolean reachable() {
+      return mapBool("reachable");
+    }
+
+    @Override
+    public String proxy() {
+      return mapStr("proxy");
+    }
+
+    @Override
+    public boolean proxyRandomizeCredentials() {
+      return mapBool("proxy_randomize_credentials");
+    }
+  }
+
+  @SuppressWarnings("serial")
+  private class NodeInfoWrapper extends MapWrapper implements NodeInfo, Serializable {
+
+    private NodeInfoWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public String addedNode() {
+      return mapStr("addednode");
+    }
+
+    @Override
+    public boolean connected() {
+      return mapBool("connected");
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Address> addresses() {
+      List<Map<String, ?>> maps = (List<Map<String, ?>>) m.get("addresses");
+      List<Address> addresses = new LinkedList<Address>();
+      for (Map<String, ?> m : maps) {
+        Address add = new AddressWrapper(m);
+        addresses.add(add);
+      }
+      return addresses;
+    }
+  }
+
+  @SuppressWarnings("serial")
+  private class PeerInfoWrapper extends MapWrapper implements PeerInfoResult, Serializable {
+
+    private PeerInfoWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public long getId() {
+      return mapLong("id");
+    }
+
+    @Override
+    public String getAddr() {
+      return mapStr("addr");
+    }
+
+    @Override
+    public String getAddrLocal() {
+      return mapStr("addrlocal");
+    }
+
+    @Override
+    public String getServices() {
+      return mapStr("services");
+    }
+
+    @Override
+    public long getLastSend() {
+      return mapLong("lastsend");
+    }
+
+    @Override
+    public long getLastRecv() {
+      return mapLong("lastrecv");
+    }
+
+    @Override
+    public long getBytesSent() {
+      return mapLong("bytessent");
+    }
+
+    @Override
+    public long getBytesRecv() {
+      return mapLong("bytesrecv");
+    }
+
+    @Override
+    public long getConnTime() {
+      return mapLong("conntime");
+    }
+
+    @Override
+    public int getTimeOffset() {
+      return mapInt("timeoffset");
+    }
+
+    @Override
+    public BigDecimal getPingTime() {
+      return mapBigDecimal("pingtime");
+    }
+
+    @Override
+    public long getVersion() {
+      return mapLong("version");
+    }
+
+    @Override
+    public String getSubVer() {
+      return mapStr("subver");
+    }
+
+    @Override
+    public boolean isInbound() {
+      return mapBool("inbound");
+    }
+
+    @Override
+    public int getStartingHeight() {
+      return mapInt("startingheight");
+    }
+
+    @Override
+    public long getBanScore() {
+      return mapLong("banscore");
+    }
+
+    @Override
+    public int getSyncedHeaders() {
+      return mapInt("synced_headers");
+    }
+
+    @Override
+    public int getSyncedBlocks() {
+      return mapInt("synced_blocks");
+    }
+
+    @Override
+    public boolean isWhiteListed() {
+      return mapBool("whitelisted");
+    }
+
+  }
+
+  @SuppressWarnings("serial")
+  private class RawTransactionImpl extends MapWrapper implements RawTransaction, Serializable {
+
+    private RawTransactionImpl(Map<String, ?> tx) {
+      super(tx);
+    }
+
+    @Override
+    public String hex() {
+      return mapStr("hex");
+    }
+
+    @Override
+    public String txId() {
+      return mapStr("txid");
+    }
+
+    @Override
+    public int version() {
+      return mapInt("version");
+    }
+
+    @Override
+    public long lockTime() {
+      return mapLong("locktime");
+    }
+
+    @Override
+    public String hash() {
+      return mapStr("hash");
+    }
+
+    @Override
+    public long size() {
+      return mapLong("size");
+    }
+
+    @Override
+    public long vsize() {
+      return mapLong("vsize");
+    }
+
+    private class InImpl extends MapWrapper implements In, Serializable {
+
+      private InImpl(Map<String, ?> m) {
+        super(m);
+      }
+
+      @Override
+      public String txid() {
+        return mapStr("txid");
+      }
+
+      @Override
+      public Integer vout() {
+        return mapInt("vout");
+      }
+
+      @Override
+      @SuppressWarnings("unchecked")
+      public Map<String, Object> scriptSig() {
+        return (Map<String, Object>) m.get("scriptSig");
+      }
+
+      @Override
+      public long sequence() {
+        return mapLong("sequence");
+      }
+
+      @Override
+      public RawTransaction getTransaction() {
+        try {
+          return getRawTransaction(mapStr("txid"));
+        } catch (GenericRpcException ex) {
+          throw new RuntimeException(ex);
+        }
+      }
+
+      @Override
+      public Out getTransactionOutput() {
+        return getTransaction().vOut().get(mapInt("vout"));
+      }
+
+      @Override
+      public String scriptPubKey() {
+        return mapStr("scriptPubKey");
+      }
+
+      @Override
+      public String address() {
+          return mapStr("address");
+      }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<In> vIn() {
+      final List<Map<String, ?>> vIn = (List<Map<String, ?>>) m.get("vin");
+      return new AbstractList<In>() {
+
+        @Override
+        public In get(int index) {
+          return new InImpl(vIn.get(index));
+        }
+
+        @Override
+        public int size() {
+          return vIn.size();
+        }
+      };
+    }
+
+    private class OutImpl extends MapWrapper implements Out, Serializable {
+
+      private OutImpl(Map<String, ?> m) {
+        super(m);
+      }
+
+      @Override
+      public BigDecimal value() {
+        return mapBigDecimal("value");
+      }
+
+      @Override
+      public int n() {
+        return mapInt("n");
+      }
+
+      private class ScriptPubKeyImpl extends MapWrapper implements ScriptPubKey, Serializable {
+
+        public ScriptPubKeyImpl(Map<String, ?> m) {
+          super(m);
+        }
+
+        @Override
+        public String asm() {
+          return mapStr("asm");
+        }
+
+        @Override
+        public String hex() {
+          return mapStr("hex");
+        }
+
+        @Override
+        public int reqSigs() {
+          return mapInt("reqSigs");
+        }
+
+        @Override
+        public String type() {
+          return mapStr("type");
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public List<String> addresses() {
+          return (List<String>) m.get("addresses");
+        }
+
+      }
+
+      @Override
+      @SuppressWarnings("unchecked")
+      public ScriptPubKey scriptPubKey() {
+        return new ScriptPubKeyImpl((Map<String, ?>) m.get("scriptPubKey"));
+      }
+
+      @Override
+      public TxInput toInput() {
+        return new BasicTxInput(transaction().txId(), n());
+      }
+
+      @Override
+      public RawTransaction transaction() {
+        return RawTransactionImpl.this;
+      }
+
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Out> vOut() {
+      final List<Map<String, ?>> vOut = (List<Map<String, ?>>) m.get("vout");
+      return new AbstractList<Out>() {
+
+        @Override
+        public Out get(int index) {
+          return new OutImpl(vOut.get(index));
+        }
+
+        @Override
+        public int size() {
+          return vOut.size();
+        }
+      };
+    }
+
+    @Override
+    public String blockHash() {
+      return mapStr("blockhash");
+    }
+
+    @Override
+    public Integer confirmations() {
+      Object o = m.get("confirmations");
+      return o == null ? null : ((Number)o).intValue();
+    }
+
+    @Override
+    public Date time() {
+      return mapDate("time");
+    }
+
+    @Override
+    public Date blocktime() {
+      return mapDate("blocktime");
+    }
+
+    @Override
+    public long height()
+    {
+        return mapLong("height");
+    }
+  }
+
+  private static class ReceivedAddressListWrapper extends AbstractList<ReceivedAddress> {
+
+    private final List<Map<String, ?>> wrappedList;
+
+    private ReceivedAddressListWrapper(List<Map<String, ?>> wrappedList) {
+      this.wrappedList = wrappedList;
+    }
+
+    @Override
+    public ReceivedAddress get(int index) {
+      final Map<String, ?> m = wrappedList.get(index);
+      return new ReceivedAddressWrapper(m);
+    }
+
+    @Override
+    public int size() {
+      return wrappedList.size();
+    }
+  }
+
+  @SuppressWarnings("serial")
+  private static class ReceivedAddressWrapper extends MapWrapper implements ReceivedAddress {
+
+    private ReceivedAddressWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public String address() {
+      return mapStr("address");
+    }
+
+    @Override
+    public String account() {
+      return mapStr("account");
+    }
+
+    @Override
+    public BigDecimal amount() {
+      return mapBigDecimal("amount");
+    }
+
+    @Override
+    public int confirmations() {
+      return mapInt("confirmations");
+    }
+  }
+
+  @SuppressWarnings("serial")
+  private class SmartFeeResultMapWrapper extends MapWrapper implements SmartFeeResult, Serializable {
+
+    private SmartFeeResultMapWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public BigDecimal feeRate() {
+      return mapBigDecimal("feerate");
+    }
+
+    @Override
+    public int blocks() {
+      return mapInt("blocks");
+    }
+
+    @Override
+    public String errors() {
+      return mapStr("errors");
+    }
+  }
+
+  @SuppressWarnings("serial")
+  private class TransactionWrapper extends MapWrapper implements Transaction, Serializable {
+
+    private TransactionWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public String account() {
+      return mapStr("account");
+    }
+
+    @Override
+    public String address() {
+      return mapStr("address");
+    }
+
+    @Override
+    public String category() {
+      return mapStr("category");
+    }
+
+    @Override
+    public BigDecimal amount() {
+      return mapBigDecimal("amount");
+    }
+
+    @Override
+    public BigDecimal fee() {
+      return mapBigDecimal("fee");
+    }
+
+    @Override
+    public int confirmations() {
+      return mapInt("confirmations");
+    }
+
+    @Override
+    public String blockHash() {
+      return mapStr("blockhash");
+    }
+
+    @Override
+    public int blockIndex() {
+      return mapInt("blockindex");
+    }
+
+    @Override
+    public Date blockTime() {
+      return mapDate("blocktime");
+    }
+
+    @Override
+    public String txId() {
+      return mapStr("txid");
+    }
+
+    @Override
+    public Date time() {
+      return mapDate("time");
+    }
+
+    @Override
+    public Date timeReceived() {
+      return mapDate("timereceived");
+    }
+
+    @Override
+    public String comment() {
+      return mapStr("comment");
+    }
+
+    @Override
+    public String commentTo() {
+      return mapStr("to");
+    }
+
+    @Override
+    public boolean generated() {
+      return mapBool("generated");
+    }
+
+    private RawTransaction raw = null;
+
+    @Override
+    public RawTransaction raw() {
+      if (raw == null)
+        try {
+          raw = getRawTransaction(txId());
+        } catch (GenericRpcException ex) {
+          logger.warning(ex.getMessage());
+        }
+      return raw;
+    }
+
+    @Override
+    public String toString() {
+      return m.toString();
+    }
+  }
+  
+  private class TransactionListMapWrapper extends ListMapWrapper<Transaction> {
+
+    private TransactionListMapWrapper(List<Map<String, ?>> list) {
+      super(list);
+    }
+
+    @Override
+    protected Transaction wrap(Map<String, ?> m) {
+      return new TransactionWrapper(m);
+    }
+  }
+
+  @SuppressWarnings("serial")
+  private class TransactionsSinceBlockImpl implements TransactionsSinceBlock, Serializable {
+
+    private final List<Transaction> transactions;
+    private final String lastBlock;
+
+    @SuppressWarnings("unchecked")
+    private TransactionsSinceBlockImpl(Map<String, ?> r) {
+      this.transactions = new TransactionListMapWrapper((List<Map<String, ?>>) r.get("transactions"));
+      this.lastBlock = (String) r.get("lastblock");
+    }
+
+    @Override
+    public List<Transaction> transactions() {
+      return transactions;
+    }
+
+    @Override
+    public String lastBlock() {
+      return lastBlock;
+    }
+  }
+  
+  @SuppressWarnings("serial")
+  private class TxOutSetInfoWrapper extends MapWrapper implements TxOutSetInfo, Serializable {
+
+    private TxOutSetInfoWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public long height() {
+      return mapInt("height");
+    }
+
+    @Override
+    public String bestBlock() {
+      return mapStr("bestBlock");
+    }
+
+    @Override
+    public long transactions() {
+      return mapInt("transactions");
+    }
+
+    @Override
+    public long txouts() {
+      return mapInt("txouts");
+    }
+
+    @Override
+    public long bytesSerialized() {
+      return mapInt("bytes_serialized");
+    }
+
+    @Override
+    public String hashSerialized() {
+      return mapStr("hash_serialized");
+    }
+
+    @Override
+    public BigDecimal totalAmount() {
+      return mapBigDecimal("total_amount");
+    }
+  }
+
+  @SuppressWarnings("serial")
+  private class TxOutWrapper extends MapWrapper implements TxOut, Serializable {
+
+    private TxOutWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public String bestBlock() {
+      return mapStr("bestblock");
+    }
+
+    @Override
+    public long confirmations() {
+      return mapLong("confirmations");
+    }
+
+    @Override
+    public BigDecimal value() {
+      return mapBigDecimal("value");
+    }
+
+    @Override
+    public String asm() {
+      return mapStr("asm");
+    }
+
+    @Override
+    public String hex() {
+      return mapStr("hex");
+    }
+
+    @Override
+    public long reqSigs() {
+      return mapLong("reqSigs");
+    }
+
+    @Override
+    public String type() {
+      return mapStr("type");
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<String> addresses() {
+      return (List<String>) m.get("addresses");
+    }
+
+    @Override
+    public long version() {
+      return mapLong("version");
+    }
+
+    @Override
+    public boolean coinBase() {
+      return mapBool("coinbase");
+    }
+  }
+
+  private class UnspentListWrapper extends ListMapWrapper<Unspent> {
+
+    private UnspentListWrapper(List<Map<String, ?>> list) {
+      super(list);
+    }
+
+    @Override
+    protected Unspent wrap(Map<String, ?> m) {
+      return new UnspentWrapper(m);
+    }
+  }
+
+  @SuppressWarnings("serial")
+  private class UnspentWrapper extends MapWrapper implements Unspent {
+    
+    private UnspentWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public String txid() {
+      return mapStr("txid");
+    }
+
+    @Override
+    public Integer vout() {
+      return mapInt("vout");
+    }
+
+    @Override
+    public String address() {
+      return mapStr("address");
+    }
+
+    @Override
+    public String scriptPubKey() {
+      return mapStr("scriptPubKey");
+    }
+
+    @Override
+    public String account() {
+      return mapStr("account");
+    }
+
+    @Override
+    public BigDecimal amount() {
+      return mapBigDecimal("amount");
+    }
+
+    @Override
+    public byte[] data() {
+      return mapHex("data");
+    }
+
+    @Override
+    public int confirmations() {
+      return mapInt("confirmations");
+    }
+  }
+  
+  @SuppressWarnings("serial")
+  private class WalletInfoWrapper extends MapWrapper implements WalletInfo, Serializable {
+
+    private WalletInfoWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    public long walletVersion() {
+      return mapLong("walletversion");
+    }
+
+    @Override
+    public BigDecimal balance() {
+      return mapBigDecimal("balance");
+    }
+
+    @Override
+    public BigDecimal unconfirmedBalance() {
+      return mapBigDecimal("unconfirmed_balance");
+    }
+
+    @Override
+    public BigDecimal immatureBalance() {
+      return mapBigDecimal("immature_balance");
+    }
+
+    @Override
+    public long txCount() {
+      return mapLong("txcount");
+    }
+
+    @Override
+    public long keyPoolOldest() {
+      return mapLong("keypoololdest");
+    }
+
+    @Override
+    public long keyPoolSize() {
+      return mapLong("keypoolsize");
+    }
+
+    @Override
+    public long unlockedUntil() {
+      return mapLong("unlocked_until");
+    }
+
+    @Override
+    public BigDecimal payTxFee() {
+      return mapBigDecimal("paytxfee");
+    }
+
+    @Override
+    public String hdMasterKeyId() {
+      return mapStr("hdmasterkeyid");
+    }
   }
 }
