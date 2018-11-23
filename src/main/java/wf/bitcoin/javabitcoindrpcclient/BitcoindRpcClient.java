@@ -81,6 +81,15 @@ public interface BitcoindRpcClient {
   Block getBlock(String blockHash) throws GenericRpcException;
 
   /**
+   * The getblock RPC gets a block with a particular header hash from the local block database as a serialized block.
+   * 
+   * @param blockHash The hash of the header of the block to get, encoded as hex in RPC byte order
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getblock">getblock</a>
+   */
+  String getRawBlock(String blockHash) throws GenericRpcException;
+
+  /**
    * The getblockchaininfo RPC provides information about the current state of the block chain.
    * 
    * @return Information about the current state of the local block chain
@@ -248,6 +257,25 @@ public interface BitcoindRpcClient {
    * @see <a href="https://bitcoin.org/en/developer-reference#submitblock">submitblock</a>
    */
   void submitBlock(String hexData);
+
+  /**
+   * Permanently marks a block as invalid, as if it violated a consensus rule.
+   *
+   * @param blockHash the hash of the block to mark as invalid
+   * 
+   * [TODO] Add to https://bitcoin.org/en/developer-reference
+   */
+  void invalidateBlock(String blockHash) throws GenericRpcException;
+
+  /**
+   * Removes invalidity status of a block and its descendants, reconsider them for activation. 
+   * This can be used to undo the effects of invalidateblock.
+   *
+   * @param blockHash The hash of the block to reconsider
+   * 
+   * [TODO] Add to https://bitcoin.org/en/developer-reference
+   */
+  void reconsiderBlock(String blockHash) throws GenericRpcException;
 
   /*
    * Network
@@ -1160,24 +1188,6 @@ public interface BitcoindRpcClient {
  /***************************************************************************************************************************/
  
  /**
-  * get the balance of specified address</br>
-  * <b>PAY ATTENTION</b>
-  * This API only works on some bitcoind nodes which support <i>addressindex</i> option</br>
-  * <a href="https://github.com/satoshilabs/bitcoin">satoshilabs/bitcoin</a> is such a kind of these nodes
-  */
- @Deprecated
- AddressBalance getAddressBalance(String address);
- 
- /**
-  * get all the utxo list of a specified address
-  * <b>PAY ATTENTION</b>
-  * This API only works on some bitcoind nodes which support <i>addressindex</i> option</br>
-  * <a href="https://github.com/satoshilabs/bitcoin">satoshilabs/bitcoin</a> is such a kind of these nodes
-  */
- @Deprecated
- List<AddressUtxo> getAddressUtxo(String address);
- 
- /**
   * The estimatefee RPC estimates the transaction fee per kilobyte that needs to be paid for a transaction to be included within a certain number of blocks.
   * 
   * @param nBlocks The maximum number of blocks a transaction should have to wait before it is predicted to be included in a block.
@@ -1187,78 +1197,6 @@ public interface BitcoindRpcClient {
   */
  @Deprecated
  BigDecimal estimateFee(int nBlocks) throws GenericRpcException;
-
- /**
-  * The estimatepriority RPC estimates the priority (coin age) that a transaction needs in order to be included within a certain number of blocks as a free high-priority transaction. 
-  * This should not to be confused with the prioritisetransaction RPC which will remain supported for adding fee deltas to transactions.
-  * 
-  * estimatepriority has been removed and will no longer be available in the next major release (planned for Bitcoin Core 0.15.0).
-  * 
-  * @param nBlocks The maximum number of blocks a transaction should have to wait before it is predicted to be included in a block based purely on its priority
-  * 
-  * @see <a href="https://bitcoin.org/en/developer-reference#estimatepriority">estimatepriority</a>
-  */
- @Deprecated
- BigDecimal estimatePriority(int nBlocks) throws GenericRpcException;
-
- /**
-  * The getgenerate RPC was removed in Bitcoin Core 0.13.0.
-  * 
-  * @see <a href="https://bitcoin.org/en/developer-reference#getgenerate">getgenerate</a>
-  */
- @Deprecated
- boolean getGenerate();
-
- /**
-  * The getinfo RPC prints various information about the node and the network.
-  * 
-  * getinfo was removed in 0.16.0 version of Bitcoin Core.
-  * 
-  * @return Information about this node and the network
-  * 
-  * @see <a href="https://bitcoin.org/en/developer-reference#getinfo">getinfo</a>
-  */
- @Deprecated
- public Info getInfo() throws GenericRpcException;
-
- /**
-  * The getblock RPC gets a block with a particular header hash from the local block database as a serialized block.
-  * 
-  * @param blockHash The hash of the header of the block to get, encoded as hex in RPC byte order
-  * 
-  * @see <a href="https://bitcoin.org/en/developer-reference#getblock">getblock</a>
-  * 
-  * [TODO] Is this really public API?
-  */
- @Deprecated
- String getRawBlock(String blockHash) throws GenericRpcException;
-
- /**
-  * Permanently marks a block as invalid, as if it violated a consensus rule.
-  *
-  * @param blockHash the hash of the block to mark as invalid
-  * 
-  * [TODO] Add to https://bitcoin.org/en/developer-reference
-  */
- @Deprecated
- void invalidateBlock(String blockHash) throws GenericRpcException;
-
- /**
-  * Removes invalidity status of a block and its descendants, reconsider them for activation. 
-  * This can be used to undo the effects of invalidateblock.
-  *
-  * @param blockHash The hash of the block to reconsider
-  * 
-  * [TODO] Add to https://bitcoin.org/en/developer-reference
-  */
- @Deprecated
- void reconsiderBlock(String blockHash) throws GenericRpcException;
-
- /**
-  * @see <a href="https://bitcoin.org/en/developer-reference#setgenerate">setgenerate</a>
-  * @deprecated
-  */
- void setGenerate(boolean doGenerate) throws BitcoinRPCException;
 
  /***************************************************************************************************************************/
   
@@ -1274,7 +1212,6 @@ public interface BitcoindRpcClient {
   * {@link BitcoinJSONRPCClient#getAddressBalance(String)}
   * 
   * @author frankchen
-  * @create 2018年6月21日 上午10:38:17
   */
  static interface AddressBalance
  {
@@ -1285,7 +1222,6 @@ public interface BitcoindRpcClient {
  /**
   * the result return by {@link BitcoinJSONRPCClient#getAddressUtxo(String)}
   * @author frankchen
-  * @create 2018年6月21日 上午10:38:17
   */
  static interface AddressUtxo
  {
@@ -1475,39 +1411,6 @@ public interface BitcoindRpcClient {
    }
 
  }
-
-  static interface Info extends MapWrapperType, Serializable {
-
-    long version();
-
-    long protocolVersion();
-
-    long walletVersion();
-
-    BigDecimal balance();
-
-    int blocks();
-
-    int timeOffset();
-
-    int connections();
-
-    String proxy();
-
-    BigDecimal difficulty();
-
-    boolean testnet();
-
-    long keyPoolOldest();
-
-    long keyPoolSize();
-
-    BigDecimal payTxFee();
-
-    BigDecimal relayFee();
-
-    String errors();
-  }
 
   static interface LockedUnspent extends MapWrapperType, Serializable {
     
@@ -1707,7 +1610,7 @@ public interface BitcoindRpcClient {
      *
      * @return the list of inputs
      */
-    List<In> vIn(); // TODO : Create special interface instead of this
+    List<In> vIn(); 
 
     interface Out extends MapWrapperType, Serializable {
 

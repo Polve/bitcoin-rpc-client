@@ -112,6 +112,8 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
   public final URL rpcURL;
 
+  private HostnameVerifier hostnameVerifier;
+  private SSLSocketFactory sslSocketFactory;
   private URL noAuthURL;
   private String authStr;
 
@@ -136,9 +138,6 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   public BitcoinJSONRPCClient() {
     this(DEFAULT_JSONRPC_TESTNET_URL);
   }
-
-  private HostnameVerifier hostnameVerifier = null;
-  private SSLSocketFactory sslSocketFactory = null;
 
   public HostnameVerifier getHostnameVerifier() {
     return hostnameVerifier;
@@ -342,12 +341,6 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   @Override
   public int getBlockCount() throws GenericRpcException {
     return ((Number) query("getblockcount")).intValue();
-  }
-
-  @Override
-  @SuppressWarnings({ "unchecked" })
-  public Info getInfo() throws GenericRpcException {
-    return new InfoWrapper((Map<String, ?>) query("getinfo"));
   }
 
   @Override
@@ -693,11 +686,6 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
-  public void setGenerate(boolean b) throws BitcoinRPCException {
-    query("setgenerate", b);
-  }
-
-  @Override
   @SuppressWarnings("unchecked")
   public List<String> generate(int numBlocks) throws BitcoinRPCException {
     return (List<String>) query("generate", numBlocks);
@@ -718,11 +706,6 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   @Override
   public BigDecimal estimateFee(int nBlocks) throws GenericRpcException {
     return (BigDecimal) query("estimatefee", nBlocks);
-  }
-
-  @Override
-  public BigDecimal estimatePriority(int nBlocks) throws GenericRpcException {
-    return (BigDecimal) query("estimatepriority", nBlocks);
   }
 
   @Override
@@ -794,12 +777,6 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   @Override
   public void ping() throws GenericRpcException {
     query("ping");
-  }
-
-  //It doesn't work!
-  @Override
-  public boolean getGenerate() throws BitcoinRPCException {
-    return (boolean) query("getgenerate");
   }
 
   @Override
@@ -934,7 +911,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @SuppressWarnings("serial")
-  private static class AddressBalanceWrapper extends MapWrapper implements AddressBalance, Serializable
+  private class AddressBalanceWrapper extends MapWrapper implements AddressBalance, Serializable
   {
     private AddressBalanceWrapper(Map<String, ?> r) {
       super(r);
@@ -950,7 +927,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
   }
 
-  private static class AddressUtxoWrapper implements AddressUtxo {
+  private class AddressUtxoWrapper implements AddressUtxo {
     private String address;
     private String txid;
     private int outputIndex;
@@ -998,7 +975,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
   }
   
-  private static class AddressUtxoList extends ListMapWrapper<AddressUtxo> {
+  private class AddressUtxoList extends ListMapWrapper<AddressUtxo> {
     
     private AddressUtxoList(List<Map<String, ?>> list) {
           super((List<Map<String, ?>>)list);
@@ -1240,90 +1217,6 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     public String p2sh() {
       return mapStr("p2sh");
     }
-  }
-
-  @SuppressWarnings("serial")
-  private class InfoWrapper extends MapWrapper implements Info, Serializable {
-
-    private InfoWrapper(Map<String, ?> m) {
-      super(m);
-    }
-
-    @Override
-    public BigDecimal balance() {
-      return mapBigDecimal("balance");
-    }
-
-    @Override
-    public int blocks() {
-      return mapInt("blocks");
-    }
-
-    @Override
-    public int connections() {
-      return mapInt("connections");
-    }
-
-    @Override
-    public BigDecimal difficulty() {
-      return mapBigDecimal("difficulty");
-    }
-
-    @Override
-    public String errors() {
-      return mapStr("errors");
-    }
-
-    @Override
-    public long keyPoolOldest() {
-      return mapLong("keypoololdest");
-    }
-
-    @Override
-    public long keyPoolSize() {
-      return mapLong("keypoolsize");
-    }
-
-    @Override
-    public BigDecimal payTxFee() {
-      return mapBigDecimal("paytxfee");
-    }
-
-    @Override
-    public long protocolVersion() {
-      return mapLong("protocolversion");
-    }
-
-    @Override
-    public String proxy() {
-      return mapStr("proxy");
-    }
-
-    @Override
-    public BigDecimal relayFee() {
-      return mapBigDecimal("relayfee");
-    }
-
-    @Override
-    public boolean testnet() {
-      return mapBool("testnet");
-    }
-
-    @Override
-    public int timeOffset() {
-      return mapInt("timeoffset");
-    }
-
-    @Override
-    public long version() {
-      return mapLong("version");
-    }
-
-    @Override
-    public long walletVersion() {
-      return mapLong("walletversion");
-    }
-
   }
 
   @SuppressWarnings("serial")
@@ -1950,7 +1843,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
   }
 
-  private static class ReceivedAddressListWrapper extends AbstractList<ReceivedAddress> {
+  private class ReceivedAddressListWrapper extends AbstractList<ReceivedAddress> {
 
     private final List<Map<String, ?>> wrappedList;
 
@@ -1971,7 +1864,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @SuppressWarnings("serial")
-  private static class ReceivedAddressWrapper extends MapWrapper implements ReceivedAddress {
+  private class ReceivedAddressWrapper extends MapWrapper implements ReceivedAddress {
 
     private ReceivedAddressWrapper(Map<String, ?> m) {
       super(m);
