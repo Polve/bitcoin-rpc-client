@@ -1262,7 +1262,7 @@ public interface BitcoindRpcClient {
 
  /***************************************************************************************************************************/
   
- static interface Address extends Serializable {
+ static interface Address extends MapWrapperType, Serializable {
 
    String address();
 
@@ -1297,7 +1297,7 @@ public interface BitcoindRpcClient {
      long getHeight();
  }
  
- static interface AddressValidationResult extends Serializable {
+ static interface AddressValidationResult extends MapWrapperType, Serializable {
 
    boolean isValid();
 
@@ -1381,7 +1381,7 @@ public interface BitcoindRpcClient {
    }
  }
 
- static interface Block extends Serializable {
+ static interface Block extends MapWrapperType, Serializable {
 
    String hash();
 
@@ -1416,7 +1416,7 @@ public interface BitcoindRpcClient {
    Block next() throws GenericRpcException;
  }
 
- static interface BlockChainInfo extends Serializable {
+ static interface BlockChainInfo extends MapWrapperType, Serializable {
 
    String chain();
 
@@ -1431,7 +1431,7 @@ public interface BitcoindRpcClient {
    String chainWork();
  }
 
- static interface DecodedScript extends Serializable {
+ static interface DecodedScript extends MapWrapperType, Serializable {
 
    String asm();
 
@@ -1476,7 +1476,7 @@ public interface BitcoindRpcClient {
 
  }
 
-  static interface Info extends Serializable {
+  static interface Info extends MapWrapperType, Serializable {
 
     long version();
 
@@ -1509,14 +1509,14 @@ public interface BitcoindRpcClient {
     String errors();
   }
 
-  static interface LockedUnspent extends Serializable {
+  static interface LockedUnspent extends MapWrapperType, Serializable {
     
     String txId();
     
     int vout();
   }
   
-  static interface MiningInfo extends Serializable {
+  static interface MiningInfo extends MapWrapperType, Serializable {
 
     int blocks();
 
@@ -1539,14 +1539,14 @@ public interface BitcoindRpcClient {
     String chain();
   }
 
-  static interface MultiSig extends Serializable {
+  static interface MultiSig extends MapWrapperType, Serializable {
 
     String address();
 
     String redeemScript();
   }
 
-  static interface NetTotals extends Serializable {
+  static interface NetTotals extends MapWrapperType, Serializable {
 
     long totalBytesRecv();
 
@@ -1554,7 +1554,7 @@ public interface BitcoindRpcClient {
 
     long timeMillis();
 
-    interface uploadTarget extends Serializable {
+    interface uploadTarget extends MapWrapperType, Serializable {
 
       long timeFrame();
 
@@ -1572,7 +1572,7 @@ public interface BitcoindRpcClient {
     uploadTarget uploadTarget();
   }
 
-  static interface NetworkInfo extends Serializable {
+  static interface NetworkInfo extends MapWrapperType, Serializable {
 
     long version();
 
@@ -1597,7 +1597,7 @@ public interface BitcoindRpcClient {
     String warnings();
   }
 
-  static interface Network extends Serializable {
+  static interface Network extends MapWrapperType, Serializable {
 
     String name();
 
@@ -1610,7 +1610,7 @@ public interface BitcoindRpcClient {
     boolean proxyRandomizeCredentials();
   }
 
-  static interface NodeInfo extends Serializable {
+  static interface NodeInfo extends MapWrapperType, Serializable {
 
     String addedNode();
 
@@ -1620,7 +1620,7 @@ public interface BitcoindRpcClient {
 
   }
 
-  static interface PeerInfoResult extends Serializable {
+  static interface PeerInfoResult extends MapWrapperType, Serializable {
 
     long getId();
 
@@ -1661,7 +1661,7 @@ public interface BitcoindRpcClient {
     boolean isWhiteListed();
   }
 
-  interface RawTransaction extends Serializable {
+  interface RawTransaction extends MapWrapperType, Serializable {
 
     String hex();
 
@@ -1709,13 +1709,13 @@ public interface BitcoindRpcClient {
      */
     List<In> vIn(); // TODO : Create special interface instead of this
 
-    interface Out extends Serializable {
+    interface Out extends MapWrapperType, Serializable {
 
       BigDecimal value();
 
       int n();
 
-      interface ScriptPubKey extends Serializable {
+      interface ScriptPubKey extends MapWrapperType, Serializable {
 
         String asm();
 
@@ -1760,7 +1760,7 @@ public interface BitcoindRpcClient {
     Date blocktime();
   }
 
-  static interface ReceivedAddress extends Serializable {
+  static interface ReceivedAddress extends MapWrapperType, Serializable {
 
     String address();
 
@@ -1771,7 +1771,7 @@ public interface BitcoindRpcClient {
     int confirmations();
   }
 
-  static interface SmartFeeResult extends Serializable {
+  static interface SmartFeeResult extends MapWrapperType, Serializable {
     
     int blocks();
 
@@ -1780,7 +1780,7 @@ public interface BitcoindRpcClient {
     String errors();
   }
 
-  static interface Transaction extends Serializable {
+  static interface Transaction extends MapWrapperType, Serializable {
 
     String account();
 
@@ -1831,7 +1831,7 @@ public interface BitcoindRpcClient {
     public String scriptPubKey();
   }
 
-  static interface TxOut extends Serializable {
+  static interface TxOut extends MapWrapperType, Serializable {
 
     String bestBlock();
 
@@ -1855,7 +1855,7 @@ public interface BitcoindRpcClient {
 
   }
 
-  static interface TxOutSetInfo extends Serializable {
+  static interface TxOutSetInfo extends MapWrapperType, Serializable {
 
     long height();
 
@@ -1888,7 +1888,7 @@ public interface BitcoindRpcClient {
     int confirmations();
   }
 
-  static interface WalletInfo extends Serializable {
+  static interface WalletInfo extends MapWrapperType, Serializable {
 
     long walletVersion();
 

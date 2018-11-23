@@ -26,6 +26,7 @@ public class BitcoinRawTxBuilder {
   public List<BitcoindRpcClient.TxOutput> outputs = new ArrayList<>();
   public List<String> privateKeys;
 
+  @SuppressWarnings("serial")
   private class Input extends BitcoindRpcClient.BasicTxInput {
 
     public Input(String txid, Integer vout) {

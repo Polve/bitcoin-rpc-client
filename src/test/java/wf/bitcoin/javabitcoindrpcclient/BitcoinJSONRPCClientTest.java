@@ -1,14 +1,14 @@
 package wf.bitcoin.javabitcoindrpcclient;
 
-import org.junit.Before;
-import org.junit.Test;
-import wf.bitcoin.krotjson.JSON;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import java.util.LinkedList;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import org.junit.Test;
+
+import wf.bitcoin.krotjson.JSON;
 
 /**
  * Created by fpeters on 11-01-17.
@@ -78,7 +78,7 @@ public class BitcoinJSONRPCClientTest {
         LinkedList<BitcoindRpcClient.ExtendedTxInput> inputList = new LinkedList<BitcoindRpcClient.ExtendedTxInput>();
         LinkedList<String> privateKeys = new LinkedList<String>();
         try {
-            String hex = client.signRawTransaction("0100000001B8B2244FACA910C1FFFF24ECD2B559B4699338398BF77E4CB1FDEB19AD419EA0010000001976A9144CB4C3B90994FEF58FABB6D8368302E917C6EFB188ACFFFFFFFF012E2600000000000017A9140B2D7ED4E5076383BA8E98B9B3BCE426B7A2EA1E8700000000",
+            client.signRawTransaction("0100000001B8B2244FACA910C1FFFF24ECD2B559B4699338398BF77E4CB1FDEB19AD419EA0010000001976A9144CB4C3B90994FEF58FABB6D8368302E917C6EFB188ACFFFFFFFF012E2600000000000017A9140B2D7ED4E5076383BA8E98B9B3BCE426B7A2EA1E8700000000",
                     inputList, privateKeys, "ALL");
         }
         catch(Exception e) {

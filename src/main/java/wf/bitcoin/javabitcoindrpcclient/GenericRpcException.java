@@ -22,6 +22,7 @@ package wf.bitcoin.javabitcoindrpcclient;
  *
  * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com
  */
+@SuppressWarnings("serial")
 public class GenericRpcException extends RuntimeException {
 
     /**

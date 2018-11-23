@@ -18,32 +18,22 @@
 
 package wf.bitcoin.javabitcoindrpcclient;
 
-import java.util.AbstractList;
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.util.Date;
 
-/**
- *
- * @author Mikhail Yevchenko m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com
- */
-abstract class ListMapWrapper<X> extends AbstractList<X> {
+public interface MapWrapperType {
 
-    public final List<Map<String, ?>> list;
-    
-    public ListMapWrapper(List<Map<String, ?>> list) {
-        this.list = list;
-    }
+  Boolean mapBool(String key);
 
-    protected abstract X wrap(Map<String, ?> m);
+  Integer mapInt(String key);
 
-    @Override
-    public X get(int index) {
-        return wrap(list.get(index));
-    }
+  Long mapLong(String key);
 
-    @Override
-    public int size() {
-        return list.size();
-    }
+  String mapStr(String key);
 
+  Date mapDate(String key);
+
+  BigDecimal mapBigDecimal(String key);
+
+  byte[] mapHex(String key);
 }
