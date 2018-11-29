@@ -3,14 +3,14 @@
   <modelVersion>4.0.0</modelVersion>
   
   <groupId>wf.bitcoin</groupId>
-  <artifactId>JavaBitcoindRpcClient</artifactId>
+  <artifactId>bitcoin-rpc-client</artifactId>
   <packaging>jar</packaging>
   
   <version>1.1.0-SNAPSHOT</version>
   
   <name>Java Bitcoind RPC Client</name>
   <description>A lightweight Java bitcoin JSON-RPC client binding</description>
-  <url>https://github.com/Polve/JavaBitcoindRpcClient</url>
+  <url>https://github.com/Polve/bitcoin-rpc-client</url>
   
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -37,6 +37,15 @@
       </roles>
     </developer>
     <developer>
+      <name>Thomas Diesler</name>
+      <email>tdiesler@redhat.com</email>
+      <organization>RedHat</organization>
+      <organizationUrl>https://www.redhat.com</organizationUrl>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
       <name>Mikhail Yevchenko</name>
       <email>m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com</email>
       <roles>
@@ -54,17 +63,10 @@
     </dependency>
   </dependencies>
 
-  <!--
-    <scm>
-      <connection>scm:git:git@github.com:Polve/JavaBitcoindRpcClient.git</connection>
-      <developerConnection>scm:git:git@github.com:Polve/JavaBitcoindRpcClient.git</developerConnection>
-      <url>git@github.com:Polve/JavaBitcoindRpcClient.git</url>
-    </scm>
-  -->
   <scm>
-    <connection>scm:git:https://github.com/Polve/JavaBitcoindRpcClient</connection>
-    <developerConnection>scm:git:https://github.com/Polve/JavaBitcoindRpcClient.git</developerConnection>
-    <url>scm:git:https://github.com/Polve/JavaBitcoindRpcClient</url>
+    <connection>scm:git:https://github.com/Polve/bitcoin-rpc-client</connection>
+    <developerConnection>scm:git:https://github.com/Polve/bitcoin-rpc-client.git</developerConnection>
+    <url>scm:git:https://github.com/Polve/bitcoin-rpc-client</url>
   </scm>
 
   <distributionManagement>
