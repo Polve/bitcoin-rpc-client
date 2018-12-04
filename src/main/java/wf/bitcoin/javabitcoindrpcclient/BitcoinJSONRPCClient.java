@@ -886,7 +886,17 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   @Override
   @SuppressWarnings("unchecked")
   public Transaction getTransaction(String txId) {
-    return new TransactionWrapper((Map<String, ?>) query("gettransaction", txId));
+    
+    TransactionWrapper tx = new TransactionWrapper((Map<String, ?>) query("gettransaction", txId));
+    
+    // [#88] Request for invalid Tx should fail
+    // https://github.com/Polve/JavaBitcoindRpcClient/issues/88
+    RawTransaction rawTx = tx.raw();
+    if (rawTx == null || rawTx.vIn().isEmpty() || rawTx.vOut().isEmpty()) {
+      throw new BitcoinRPCException("Invalid Tx: " + txId);
+    }
+    
+    return tx;
   }
 
   @Override
@@ -1704,11 +1714,6 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       public String scriptPubKey() {
         return mapStr("scriptPubKey");
       }
-
-      @Override
-      public String address() {
-          return mapStr("address");
-      }
     }
 
     @Override
@@ -1834,12 +1839,6 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     @Override
     public Date blocktime() {
       return mapDate("blocktime");
-    }
-
-    @Override
-    public long height()
-    {
-        return mapLong("height");
     }
   }
 

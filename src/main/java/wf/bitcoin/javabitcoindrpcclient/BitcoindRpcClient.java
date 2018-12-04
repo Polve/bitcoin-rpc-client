@@ -1581,62 +1581,11 @@ public interface BitcoindRpcClient {
     String hash();
 
     /**
-     * get the height of block in which this transaction is</br>
-     * <b>PAY ATTENSION</b> this properties only works with bitcoind nodes of which version is under 0.15
-     */
-    long height();
-    
-    interface In extends TxInput, Serializable {
-
-      Map<String, Object> scriptSig();
-
-      long sequence();
-
-      RawTransaction getTransaction();
-
-      Out getTransactionOutput();
-      
-      /**
-       * get the spent address, which is specified in the 'scriptPubKey' in the connected output of this tx </br>
-       * <b>PAY ATTENTION</b> This property is only supported by those bitcoind which supports a '-spentindex' option<br/>
-       * For more information about 'spentindex', take a look at <a href="https://github.com/satoshilabs/bitcoin">satoshilabs/bitcoin</a>
-       * or <a href="https://github.com/bitpay/bitcoin">bitpay/bitcoin</a>
-       */
-      String address();
-    }
-
-    /**
      * This method should be replaced someday
      *
      * @return the list of inputs
      */
     List<In> vIn(); 
-
-    interface Out extends MapWrapperType, Serializable {
-
-      BigDecimal value();
-
-      int n();
-
-      interface ScriptPubKey extends MapWrapperType, Serializable {
-
-        String asm();
-
-        String hex();
-
-        int reqSigs();
-
-        String type();
-
-        List<String> addresses();
-      }
-
-      ScriptPubKey scriptPubKey();
-
-      TxInput toInput();
-
-      RawTransaction transaction();
-    }
 
     /**
      * This method should be replaced someday
@@ -1661,6 +1610,43 @@ public interface BitcoindRpcClient {
      * @return null if this tx has not been confirmed yet
      */
     Date blocktime();
+
+    interface In extends TxInput, Serializable {
+
+      Map<String, Object> scriptSig();
+
+      long sequence();
+
+      RawTransaction getTransaction();
+
+      Out getTransactionOutput();
+    }
+
+    interface Out extends MapWrapperType, Serializable {
+
+      BigDecimal value();
+
+      int n();
+
+      ScriptPubKey scriptPubKey();
+
+      TxInput toInput();
+
+      RawTransaction transaction();
+
+      interface ScriptPubKey extends MapWrapperType, Serializable {
+
+        String asm();
+
+        String hex();
+
+        int reqSigs();
+
+        String type();
+
+        List<String> addresses();
+      }
+    }
   }
 
   static interface ReceivedAddress extends MapWrapperType, Serializable {
