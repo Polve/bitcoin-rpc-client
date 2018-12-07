@@ -1,0 +1,36 @@
+### Changelog
+
+<%
+String processIssues(def milestone, def issues, String category) {
+    def milestoneTitle = URLEncoder.encode(milestone.title, "UTF-8")
+    def issueSummary = ""
+
+    println ''
+    println "**${category.capitalize()}s**"
+    println ''
+
+    issues[category].each { issue ->
+        println "* [#${issue.number}][${issue.number}] ${issue.title}"
+        issueSummary <<= "[${issue.number}]: ${issue.url}\n"
+    }
+
+    println ''
+    println "For details see [${milestone.title} ${category}s](https://github.com/Polve/bitcoin-rpc-client/issues?q=milestone%3A\"${milestoneTitle}\"+label%3A${category})"
+    return issueSummary
+}
+
+milestoneIssues.each { milestone, issues ->
+    def milestoneSummary = ""
+
+    println "#### Bitcoin RPC Client ${milestone.title}"
+
+    issueCategories.each {
+    	if (issues[it] != null) {
+        	milestoneSummary <<= processIssues(milestone, issues, it)
+    	}
+    }
+
+    println ''
+    println milestoneSummary
+}
+%>
