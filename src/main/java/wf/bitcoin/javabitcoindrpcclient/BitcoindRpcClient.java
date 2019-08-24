@@ -540,6 +540,7 @@ public interface BitcoindRpcClient {
    * 
    * @see <a href="https://bitcoin.org/en/developer-reference#addmultisigaddress">addmultisigaddress</a>
    */
+  @Deprecated
   MultiSig addMultiSigAddress(int nRequired, List<String> keyObject, String account);
 
   /**
