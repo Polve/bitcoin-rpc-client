@@ -853,14 +853,16 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return (boolean) query("verifymessage", bitcoinAddress, signature, message);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public String addMultiSigAddress(int nRequired, List<String> keyObject) throws GenericRpcException {
-    return (String) query("addmultisigaddress", nRequired, keyObject);
+  public MultiSig addMultiSigAddress(int nRequired, List<String> keyObject) throws GenericRpcException {
+    return new MultiSigWrapper((Map<String, ?>) query("addmultisigaddress", nRequired, keyObject));
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public String addMultiSigAddress(int nRequired, List<String> keyObject, String account) throws GenericRpcException {
-    return (String) query("addmultisigaddress", nRequired, keyObject, account);
+  public MultiSig addMultiSigAddress(int nRequired, List<String> keyObject, String account) throws GenericRpcException {
+    return new MultiSigWrapper((Map<String, ?>) query("addmultisigaddress", nRequired, keyObject, account));
   }
 
   @Override

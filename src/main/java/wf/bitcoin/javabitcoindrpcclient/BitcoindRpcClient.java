@@ -527,7 +527,7 @@ public interface BitcoindRpcClient {
    * 
    * @see <a href="https://bitcoin.org/en/developer-reference#addmultisigaddress">addmultisigaddress</a>
    */
-  String addMultiSigAddress(int nRequired, List<String> keyObject);
+  MultiSig addMultiSigAddress(int nRequired, List<String> keyObject);
 
   /**
    * The addmultisigaddress RPC adds a P2SH multisig address to the wallet.
@@ -540,7 +540,8 @@ public interface BitcoindRpcClient {
    * 
    * @see <a href="https://bitcoin.org/en/developer-reference#addmultisigaddress">addmultisigaddress</a>
    */
-  String addMultiSigAddress(int nRequired, List<String> keyObject, String account);
+  @Deprecated
+  MultiSig addMultiSigAddress(int nRequired, List<String> keyObject, String account);
 
   /**
    * The backupwallet RPC safely copies wallet.dat to the specified file, which can be a directory or a path with filename.
