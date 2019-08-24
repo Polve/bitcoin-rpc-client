@@ -1257,6 +1257,7 @@ public interface BitcoindRpcClient {
    public String txid;
    public Integer vout;
    public String scriptPubKey;
+   public BigDecimal amount;
 
    public BasicTxInput(String txid, Integer vout) {
      this.txid = txid;
@@ -1266,6 +1267,11 @@ public interface BitcoindRpcClient {
    public BasicTxInput(String txid, Integer vout, String scriptPubKey) {
      this(txid, vout);
      this.scriptPubKey = scriptPubKey;
+   }
+   
+   public BasicTxInput(String txid, Integer vout, String scriptPubKey, BigDecimal amount) {
+     this(txid, vout, scriptPubKey);
+     this.amount = amount;
    }
 
    @Override
@@ -1283,6 +1289,10 @@ public interface BitcoindRpcClient {
      return scriptPubKey;
    }
 
+	@Override
+	public BigDecimal amount() {
+		return amount;
+	}
  }
 
  @SuppressWarnings("serial")
@@ -1719,6 +1729,8 @@ public interface BitcoindRpcClient {
     public Integer vout();
 
     public String scriptPubKey();
+    
+    public BigDecimal amount();
   }
 
   static interface TxOut extends MapWrapperType, Serializable {

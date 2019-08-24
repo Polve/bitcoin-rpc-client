@@ -1686,6 +1686,11 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       public Integer vout() {
         return mapInt("vout");
       }
+      
+      @Override
+      public BigDecimal amount() {
+    	return mapBigDecimal("amount");
+      }
 
       @Override
       @SuppressWarnings("unchecked")
