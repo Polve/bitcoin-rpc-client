@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.AddressValidationResult;
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.MultiSig;
 
 /**
@@ -15,17 +16,18 @@ import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.MultiSig;
  */
 public class WalletTests extends IntegrationTestBase
 {
-    @Test
+	@Test(expected = Test.None.class) // no exception expected
     public void addMultiSigAddressTest()
     {
-    	MultiSig multiSig = client.addMultiSigAddress(2,
-    			Arrays.asList(
-    					"2MtmEeTw22qnkZVnrPy5f1FzPYdZS4D9SJu",
-    					"2N8EWC92UvXDNgqCtyWDmcvMQtdn4N9HBkD"));
+		String addr1 = client.getNewAddress();
+		String addr2 = client.getNewAddress();
+		
+    	MultiSig multiSig = client.addMultiSigAddress(2, Arrays.asList(addr1, addr2));
+    	LOGGER.info("Created and added multiSig: " + multiSig);
+    	
+    	AddressValidationResult addrValidationResult = client.validateAddress(multiSig.address());
 
-    	assertEquals("2N2FUD9hyhV2TAShQ89kd8KjYTfgLmNQviA",
-    			multiSig.address());
-    	assertEquals("52210224f7816995d3b8ef24ae41ed790ec02be829f4074241a1827f838cdfbd9203852103318457f6ab23ada4cea00ea29f98b84cf3a531d4c40d7f46b8b25489f473bf1c52ae",
-    			multiSig.redeemScript());
+    	assertEquals(addrValidationResult.address(), multiSig.address());
+    	assertEquals(addrValidationResult.isScript(), true);
     }
 }
