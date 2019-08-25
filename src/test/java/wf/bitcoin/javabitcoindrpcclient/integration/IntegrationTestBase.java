@@ -1,5 +1,7 @@
 package wf.bitcoin.javabitcoindrpcclient.integration;
 
+import java.util.logging.Logger;
+
 import org.junit.BeforeClass;
 
 import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient;
@@ -15,11 +17,16 @@ import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.BlockChainInfo;
  */
 public class IntegrationTestBase
 {
+	static final Logger LOGGER = Logger.getLogger(IntegrationTestBase.class.getName());
+	
     static BitcoindRpcClient client;
     
     @BeforeClass
     public static void setup() throws Exception
     {
+    	// Set logger format used in the tests
+    	System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$-7s] %5$s %n");
+    	
     	client = new BitcoinJSONRPCClient();
     	
     	BlockChainInfo blockChainInfo = client.getBlockChainInfo();
