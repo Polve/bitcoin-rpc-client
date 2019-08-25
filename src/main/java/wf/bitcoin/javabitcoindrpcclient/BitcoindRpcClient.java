@@ -435,8 +435,25 @@ public interface BitcoindRpcClient {
    * @return The results of the signature
    * 
    * @see <a href="https://bitcoin.org/en/developer-reference#signrawtransaction">signrawtransaction</a>
+   * 
+   * @deprecated signrawtransaction was removed in v0.18. Clients should transition to using signrawtransactionwithkey and signrawtransactionwithwallet
    */
+  @Deprecated
   String signRawTransaction(String hex, List<? extends TxInput> inputs, List<String> privateKeys) throws GenericRpcException;
+  
+  /**
+   * The signrawtransactionwithkey RPC sign inputs for raw transaction (serialized, hex-encoded).
+   * 
+   * @param hex The transaction hex string
+   * @param privateKeys List of base58-encoded private keys for signing
+   * @param	prevTxs List of previous transaction outputs that this transaction depends on but may not yet be in the block chain (optional)
+   * @param sigHashType The signature hash type (optional, default = ALL)
+   * 
+   * @return The results of the signature
+   * 
+   * @see <a href="https://bitcoincore.org/en/doc/0.18.0/rpc/rawtransactions/signrawtransactionwithkey/">Bitcoin Core Documentation for signrawtransactionwithkey</a>
+   */
+  SignedRawTransaction signRawTransactionWithKey(String hex, List<String> privateKeys, List<? extends TxInput> prevTxs, SignatureHashType sigHashType);
 
   /*
    * Util
@@ -1836,5 +1853,57 @@ public interface BitcoindRpcClient {
     BigDecimal payTxFee();
 
     String hdMasterKeyId();
+  }
+  
+  /**
+   * See return structure of <a href="https://bitcoincore.org/en/doc/0.18.0/rpc/rawtransactions/signrawtransactionwithkey/">signrawtransactionwithkey</a>
+   */
+  static interface SignedRawTransaction
+  {
+	  /**
+	   * @return The hex-encoded raw transaction with signature(s)
+	   */
+	  String hex();
+	  
+	  /**
+	   * @return If the transaction has a complete set of signatures
+	   */
+	  boolean complete();
+	  
+	  /**
+	   * @return Script verification errors (if there are any)
+	   */
+	  List<RawTransactionSigningOrVerificationError> errors();
+  }
+  
+  /**
+   * See error array in return structure of <a href="https://bitcoincore.org/en/doc/0.18.0/rpc/rawtransactions/signrawtransactionwithkey/">signrawtransactionwithkey</a>
+   */
+  static interface RawTransactionSigningOrVerificationError
+  {
+	  /**
+	   * @return The hash of the referenced, previous transaction
+	   */
+	  String txId();
+	  
+	  /**
+	   * @return The index of the output to be spent and used as input
+	   */
+	  int vOut();
+	  
+	  /**
+	   * @return The hex-encoded signature script
+	   */
+	  String scriptSig();
+	  
+	  /**
+	   * @return Script sequence number
+	   */
+	  int n();
+	  
+	  /**
+	   * @return Verification or signing error related to the input
+	   */
+	  String error();
   }
 }
