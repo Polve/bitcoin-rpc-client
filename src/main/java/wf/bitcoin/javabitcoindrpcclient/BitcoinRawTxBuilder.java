@@ -132,10 +132,21 @@ public class BitcoinRawTxBuilder {
     return bitcoin.createRawTransaction(new ArrayList<>(inputs), outputs);
   }
 
+	/**
+	 * @deprecated Underlying client call not supported anymore, use instead
+	 *             {@link BitcoindRpcClient#signRawTransactionWithKey(String, List, List, SignatureHashType)}
+	 */
+  @Deprecated
   public String sign() throws GenericRpcException {
     return bitcoin.signRawTransaction(create(), null, privateKeys);
   }
 
+	/**
+	 * @deprecated Relies on call to deprecated {@link #sign()}. Instead, call
+	 *             {@link BitcoindRpcClient#sendRawTransaction(String)} on a signed
+	 *             transaction
+	 */
+  @Deprecated
   public String send() throws GenericRpcException {
     return bitcoin.sendRawTransaction(sign());
   }
