@@ -1393,32 +1393,43 @@ public interface BitcoindRpcClient {
    String p2sh();
  }
 
+ 	/**
+	 * In addition to {@link BasicTxInput}, this also includes a
+	 * {@link #redeemScript} and {@link #witnessScript}.
+	 * <br>
+	 * <br>
+	 * 
+	 * With the addition of these fields, the {@link ExtendedTxInput} can represent
+	 * inputs for for P2SH, P2SH-P2WPKH, P2SH-P2WSH
+	 * 
+	 * @see <a href=
+	 *      "https://bitcoincore.org/en/segwit_wallet_dev/#creation-of-p2sh-p2wsh-address">Bitcoin
+	 *      Core documentation on P2SH and P2WSH addresses</a>
+	 * @see <a href=
+	 *      "https://bitcoincore.org/en/doc/0.18.0/rpc/rawtransactions/signrawtransactionwithkey/">Bitcoin
+	 *      Core RPC documentation of signrawtransactionwithkey</a>
+	 *      , where the
+	 *      different scenarios for the extra fields of txIns (prevtxs) are
+	 *      specified
+	 */
  @SuppressWarnings("serial")
  public static class ExtendedTxInput extends BasicTxInput {
 
-   public String redeemScript;
-   public BigDecimal amount;
+   private String redeemScript;
+   private String witnessScript;
 
-   public ExtendedTxInput(String txid, int vout) {
-     super(txid, vout);
-   }
-
-   public ExtendedTxInput(String txid, int vout, String scriptPubKey) {
-     super(txid, vout, scriptPubKey);
-   }
-
-   public ExtendedTxInput(String txid, int vout, String scriptPubKey, String redeemScript, BigDecimal amount) {
-     super(txid, vout, scriptPubKey);
+   public ExtendedTxInput(String txid, int vout, String scriptPubKey, BigDecimal amount, String redeemScript, String witnessScript) {
+     super(txid, vout, scriptPubKey, amount);
      this.redeemScript = redeemScript;
-     this.amount = amount;
+     this.witnessScript = witnessScript;
    }
 
    public String redeemScript() {
      return redeemScript;
    }
 
-   public BigDecimal amount() {
-     return amount;
+   public String witnessScript() {
+     return witnessScript;
    }
 
  }
@@ -1783,11 +1794,25 @@ public interface BitcoindRpcClient {
     public byte[] data();
   }
 
+  /**
+   * @see <a href="https://bitcoin.org/en/developer-reference#listunspent">Bitcoin Core API documentation</a>
+   */
   interface Unspent extends TxInput, TxOutput, Serializable {
 
+	@Deprecated
     String account();
 
     int confirmations();
+    
+    /**
+     * @return The redeemScript if scriptPubKey is P2SH
+     */
+    String redeemScript();
+    
+    /**
+     * @return witnessScript, if the scriptPubKey is P2WSH or P2SH-P2WSH
+     */
+    String witnessScript();
   }
 
   static interface WalletInfo extends MapWrapperType, Serializable {

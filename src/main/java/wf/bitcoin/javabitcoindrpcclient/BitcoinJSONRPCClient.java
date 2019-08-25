@@ -2197,6 +2197,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       return mapStr("scriptPubKey");
     }
 
+    @Deprecated
     @Override
     public String account() {
       return mapStr("account");
@@ -2216,6 +2217,16 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     public int confirmations() {
       return mapInt("confirmations");
     }
+
+	@Override
+	public String redeemScript() {
+		return mapStr("redeemScript");
+	}
+
+	@Override
+	public String witnessScript() {
+		return mapStr("witnessScript");
+	}
   }
   
   @SuppressWarnings("serial")
