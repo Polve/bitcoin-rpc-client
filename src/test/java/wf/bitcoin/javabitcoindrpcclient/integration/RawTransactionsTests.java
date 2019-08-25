@@ -23,7 +23,7 @@ import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.Unspent;
  */
 public class RawTransactionsTests extends IntegrationTestBase
 {
-	@Test
+	@Test(expected = Test.None.class) // no exception expected
 	public void signRawTransactionWithKeyTest_P2SH_MultiSig()
 	{
 		LOGGER.info("Testing scenario: signRawTransactionWithKey ( P2SH-multiSigAddr(2-of-2, [addr1, addr2]) -> addr4 )");
@@ -131,7 +131,7 @@ public class RawTransactionsTests extends IntegrationTestBase
 	/**
 	 * Signing a transaction to a P2SH-P2WPKH address (Pay-to-Witness-Public-Key-Hash)
 	 */
-	@Test
+	@Test(expected = Test.None.class) // no exception expected
 	public void signRawTransactionWithKeyTest_P2SH_P2WPKH()
 	{
 		LOGGER.info("Testing scenario: signRawTransactionWithKey (addr1 -> addr2)");
@@ -151,22 +151,22 @@ public class RawTransactionsTests extends IntegrationTestBase
 		Unspent selectedUtxo = utxos.get(0);
 		LOGGER.info("Selected UTXO which will be sent from addr1 to addr2: " + selectedUtxo);
 		
-		ExtendedTxInput inputP2PKH = new ExtendedTxInput(
+		ExtendedTxInput inputP2SH_P2WPKH = new ExtendedTxInput(
 				selectedUtxo.txid(),
 				selectedUtxo.vout(),
 				selectedUtxo.scriptPubKey(),
 				selectedUtxo.amount(),
 				selectedUtxo.redeemScript(),
 				selectedUtxo.witnessScript());
-		LOGGER.info("inputP2PKH txid: " + 			selectedUtxo.txid());
-		LOGGER.info("inputP2PKH vout: " + 			selectedUtxo.vout());
-		LOGGER.info("inputP2PKH scriptPubKey: " + 	selectedUtxo.scriptPubKey());
-		LOGGER.info("inputP2PKH redeemScript: " + 	selectedUtxo.redeemScript());
-		LOGGER.info("inputP2PKH witnessScript: " + 	selectedUtxo.witnessScript());
-		LOGGER.info("inputP2PKH amount: " + 		selectedUtxo.amount());
+		LOGGER.info("inputP2SH_P2WPKH txid: " + 			inputP2SH_P2WPKH.txid());
+		LOGGER.info("inputP2SH_P2WPKH vout: " + 			inputP2SH_P2WPKH.vout());
+		LOGGER.info("inputP2SH_P2WPKH scriptPubKey: " + 	inputP2SH_P2WPKH.scriptPubKey());
+		LOGGER.info("inputP2SH_P2WPKH redeemScript: " + 	inputP2SH_P2WPKH.redeemScript());
+		LOGGER.info("inputP2SH_P2WPKH witnessScript: " + 	inputP2SH_P2WPKH.witnessScript());
+		LOGGER.info("inputP2SH_P2WPKH amount: " + 			inputP2SH_P2WPKH.amount());
 
 		BitcoinRawTxBuilder rawTxBuilder = new BitcoinRawTxBuilder(client);
-		rawTxBuilder.in(inputP2PKH);
+		rawTxBuilder.in(inputP2SH_P2WPKH);
 
 		// Found no other reliable way to estimate the fee in a test
 		// Therefore, setting the fee for this tx to 1/1000 of the tx amount
@@ -184,7 +184,7 @@ public class RawTransactionsTests extends IntegrationTestBase
 		SignedRawTransaction srTx = client.signRawTransactionWithKey(
 				unsignedRawTxHex,
 				Arrays.asList(client.dumpPrivKey(addr1)), // addr1 is sending, so we need to sign with the private key of addr1
-				Arrays.asList(inputP2PKH),
+				Arrays.asList(inputP2SH_P2WPKH),
 				null);
 		LOGGER.info("signedRawTx hex: " + srTx.hex());
 		LOGGER.info("signedRawTx complete: " + srTx.complete());
