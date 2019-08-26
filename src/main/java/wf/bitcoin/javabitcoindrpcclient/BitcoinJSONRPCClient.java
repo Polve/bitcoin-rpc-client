@@ -633,16 +633,19 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return (String) query("sendtoaddress", toAddress, amount, comment, commentTo);
   }
 
+  @Deprecated
   public String signRawTransaction(String hex) throws GenericRpcException {
     return signRawTransaction(hex, null, null, "ALL");
   }
 
   @Override
+  @Deprecated
   public String signRawTransaction(String hex, List<? extends TxInput> inputs, List<String> privateKeys) throws GenericRpcException {
     return signRawTransaction(hex, inputs, privateKeys, "ALL");
   }
 
   @SuppressWarnings({ "serial", "unchecked" })
+  @Deprecated
   public String signRawTransaction(String hex, List<? extends TxInput> inputs, List<String> privateKeys, String sigHashType) {
     List<Map<String, ?>> pInputs = null;
 
@@ -670,6 +673,44 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     else
       throw new GenericRpcException("Incomplete");
   }
+  
+	@SuppressWarnings("serial")
+	@Override
+	public SignedRawTransaction signRawTransactionWithKey(String hex, List<String> privateKeys, List<? extends TxInput> prevTxs, SignatureHashType sigHashType)
+	{
+	    List<Map<String, ?>> prevTxsJson = null;
+		if (prevTxs != null)
+		{
+			prevTxsJson = new ArrayList<>();
+			for (TxInput txInput : prevTxs)
+			{
+				prevTxsJson.add(new LinkedHashMap<String, Object>() {
+					{
+						put("txid", txInput.txid());
+						put("vout", txInput.vout());
+						put("scriptPubKey", txInput.scriptPubKey());
+						put("amount", txInput.amount());
+						
+						if (txInput instanceof ExtendedTxInput)
+						{
+							ExtendedTxInput extIn = (ExtendedTxInput) txInput;
+							put("redeemScript", extIn.redeemScript());
+							put("witnessScript", extIn.witnessScript());
+						}
+					}
+				});
+			}
+		}
+
+	    @SuppressWarnings("unchecked")
+		Map<String, ?> result = (Map<String, ?>) query("signrawtransactionwithkey",
+	    		hex,
+	    		privateKeys,
+	    		prevTxsJson,
+	    		sigHashType);
+	    
+	    return new SignedRawTransactionWrapper(result);
+	}
 
   @SuppressWarnings("unchecked")
   public RawTransaction decodeRawTransaction(String hex) throws GenericRpcException {
@@ -1686,6 +1727,11 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       public Integer vout() {
         return mapInt("vout");
       }
+      
+      @Override
+      public BigDecimal amount() {
+    	return mapBigDecimal("amount");
+      }
 
       @Override
       @SuppressWarnings("unchecked")
@@ -2192,6 +2238,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       return mapStr("scriptPubKey");
     }
 
+    @Deprecated
     @Override
     public String account() {
       return mapStr("account");
@@ -2211,6 +2258,16 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     public int confirmations() {
       return mapInt("confirmations");
     }
+
+	@Override
+	public String redeemScript() {
+		return mapStr("redeemScript");
+	}
+
+	@Override
+	public String witnessScript() {
+		return mapStr("witnessScript");
+	}
   }
   
   @SuppressWarnings("serial")
@@ -2270,4 +2327,92 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       return mapStr("hdmasterkeyid");
     }
   }
+
+	@SuppressWarnings("serial")
+	private class SignedRawTransactionWrapper extends MapWrapper implements SignedRawTransaction, Serializable
+	{
+		private SignedRawTransactionWrapper(Map<String, ?> m)
+		{
+			super(m);
+		}
+
+		@Override
+		public String hex()
+		{
+			return mapStr("hex");
+		}
+
+		@Override
+		public boolean complete()
+		{
+			return mapBool("complete");
+		}
+
+		@Override
+		public List<RawTransactionSigningOrVerificationError> errors()
+		{
+			if (! m.containsKey("errors"))
+				return null;
+			
+			@SuppressWarnings("unchecked")
+			List<Map<String, ?>> list = (List<Map<String, ?>>) m.get("errors");
+			
+			return new RawTransactionSigningOrVerificationErrorList(list);
+		}
+	}
+
+	private class RawTransactionSigningOrVerificationErrorList
+			extends ListMapWrapper<RawTransactionSigningOrVerificationError>
+	{
+
+		private RawTransactionSigningOrVerificationErrorList(List<Map<String, ?>> list)
+		{
+			super((List<Map<String, ?>>) list);
+		}
+
+		@Override
+		protected RawTransactionSigningOrVerificationError wrap(Map<String, ?> m)
+		{
+			return new RawTransactionSigningOrVerificationErrorWrapper(m);
+		}
+	}
+	
+	@SuppressWarnings("serial")
+	private class RawTransactionSigningOrVerificationErrorWrapper extends MapWrapper implements RawTransactionSigningOrVerificationError, Serializable
+	{
+		private RawTransactionSigningOrVerificationErrorWrapper(Map<String, ?> m)
+		{
+			super(m);
+		}
+		
+		@Override
+		public String txId()
+		{
+			return mapStr("txid");
+		}
+
+		@Override
+		public int vOut()
+		{
+			return mapInt("vout");
+		}
+
+		@Override
+		public String scriptSig()
+		{
+			return mapStr("scriptSig");
+		}
+
+		@Override
+		public int n()
+		{
+			return mapInt("sequence");
+		}
+
+		@Override
+		public String error()
+		{
+			return mapStr("error");
+		}
+	}
 }

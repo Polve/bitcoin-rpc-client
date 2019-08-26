@@ -435,8 +435,25 @@ public interface BitcoindRpcClient {
    * @return The results of the signature
    * 
    * @see <a href="https://bitcoin.org/en/developer-reference#signrawtransaction">signrawtransaction</a>
+   * 
+   * @deprecated signrawtransaction was removed in v0.18. Clients should transition to using signrawtransactionwithkey and signrawtransactionwithwallet
    */
+  @Deprecated
   String signRawTransaction(String hex, List<? extends TxInput> inputs, List<String> privateKeys) throws GenericRpcException;
+  
+  /**
+   * The signrawtransactionwithkey RPC sign inputs for raw transaction (serialized, hex-encoded).
+   * 
+   * @param hex The transaction hex string
+   * @param privateKeys List of base58-encoded private keys for signing
+   * @param	prevTxs List of previous transaction outputs that this transaction depends on but may not yet be in the block chain (optional)
+   * @param sigHashType The signature hash type (optional, default = ALL)
+   * 
+   * @return The results of the signature
+   * 
+   * @see <a href="https://bitcoincore.org/en/doc/0.18.0/rpc/rawtransactions/signrawtransactionwithkey/">Bitcoin Core Documentation for signrawtransactionwithkey</a>
+   */
+  SignedRawTransaction signRawTransactionWithKey(String hex, List<String> privateKeys, List<? extends TxInput> prevTxs, SignatureHashType sigHashType);
 
   /*
    * Util
@@ -1257,6 +1274,7 @@ public interface BitcoindRpcClient {
    public String txid;
    public Integer vout;
    public String scriptPubKey;
+   public BigDecimal amount;
 
    public BasicTxInput(String txid, Integer vout) {
      this.txid = txid;
@@ -1266,6 +1284,11 @@ public interface BitcoindRpcClient {
    public BasicTxInput(String txid, Integer vout, String scriptPubKey) {
      this(txid, vout);
      this.scriptPubKey = scriptPubKey;
+   }
+   
+   public BasicTxInput(String txid, Integer vout, String scriptPubKey, BigDecimal amount) {
+     this(txid, vout, scriptPubKey);
+     this.amount = amount;
    }
 
    @Override
@@ -1283,6 +1306,10 @@ public interface BitcoindRpcClient {
      return scriptPubKey;
    }
 
+	@Override
+	public BigDecimal amount() {
+		return amount;
+	}
  }
 
  @SuppressWarnings("serial")
@@ -1383,32 +1410,43 @@ public interface BitcoindRpcClient {
    String p2sh();
  }
 
+ 	/**
+	 * In addition to {@link BasicTxInput}, this also includes a
+	 * {@link #redeemScript} and {@link #witnessScript}.
+	 * <br>
+	 * <br>
+	 * 
+	 * With the addition of these fields, the {@link ExtendedTxInput} can represent
+	 * inputs for for P2SH, P2SH-P2WPKH, P2SH-P2WSH
+	 * 
+	 * @see <a href=
+	 *      "https://bitcoincore.org/en/segwit_wallet_dev/#creation-of-p2sh-p2wsh-address">Bitcoin
+	 *      Core documentation on P2SH and P2WSH addresses</a>
+	 * @see <a href=
+	 *      "https://bitcoincore.org/en/doc/0.18.0/rpc/rawtransactions/signrawtransactionwithkey/">Bitcoin
+	 *      Core RPC documentation of signrawtransactionwithkey</a>
+	 *      , where the
+	 *      different scenarios for the extra fields of txIns (prevtxs) are
+	 *      specified
+	 */
  @SuppressWarnings("serial")
  public static class ExtendedTxInput extends BasicTxInput {
 
-   public String redeemScript;
-   public BigDecimal amount;
+   private String redeemScript;
+   private String witnessScript;
 
-   public ExtendedTxInput(String txid, int vout) {
-     super(txid, vout);
-   }
-
-   public ExtendedTxInput(String txid, int vout, String scriptPubKey) {
-     super(txid, vout, scriptPubKey);
-   }
-
-   public ExtendedTxInput(String txid, int vout, String scriptPubKey, String redeemScript, BigDecimal amount) {
-     super(txid, vout, scriptPubKey);
+   public ExtendedTxInput(String txid, int vout, String scriptPubKey, BigDecimal amount, String redeemScript, String witnessScript) {
+     super(txid, vout, scriptPubKey, amount);
      this.redeemScript = redeemScript;
-     this.amount = amount;
+     this.witnessScript = witnessScript;
    }
 
    public String redeemScript() {
      return redeemScript;
    }
 
-   public BigDecimal amount() {
-     return amount;
+   public String witnessScript() {
+     return witnessScript;
    }
 
  }
@@ -1719,6 +1757,8 @@ public interface BitcoindRpcClient {
     public Integer vout();
 
     public String scriptPubKey();
+    
+    public BigDecimal amount();
   }
 
   static interface TxOut extends MapWrapperType, Serializable {
@@ -1771,11 +1811,25 @@ public interface BitcoindRpcClient {
     public byte[] data();
   }
 
+  /**
+   * @see <a href="https://bitcoin.org/en/developer-reference#listunspent">Bitcoin Core API documentation</a>
+   */
   interface Unspent extends TxInput, TxOutput, Serializable {
 
+	@Deprecated
     String account();
 
     int confirmations();
+    
+    /**
+     * @return The redeemScript if scriptPubKey is P2SH
+     */
+    String redeemScript();
+    
+    /**
+     * @return witnessScript, if the scriptPubKey is P2WSH or P2SH-P2WSH
+     */
+    String witnessScript();
   }
 
   static interface WalletInfo extends MapWrapperType, Serializable {
@@ -1799,5 +1853,57 @@ public interface BitcoindRpcClient {
     BigDecimal payTxFee();
 
     String hdMasterKeyId();
+  }
+  
+  /**
+   * See return structure of <a href="https://bitcoincore.org/en/doc/0.18.0/rpc/rawtransactions/signrawtransactionwithkey/">signrawtransactionwithkey</a>
+   */
+  static interface SignedRawTransaction
+  {
+	  /**
+	   * @return The hex-encoded raw transaction with signature(s)
+	   */
+	  String hex();
+	  
+	  /**
+	   * @return If the transaction has a complete set of signatures
+	   */
+	  boolean complete();
+	  
+	  /**
+	   * @return Script verification errors (if there are any)
+	   */
+	  List<RawTransactionSigningOrVerificationError> errors();
+  }
+  
+  /**
+   * See error array in return structure of <a href="https://bitcoincore.org/en/doc/0.18.0/rpc/rawtransactions/signrawtransactionwithkey/">signrawtransactionwithkey</a>
+   */
+  static interface RawTransactionSigningOrVerificationError
+  {
+	  /**
+	   * @return The hash of the referenced, previous transaction
+	   */
+	  String txId();
+	  
+	  /**
+	   * @return The index of the output to be spent and used as input
+	   */
+	  int vOut();
+	  
+	  /**
+	   * @return The hex-encoded signature script
+	   */
+	  String scriptSig();
+	  
+	  /**
+	   * @return Script sequence number
+	   */
+	  int n();
+	  
+	  /**
+	   * @return Verification or signing error related to the input
+	   */
+	  String error();
   }
 }
