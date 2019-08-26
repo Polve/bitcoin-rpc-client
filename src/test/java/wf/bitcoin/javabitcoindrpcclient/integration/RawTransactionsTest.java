@@ -21,7 +21,7 @@ import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.Unspent;
  * 
  * @see <a href="https://bitcoincore.org/en/doc/0.18.0/rpc/">Bitcoin Core RPC documentation</a>
  */
-public class RawTransactionsTests extends IntegrationTestBase
+public class RawTransactionsTest extends IntegrationTestBase
 {
 	@Test(expected = Test.None.class) // no exception expected
 	public void signRawTransactionWithKeyTest_P2SH_MultiSig()

@@ -14,7 +14,7 @@ import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.MultiSig;
  * 
  * @see <a href="https://bitcoincore.org/en/doc/0.18.0/rpc/">Bitcoin Core RPC documentation</a>
  */
-public class WalletTests extends IntegrationTestBase
+public class WalletTest extends IntegrationTestBase
 {
 	@Test(expected = Test.None.class) // no exception expected
     public void addMultiSigAddressTest()
