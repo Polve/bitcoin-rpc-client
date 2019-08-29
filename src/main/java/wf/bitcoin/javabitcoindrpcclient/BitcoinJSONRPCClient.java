@@ -1172,7 +1172,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     @Override
-    public int blocks() {
+    public Integer blocks() {
       return mapInt("blocks");
     }
 
@@ -1197,49 +1197,49 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
 	@Override
-	public int headers()
+	public Integer headers()
 	{
 		return mapInt("headers");
 	}
 
 	@Override
-	public long medianTime()
+	public Long medianTime()
 	{
 		return mapLong("mediantime");
 	}
 
 	@Override
-	public boolean initialBlockDownload()
+	public Boolean initialBlockDownload()
 	{
 		return mapBool("initialblockdownload");
 	}
 
 	@Override
-	public long sizeOnDisk()
+	public Long sizeOnDisk()
 	{
 		return mapLong("size_on_disk");
 	}
 
 	@Override
-	public boolean pruned()
+	public Boolean pruned()
 	{
 		return mapBool("pruned");
 	}
 
 	@Override
-	public int pruneHeight()
+	public Integer pruneHeight()
 	{
 		return mapInt("pruneheight");
 	}
 
 	@Override
-	public boolean automaticPruning()
+	public Boolean automaticPruning()
 	{
 		return mapBool("automatic_pruning");
 	}
 
 	@Override
-	public long pruneTargetSize()
+	public Long pruneTargetSize()
 	{
 		return mapLong("prune_target_size");
 	}

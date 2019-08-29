@@ -1396,31 +1396,31 @@ public interface BitcoindRpcClient {
 
    String chain();
 
-   int blocks();
+   Integer blocks();
    
-   int headers();
+   Integer headers();
 
    String bestBlockHash();
 
    BigDecimal difficulty();
    
-   long medianTime();
+   Long medianTime();
    
    BigDecimal verificationProgress();
    
-   boolean initialBlockDownload();
+   Boolean initialBlockDownload();
 
    String chainWork();
    
-   long sizeOnDisk();
+   Long sizeOnDisk();
    
-   boolean pruned();
+   Boolean pruned();
    
-   int pruneHeight();
+   Integer pruneHeight();
    
-   boolean automaticPruning();
+   Boolean automaticPruning();
    
-   long pruneTargetSize();
+   Long pruneTargetSize();
    
    String warnings();
  }
