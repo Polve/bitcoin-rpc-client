@@ -1397,14 +1397,32 @@ public interface BitcoindRpcClient {
    String chain();
 
    int blocks();
+   
+   int headers();
 
    String bestBlockHash();
 
    BigDecimal difficulty();
-
+   
+   long medianTime();
+   
    BigDecimal verificationProgress();
+   
+   boolean initialBlockDownload();
 
    String chainWork();
+   
+   long sizeOnDisk();
+   
+   boolean pruned();
+   
+   int pruneHeight();
+   
+   boolean automaticPruning();
+   
+   long pruneTargetSize();
+   
+   String warnings();
  }
 
  static interface DecodedScript extends MapWrapperType, Serializable {

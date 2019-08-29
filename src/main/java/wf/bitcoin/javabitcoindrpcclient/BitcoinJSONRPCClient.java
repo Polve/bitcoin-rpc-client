@@ -1195,6 +1195,60 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     public String chainWork() {
       return mapStr("chainwork");
     }
+
+	@Override
+	public int headers()
+	{
+		return mapInt("headers");
+	}
+
+	@Override
+	public long medianTime()
+	{
+		return mapLong("mediantime");
+	}
+
+	@Override
+	public boolean initialBlockDownload()
+	{
+		return mapBool("initialblockdownload");
+	}
+
+	@Override
+	public long sizeOnDisk()
+	{
+		return mapLong("size_on_disk");
+	}
+
+	@Override
+	public boolean pruned()
+	{
+		return mapBool("pruned");
+	}
+
+	@Override
+	public int pruneHeight()
+	{
+		return mapInt("pruneheight");
+	}
+
+	@Override
+	public boolean automaticPruning()
+	{
+		return mapBool("automatic_pruning");
+	}
+
+	@Override
+	public long pruneTargetSize()
+	{
+		return mapLong("prune_target_size");
+	}
+
+	@Override
+	public String warnings()
+	{
+		return mapStr("warnings");
+	}
   }
 
   @SuppressWarnings("serial")
