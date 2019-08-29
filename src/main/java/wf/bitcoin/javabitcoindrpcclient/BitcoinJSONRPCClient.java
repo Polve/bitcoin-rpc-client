@@ -134,9 +134,9 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
         			+ "To use newer auth mechanism based on a temporary password, remove the property rpcauth from bitcoin.conf");
         }
         
-        // Look for .cookie file, which is in a subfolder of the home folder
+        // Look for .cookie file, which is in a subfolder of the .bitcoin folder
         // Subfolder is one of regtest, testnet3, or mainnet - depending on which mode bitcoind is currently using
-        Optional<Path> cookieFile = Files.walk(home.toPath())
+        Optional<Path> cookieFile = Files.walk(configFile.getParentFile().toPath())
         		.filter(f -> f.toFile().getName().equals(".cookie"))
         		.findFirst();
         
