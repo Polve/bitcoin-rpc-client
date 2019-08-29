@@ -1,7 +1,11 @@
 package wf.bitcoin.javabitcoindrpcclient.integration;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
+import java.math.BigDecimal;
+
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.BlockChainInfo;
@@ -18,18 +22,18 @@ public class BlockChainTest extends IntegrationTestBase
 	{
 		BlockChainInfo bci = client.getBlockChainInfo();
 		
-		// Check if mandatory fields are present
-		assertNotNull(bci.chain());
-		assertNotNull(bci.blocks());
-		assertNotNull(bci.headers());
-		assertNotNull(bci.bestBlockHash());
-		assertNotNull(bci.difficulty());
-		assertNotNull(bci.medianTime());
-		assertNotNull(bci.verificationProgress());
-		assertNotNull(bci.initialBlockDownload());
-		assertNotNull(bci.chainWork());
-		assertNotNull(bci.sizeOnDisk());
-		assertNotNull(bci.pruned());
-		assertNotNull(bci.warnings());
+		// Check if mandatory fields are present and have valid values
+		assertTrue(StringUtils.isNotBlank(bci.chain()));
+		assertTrue(bci.blocks() >= 0);
+		assertTrue(bci.headers() >= 0);
+		assertTrue(StringUtils.isNotBlank(bci.bestBlockHash()));
+		assertTrue(bci.difficulty().compareTo(BigDecimal.ZERO) >= 0);
+		assertTrue(bci.medianTime() > 0);
+		assertTrue(bci.verificationProgress().intValue() >= 0 && bci.verificationProgress().intValue() <= 1); // interval [0..1]
+		assertFalse(bci.initialBlockDownload());
+		assertTrue(StringUtils.isNotBlank(bci.chainWork()));
+		assertTrue(bci.sizeOnDisk() > 0);
+		assertFalse(bci.pruned()); // no pruning enabled for tests
+		assertTrue(StringUtils.isBlank(bci.warnings()));
 	}
 }
