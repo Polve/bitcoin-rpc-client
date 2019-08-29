@@ -19,8 +19,6 @@ The package is published in the wf.bitcoin group and you can add it to you pom.x
 Configuration
 =====
 In order to know what RPC API to use, the library will look in the bitcoind configuration file (`<user home>/.bitcoin/bitcoin.conf`) and read the relevant configs:
-- rpcuser
-- rpcpassword
 - rpcconnect
 - rpcport
 
@@ -40,8 +38,8 @@ server=1
 [regtest]
 
 # RPC API settings
-rpcuser=myUsername
-rpcpassword=myPassword
 rpcconnect=localhost
 rpcport=9997
 ```
+
+Note that the configuration does not contain any API credentials. The authentication is done via a temporary token stored in a cookie file by bitcoind (see [details](https://bitcoin.org/en/release/v0.12.0#rpc-random-cookie-rpc-authentication)). The approach of using rpcuser and rpcpassword is still supported, even though bitcoind considers it legacy.
