@@ -130,6 +130,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
+		<configuration>
+			<!-- Set skip to true, if running "mvn build" in an environment where gpg keys are not available -->
+			<skip>false</skip>
+		</configuration>
         <version>1.6</version>
         <executions>
           <execution>
