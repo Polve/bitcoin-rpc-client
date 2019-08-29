@@ -726,12 +726,14 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return new AddressValidationResultWrapper(m);
   }
 
+  @Deprecated
   @Override
   @SuppressWarnings("unchecked")
   public List<String> generate(int numBlocks) throws BitcoinRPCException {
     return (List<String>) query("generate", numBlocks);
   }
 
+  @Deprecated
   @Override
   @SuppressWarnings("unchecked")
   public List<String> generate(int numBlocks, long maxTries) throws BitcoinRPCException {
