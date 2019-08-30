@@ -97,6 +97,15 @@ public interface BitcoindRpcClient {
    * @see <a href="https://bitcoin.org/en/developer-reference#getblockchaininfo">getblockchaininfo</a>
    */
   BlockChainInfo getBlockChainInfo() throws GenericRpcException;
+  
+  /**
+   * @param address The bitcoin address to get the information of
+   * 
+   * @return Return information about the given bitcoin address. Some information requires the address to be in the wallet
+   *  
+   * @see <a href="https://bitcoincore.org/en/doc/0.18.0/rpc/wallet/getaddressinfo/">getaddressinfo</a>
+   */
+  AddressInfo getAddressInfo(String address) throws GenericRpcException;
 
   /**
    * The getblockcount RPC returns the number of blocks in the local best block chain.
@@ -1424,6 +1433,64 @@ public interface BitcoindRpcClient {
    
    String warnings();
  }
+ 
+	static interface AddressInfo extends MapWrapperType, Serializable
+	{
+		String address();
+
+		String scriptPubKey();
+
+		Boolean isMine();
+
+		Boolean isWatchOnly();
+
+		Boolean solvable();
+
+		String desc();
+
+		Boolean isScript();
+
+		Boolean isChange();
+
+		Boolean isWitness();
+
+		Integer witnessVersion();
+
+		String witnessProgram();
+
+		String script();
+		
+		String hex();
+
+		List<String> pubKeys();
+
+		Integer sigsRequired();
+
+		String pubKey();
+		
+		AddressInfo embedded();
+		
+		Boolean isCompressed();
+		
+		String label();
+		
+		Long timestamp();
+		
+		String hdKeyPath();
+		
+		String hdSeedId();
+		
+		String hdMasterFingerprint();
+		
+		List<AddressInfoLabel> labels();
+	}
+	
+	static interface AddressInfoLabel extends MapWrapperType, Serializable
+	{
+		String name();
+		
+		String purpose();
+	}
 
  static interface DecodedScript extends MapWrapperType, Serializable {
 

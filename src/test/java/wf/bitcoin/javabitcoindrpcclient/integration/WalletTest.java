@@ -1,11 +1,13 @@
 package wf.bitcoin.javabitcoindrpcclient.integration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
 
 import org.junit.Test;
 
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.AddressInfo;
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.AddressValidationResult;
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.MultiSig;
 
@@ -29,5 +31,25 @@ public class WalletTest extends IntegrationTestBase
 
     	assertEquals(addrValidationResult.address(), multiSig.address());
     	assertEquals(addrValidationResult.isScript(), true);
+    }
+	
+	@Test(expected = Test.None.class) // no exception expected
+    public void getAddressInfoTest()
+    {
+		String address = client.getNewAddress();
+		
+		AddressInfo addressInfo = client.getAddressInfo(address);
+		
+		// Check if mandatory fields are there
+		assertEquals(address, addressInfo.address());
+		assertStringNotNullNorEmpty(addressInfo.scriptPubKey());
+		assertNotNull(addressInfo.isMine());
+		assertNotNull(addressInfo.isWatchOnly());
+		assertNotNull(addressInfo.solvable());
+		assertNotNull(addressInfo.isScript());
+		assertNotNull(addressInfo.isChange());
+		assertNotNull(addressInfo.isWitness());
+		assertNotNull(addressInfo.label());
+		assertNotNull(addressInfo.labels());
     }
 }

@@ -1,7 +1,11 @@
 package wf.bitcoin.javabitcoindrpcclient.integration;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.BeforeClass;
 
 import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient;
@@ -35,5 +39,15 @@ public class IntegrationTestBase
     	if (!blockChainInfo.chain().equals(expectedBlockChain))
     		throw new Exception("Integration tests expected to run on the " + expectedBlockChain + " blockchain, "
     				+ "but client is configured to use: " + blockChainInfo.chain());
+    }
+    
+    protected void assertStringNotNullNorEmpty(String s)
+    {
+    	assertFalse(StringUtils.isEmpty(s));
+    }
+    
+    protected void assertStringNullOrEmpty(String s)
+    {
+    	assertTrue(StringUtils.isEmpty(s));
     }
 }
