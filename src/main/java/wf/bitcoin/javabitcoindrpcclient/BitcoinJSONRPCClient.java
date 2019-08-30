@@ -81,11 +81,27 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       File configFile = null;
       File home = new File(System.getProperty("user.home"));
       
-      if ((configFile = new File(home, ".bitcoin" + File.separatorChar + "bitcoin.conf")).exists())
+      if ((configFile = new File(home, ".bitcoin" + File.separatorChar +
+    		  							"bitcoin.conf")
+    		  ).exists())
       {
     	  // Look for the config file on the Linux path
       }
-      else if ((configFile = new File(home, "AppData" + File.separatorChar + "Roaming" + File.separatorChar + "Bitcoin" + File.separatorChar + "bitcoin.conf")).exists())
+      else if ((configFile = new File(home, "snap" + File.separatorChar +
+    		  								"bitcoin-core" + File.separatorChar +
+    		  								"common" + File.separatorChar +
+    		  								".bitcoin" + File.separatorChar +
+    		  								"bitcoin.conf")
+    		  ).exists())
+      {
+    	  // Look for the config file on the Linux path, when bitcoind was installed via snap
+    	  // Path is: ~/snap/bitcoin-core/common/.bitcoin/bitcoin.conf
+      }
+      else if ((configFile = new File(home, "AppData" + File.separatorChar +
+    		  								"Roaming" + File.separatorChar +
+    		  								"Bitcoin" + File.separatorChar +
+    		  								"bitcoin.conf")
+    		  ).exists())
       {
     	  // Look for the cofig file on the Windows path
       }
