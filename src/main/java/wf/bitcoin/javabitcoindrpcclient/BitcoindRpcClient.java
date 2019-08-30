@@ -189,14 +189,20 @@ public interface BitcoindRpcClient {
    * 
    */
   
-  /**
-   * The generate RPC nearly instantly generates blocks.
-   *
-   * @param numBlocks The number of blocks to generate.
-   * @return An array containing the block header hashes of the generated blocks
-   * 
-   * @see <a href="https://bitcoin.org/en/developer-reference#generate">generate</a>
-   */
+  	/**
+	 * The generate RPC nearly instantly generates blocks.
+	 *
+	 * @param numBlocks The number of blocks to generate.
+	 * @return An array containing the block header hashes of the generated blocks
+	 * 
+	 * @see <a href="https://bitcoin.org/en/developer-reference#generate">generate</a>
+	 * 
+	 * @deprecated The wallet generate rpc method is deprecated and will be fully
+	 *             removed in v0.19. To use generate in v0.18, restart bitcoind with
+	 *             -deprecatedrpc=generate. Clients should transition to using the
+	 *             node rpc method generatetoaddress
+	 */
+  @Deprecated
   List<String> generate(int numBlocks) throws BitcoinRPCException;
 
   /**
@@ -207,7 +213,13 @@ public interface BitcoindRpcClient {
    * @return An array containing the block header hashes of the generated blocks
    * 
    * @see <a href="https://bitcoin.org/en/developer-reference#generate">generate</a>
+   * 
+   * @deprecated The wallet generate rpc method is deprecated and will be fully
+   * 			removed in v0.19. To use generate in v0.18, restart bitcoind with
+   * 			-deprecatedrpc=generate. Clients should transition to using the
+   * 			node rpc method generatetoaddress
    */
+  @Deprecated
   List<String> generate(int numBlocks, long maxTries) throws BitcoinRPCException;
 
   /**
@@ -1384,15 +1396,33 @@ public interface BitcoindRpcClient {
 
    String chain();
 
-   int blocks();
+   Integer blocks();
+   
+   Integer headers();
 
    String bestBlockHash();
 
    BigDecimal difficulty();
-
+   
+   Long medianTime();
+   
    BigDecimal verificationProgress();
+   
+   Boolean initialBlockDownload();
 
    String chainWork();
+   
+   Long sizeOnDisk();
+   
+   Boolean pruned();
+   
+   Integer pruneHeight();
+   
+   Boolean automaticPruning();
+   
+   Long pruneTargetSize();
+   
+   String warnings();
  }
 
  static interface DecodedScript extends MapWrapperType, Serializable {
