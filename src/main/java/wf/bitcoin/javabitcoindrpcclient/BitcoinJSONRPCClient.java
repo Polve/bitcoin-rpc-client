@@ -2527,10 +2527,11 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
   }
 
-  @SuppressWarnings("serial")
   private class UnspentWrapper extends MapWrapper implements Unspent {
     
-    private UnspentWrapper(Map<String, ?> m) {
+	private static final long serialVersionUID = -1879303578294482585L;
+
+	private UnspentWrapper(Map<String, ?> m) {
       super(m);
     }
 
@@ -2571,7 +2572,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     @Override
-    public int confirmations() {
+    public Integer confirmations() {
       return mapInt("confirmations");
     }
 
@@ -2583,6 +2584,36 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 	@Override
 	public String witnessScript() {
 		return mapStr("witnessScript");
+	}
+
+	@Override
+	public String label()
+	{
+		return mapStr("label");
+	}
+
+	@Override
+	public Boolean spendable()
+	{
+		return mapBool("spendable");
+	}
+
+	@Override
+	public Boolean solvable()
+	{
+		return mapBool("solvable");
+	}
+
+	@Override
+	public String desc()
+	{
+		return mapStr("desc");
+	}
+
+	@Override
+	public Boolean safe()
+	{
+		return mapBool("safe");
 	}
   }
   
