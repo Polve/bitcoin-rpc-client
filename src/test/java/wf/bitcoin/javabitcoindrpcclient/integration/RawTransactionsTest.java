@@ -52,7 +52,7 @@ public class RawTransactionsTest extends IntegrationTestBase
 		List<String> generatedBlocksHashes = client.generateToAddress(110, addr3);
 		LOGGER.info("Generated " + generatedBlocksHashes.size() + " blocks for addr3");
 		
-		List<Unspent> availableUtxosForTx1 = client.listUnspent(0, 999, addr3);
+		List<Unspent> availableUtxosForTx1 = client.listUnspent(0, Integer.MAX_VALUE, addr3);
 		LOGGER.info("Found " + availableUtxosForTx1.size() + " UTXOs (unspent transaction outputs) belonging to addr3");
 
 		TxInput selectedUtxoForTx1 = availableUtxosForTx1.get(0);
@@ -145,7 +145,7 @@ public class RawTransactionsTest extends IntegrationTestBase
 		List<String> generatedBlocksHashes = client.generateToAddress(110, addr1);
 		LOGGER.info("Generated " + generatedBlocksHashes.size() + " blocks for addr1");
 		
-		List<Unspent> utxos = client.listUnspent(0, 999, addr1);
+		List<Unspent> utxos = client.listUnspent(0, Integer.MAX_VALUE, addr1);
 		LOGGER.info("Found " + utxos.size() + " UTXOs (unspent transaction outputs) belonging to addr1");
 
 		Unspent selectedUtxo = utxos.get(0);
