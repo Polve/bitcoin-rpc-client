@@ -595,6 +595,12 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   public TransactionsSinceBlock listSinceBlock(String blockHash, int targetConfirmations) throws GenericRpcException {
     return new TransactionsSinceBlockImpl((Map<String, ?>) query("listsinceblock", blockHash, targetConfirmations));
   }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public TransactionsSinceBlock listSinceBlock(String blockHash, int targetConfirmations, boolean includeWatchOnly) throws GenericRpcException {
+    return new TransactionsSinceBlockImpl((Map<String, ?>) query("listsinceblock", blockHash, targetConfirmations, includeWatchOnly));
+  }
 
   @Override
   @SuppressWarnings("unchecked")
