@@ -97,6 +97,15 @@ public interface BitcoindRpcClient {
    * @see <a href="https://bitcoin.org/en/developer-reference#getblockchaininfo">getblockchaininfo</a>
    */
   BlockChainInfo getBlockChainInfo() throws GenericRpcException;
+  
+  /**
+   * @param address The bitcoin address to get the information of
+   * 
+   * @return Return information about the given bitcoin address. Some information requires the address to be in the wallet
+   *  
+   * @see <a href="https://bitcoincore.org/en/doc/0.18.0/rpc/wallet/getaddressinfo/">getaddressinfo</a>
+   */
+  AddressInfo getAddressInfo(String address) throws GenericRpcException;
 
   /**
    * The getblockcount RPC returns the number of blocks in the local best block chain.
@@ -933,6 +942,20 @@ public interface BitcoindRpcClient {
    * @see <a href="https://bitcoin.org/en/developer-reference#listsinceblock">listsinceblock</a>
    */
   TransactionsSinceBlock listSinceBlock(String blockHash, int targetConfirmations) throws GenericRpcException;
+  
+  /**
+   * The listsinceblock RPC gets all transactions affecting the wallet which have occurred since a particular block, plus the header hash of a block at a particular depth.
+   * 
+   * @param blockHash The hash of a block header encoded as hex in RPC byte order.
+   * @param targetConfirmations Sets the lastblock field of the results to the header hash of a block with this many confirmations.
+   * @param includeWatchOnly Include transactions to watch-only addresses
+   * 
+   * @return An object containing an array of transactions and the lastblock field
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#listsinceblock">listsinceblock</a>
+   * @see <a href="https://bitcoincore.org/en/doc/0.18.0/rpc/wallet/listsinceblock/">Bitcoin Core Documentation for listsinceblock</a>
+   */
+  TransactionsSinceBlock listSinceBlock(String blockHash, int targetConfirmations, boolean includeWatchOnly) throws GenericRpcException;
 
   /**
    * The listtransactions RPC returns the most recent transactions that affect the wallet.
@@ -984,7 +1007,8 @@ public interface BitcoindRpcClient {
   * 
   * @return An array of objects each describing an unspent output.
   * 
-  * @see <a href="https://bitcoin.org/en/developer-reference#listunspent">listunspent</a>
+  * @see <a href="https://bitcoin.org/en/developer-reference#listunspent">Developer reference documentation</a>
+  * @see <a href="https://bitcoincore.org/en/doc/0.18.0/rpc/wallet/listunspent/">Bitcoin Core API documentation</a>
   */
  List<Unspent> listUnspent() throws GenericRpcException;
 
@@ -1324,20 +1348,39 @@ public interface BitcoindRpcClient {
 	}
  }
 
- @SuppressWarnings("serial")
  public static class BasicTxOutput implements TxOutput {
 
+   private static final long serialVersionUID = 4906609252978270536L;
+   
    public final String address;
+   public final String label;
    public final BigDecimal amount;
+   public final Boolean spendable;
+   public final Boolean solvable;
+   public final String desc;
+   public final Boolean safe;
    public final byte[] data;
 
    public BasicTxOutput(String address, BigDecimal amount) {
-     this(address, amount, null);
+     this(address, null, amount, null, null, null, null, null);
+   }
+   
+   public BasicTxOutput(String address, BigDecimal amount, byte[] data) {
+	 this(address, null, amount, null, null, null, null, data);
+   }
+   
+   public BasicTxOutput(String address, BigDecimal amount, Boolean spendable, byte[] data) {
+	 this(address, null, amount, spendable, null, null, null, data);
    }
 
-   public BasicTxOutput(String address, BigDecimal amount, byte[] data) {
+   public BasicTxOutput(String address, String label, BigDecimal amount, Boolean spendable, Boolean solvable, String desc, Boolean safe, byte[] data) {
      this.address = address;
+     this.label = label;
      this.amount = amount;
+     this.spendable = spendable;
+     this.solvable = solvable;
+     this.desc = desc;
+     this.safe = safe;
      this.data = data;
    }
 
@@ -1355,6 +1398,36 @@ public interface BitcoindRpcClient {
    public byte[] data() {
      return data;
    }
+
+	@Override
+	public String label()
+	{
+		return label;
+	}
+
+	@Override
+	public Boolean spendable()
+	{
+		return spendable;
+	}
+
+	@Override
+	public Boolean solvable()
+	{
+		return solvable;
+	}
+
+	@Override
+	public String desc()
+	{
+		return desc;
+	}
+
+	@Override
+	public Boolean safe()
+	{
+		return safe;
+	}
  }
 
  static interface Block extends MapWrapperType, Serializable {
@@ -1424,6 +1497,64 @@ public interface BitcoindRpcClient {
    
    String warnings();
  }
+ 
+	static interface AddressInfo extends MapWrapperType, Serializable
+	{
+		String address();
+
+		String scriptPubKey();
+
+		Boolean isMine();
+
+		Boolean isWatchOnly();
+
+		Boolean solvable();
+
+		String desc();
+
+		Boolean isScript();
+
+		Boolean isChange();
+
+		Boolean isWitness();
+
+		Integer witnessVersion();
+
+		String witnessProgram();
+
+		String script();
+		
+		String hex();
+
+		List<String> pubKeys();
+
+		Integer sigsRequired();
+
+		String pubKey();
+		
+		AddressInfo embedded();
+		
+		Boolean isCompressed();
+		
+		String label();
+		
+		Long timestamp();
+		
+		String hdKeyPath();
+		
+		String hdSeedId();
+		
+		String hdMasterFingerprint();
+		
+		List<AddressInfoLabel> labels();
+	}
+	
+	static interface AddressInfoLabel extends MapWrapperType, Serializable
+	{
+		String name();
+		
+		String purpose();
+	}
 
  static interface DecodedScript extends MapWrapperType, Serializable {
 
@@ -1835,21 +1966,59 @@ public interface BitcoindRpcClient {
   public static interface TxOutput extends Serializable {
 
     public String address();
+    
+    /**
+     * @return The label associated with {@link #address()}
+     */
+    public String label();
 
     public BigDecimal amount();
+    
+    /**
+     * @return Whether we have the private keys to spend this output
+     */
+    public Boolean spendable();
+
+    /**
+     * @return Whether we know how to spend this output, ignoring the lack of keys
+     */
+    public Boolean solvable();
+    
+    /**
+     * @return (only when solvable) A descriptor for spending this output
+     */
+    public String desc();
+    
+    	/**
+		 * @return Whether this output is considered safe to spend. Unconfirmed
+		 *         transactions from outside keys and unconfirmed replacement
+		 *         transactions are considered unsafe and are not eligible for spending
+		 *         by fundrawtransaction and sendtoaddress.
+		 */
+    public Boolean safe();
     
     public byte[] data();
   }
 
   /**
-   * @see <a href="https://bitcoin.org/en/developer-reference#listunspent">Bitcoin Core API documentation</a>
+   * Also known as UTXO (unspent transaction output)
+   * <br><br>
+   * Is a type of transaction output (therefore implements {@link TxOutput}.
+   * <br><br>
+   * But it can also be used as a transaction input (therefore implements {@link TxInput}).
+   * 
+   * @see {@link BitcoindRpcClient#listUnspent()}
+
    */
   interface Unspent extends TxInput, TxOutput, Serializable {
-
+	
+	  /**
+	   * @deprecatd Use {@link TxOutput#address()} instead
+	   */
 	@Deprecated
     String account();
 
-    int confirmations();
+    Integer confirmations();
     
     /**
      * @return The redeemScript if scriptPubKey is P2SH
