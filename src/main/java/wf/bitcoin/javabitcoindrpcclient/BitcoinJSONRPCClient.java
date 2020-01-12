@@ -2533,10 +2533,9 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
   }
 
+  @SuppressWarnings("serial")
   private class UnspentWrapper extends MapWrapper implements Unspent {
     
-	private static final long serialVersionUID = -1879303578294482585L;
-
 	private UnspentWrapper(Map<String, ?> m) {
       super(m);
     }
