@@ -1,32 +1,47 @@
-package wf.bitcoin.javabitcoindrpcclient.integration;
+package wf.bitcoin.javabitcoindrpcclient.examples;
 
-import static org.junit.Assert.assertNull;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
-import org.junit.Test;
-
+import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient;
 import wf.bitcoin.javabitcoindrpcclient.BitcoinRawTxBuilder;
+import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient;
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.ExtendedTxInput;
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.MultiSig;
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.RawTransactionSigningOrVerificationError;
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.SignedRawTransaction;
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.TxInput;
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.Unspent;
+import wf.bitcoin.javabitcoindrpcclient.util.Chain;
+import wf.bitcoin.javabitcoindrpcclient.util.Util;
 
-/**
- * Integration tests for the Raw Transactions command group
- * 
- * @see <a href="https://bitcoincore.org/en/doc/0.18.0/rpc/">Bitcoin Core RPC documentation</a>
- */
-public class RawTransactionsTest extends IntegrationTestBase
+public class RawTransactionsExample
 {
-	@Test(expected = Test.None.class) // no exception expected
-	public void signRawTransactionWithKeyTest_P2SH_MultiSig()
+	static final Logger LOGGER = Logger.getLogger(RawTransactionsExample.class.getName());
+	
+	public static void main(String[] args) throws Exception
 	{
-		LOGGER.info("Testing scenario: signRawTransactionWithKey ( P2SH-multiSigAddr(2-of-2, [addr1, addr2]) -> addr4 )");
+		System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$-7s] %5$s %n");
+		
+		BitcoindRpcClient client = new BitcoinJSONRPCClient();
+		
+		Util.ensureRunningOnChain(Chain.REGTEST, client);
+		
+		// Before you run the examples:
+		// 1. make sure you have an empty regtest chain (e.g. delete the regtest folder in the bitcoin data path)
+		// 2. make sure the bitcoin client is running
+		// 3. make sure it is running on regtest
+		
+		signRawTransactionWithKeyTest_P2SH_MultiSig(client);
+		signRawTransactionWithKeyTest_P2SH_P2WPKH(client);
+	}
+	
+	static void signRawTransactionWithKeyTest_P2SH_MultiSig(BitcoindRpcClient client)
+	{
+		LOGGER.info("=== Testing scenario: signRawTransactionWithKey ( P2SH-multiSigAddr(2-of-2, [addr1, addr2]) -> addr4 )");
 		
 		///////////////////////////////////////////
 		// Prepare transaction 1 (addr3 -> multisig)
@@ -93,8 +108,8 @@ public class RawTransactionsTest extends IntegrationTestBase
 		rawTxBuilder.in(inputP2SH);
 		
 		// Found no other reliable way to estimate the fee in a test
-		// Therefore, setting the fee for this tx to 1/1000 of the tx amount
-		BigDecimal estimatedFee = selectedUtxoForTx2.amount().divide(BigDecimal.valueOf(1000));
+		// Therefore, setting the fee for this tx 200 satoshis (what appears to be the min relay fee)
+		BigDecimal estimatedFee = BigDecimal.valueOf(0.00000200);
 		BigDecimal txToAddr4Amount = selectedUtxoForTx2.amount().subtract(estimatedFee);
 		rawTxBuilder.out(addr4, txToAddr4Amount);
 		
@@ -124,17 +139,14 @@ public class RawTransactionsTest extends IntegrationTestBase
 		// Transaction 2 : multisig -> addr4
 		String sentRawTransactionID = client.sendRawTransaction(srTx.hex());
 		LOGGER.info("Sent signedRawTx (txID): " + sentRawTransactionID);
-
-		assertNull("Client reported errors when signing unsignedRawTx", srTx.errors());
 	}
 	
 	/**
 	 * Signing a transaction to a P2SH-P2WPKH address (Pay-to-Witness-Public-Key-Hash)
 	 */
-	@Test(expected = Test.None.class) // no exception expected
-	public void signRawTransactionWithKeyTest_P2SH_P2WPKH()
+	static void signRawTransactionWithKeyTest_P2SH_P2WPKH(BitcoindRpcClient client)
 	{
-		LOGGER.info("Testing scenario: signRawTransactionWithKey (addr1 -> addr2)");
+		LOGGER.info("=== Testing scenario: signRawTransactionWithKey (addr1 -> addr2)");
 		
 		String addr1 = client.getNewAddress();
 		LOGGER.info("Created address addr1: " + addr1);
@@ -169,8 +181,8 @@ public class RawTransactionsTest extends IntegrationTestBase
 		rawTxBuilder.in(inputP2SH_P2WPKH);
 
 		// Found no other reliable way to estimate the fee in a test
-		// Therefore, setting the fee for this tx to 1/1000 of the tx amount
-		BigDecimal estimatedFee = selectedUtxo.amount().divide(BigDecimal.valueOf(1000));
+		// Therefore, setting the fee for this tx 200 satoshis (what appears to be the min relay fee)
+		BigDecimal estimatedFee = BigDecimal.valueOf(0.00000200);
 		BigDecimal txToAddr2Amount = selectedUtxo.amount().subtract(estimatedFee);
 		rawTxBuilder.out(addr2, txToAddr2Amount);
 		
@@ -202,7 +214,5 @@ public class RawTransactionsTest extends IntegrationTestBase
 		
 		String sentRawTransactionID = client.sendRawTransaction(srTx.hex());
 		LOGGER.info("Sent signedRawTx (txID): " + sentRawTransactionID);
-
-		assertNull("Client reported errors when signing unsignedRawTx", srTx.errors());
 	}
 }
