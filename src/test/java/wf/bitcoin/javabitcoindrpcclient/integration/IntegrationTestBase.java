@@ -10,7 +10,8 @@ import org.junit.BeforeClass;
 
 import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient;
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient;
-import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient.BlockChainInfo;
+import wf.bitcoin.javabitcoindrpcclient.util.Chain;
+import wf.bitcoin.javabitcoindrpcclient.util.Util;
 
 /**
  * Common framework for integration tests
@@ -33,12 +34,7 @@ public class IntegrationTestBase
     	
     	client = new BitcoinJSONRPCClient();
     	
-    	BlockChainInfo blockChainInfo = client.getBlockChainInfo();
-    	
-    	String expectedBlockChain = "regtest";
-    	if (!blockChainInfo.chain().equals(expectedBlockChain))
-    		throw new Exception("Integration tests expected to run on the " + expectedBlockChain + " blockchain, "
-    				+ "but client is configured to use: " + blockChainInfo.chain());
+    	Util.ensureRunningOnChain(Chain.REGTEST, client);
     }
     
     protected void assertStringNotNullNorEmpty(String s)
