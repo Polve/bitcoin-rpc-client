@@ -52,6 +52,9 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.apache.commons.lang3.StringUtils;
+
+import wf.bitcoin.javabitcoindrpcclient.config.RpcClientConfig;
 import wf.bitcoin.krotjson.Base64Coder;
 import wf.bitcoin.krotjson.HexCoder;
 import wf.bitcoin.krotjson.JSON;
@@ -80,8 +83,16 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     try {
       File configFile = null;
       File home = new File(System.getProperty("user.home"));
+      String manuallyConfiguredDataFolderPath = RpcClientConfig.get().bitcoinCoreDataFolder();
       
-      if ((configFile = new File(home, ".bitcoin" + File.separatorChar +
+      if (!StringUtils.isEmpty(manuallyConfiguredDataFolderPath) &&
+    		  (configFile = new File(manuallyConfiguredDataFolderPath, "bitcoin.conf")
+    		  ).exists())
+      {
+    	  // Look for the config file in the configured bitcoin core data folder
+    	  logger.fine("Using configured data dir: " + manuallyConfiguredDataFolderPath);
+      }
+      else if ((configFile = new File(home, ".bitcoin" + File.separatorChar +
     		  							"bitcoin.conf")
     		  ).exists())
       {
