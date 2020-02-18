@@ -1044,7 +1044,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   public TxOut getTxOut(String txId, long vout) throws GenericRpcException {
     TxOutWrapper txOut = new TxOutWrapper((Map<String, ?>) query("gettxout", txId, vout, true));
     if (txOut.m == null) {
-      throw new BitcoinRPCException("Invalid TxOut: " + txId+":"+vout);
+      return null;
     }
     return txOut;
   }
@@ -1053,7 +1053,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   public TxOut getTxOut(String txId, long vout, boolean includemempool) throws GenericRpcException {
     TxOutWrapper txOut = new TxOutWrapper((Map<String, ?>) query("gettxout", txId, vout, includemempool));
     if (txOut.m == null) {
-      throw new BitcoinRPCException("Invalid TxOut: " + txId+":"+vout);
+      return null;
     }
     return txOut;
   }
