@@ -1042,12 +1042,20 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   @Override
   @SuppressWarnings("unchecked")
   public TxOut getTxOut(String txId, long vout) throws GenericRpcException {
-    return new TxOutWrapper((Map<String, ?>) query("gettxout", txId, vout, true));
+    TxOutWrapper txOut = new TxOutWrapper((Map<String, ?>) query("gettxout", txId, vout, true));
+    if (txOut.m == null) {
+      return null;
+    }
+    return txOut;
   }
 
   @SuppressWarnings("unchecked")
   public TxOut getTxOut(String txId, long vout, boolean includemempool) throws GenericRpcException {
-    return new TxOutWrapper((Map<String, ?>) query("gettxout", txId, vout, includemempool));
+    TxOutWrapper txOut = new TxOutWrapper((Map<String, ?>) query("gettxout", txId, vout, includemempool));
+    if (txOut.m == null) {
+      return null;
+    }
+    return txOut;
   }
 
   @SuppressWarnings("unchecked")
