@@ -1,15 +1,15 @@
 /*
  * BitcoindRpcClient-JSON-RPC-Client License
- * 
+ *
  * Copyright (c) 2013, Mikhail Yevchenko.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the
  * Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish,
  * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject
  * to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
@@ -47,6 +47,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -71,7 +72,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   public static final URL DEFAULT_JSONRPC_URL;
   public static final URL DEFAULT_JSONRPC_TESTNET_URL;
   public static final URL DEFAULT_JSONRPC_REGTEST_URL;
-  
+
   public static final Charset QUERY_CHARSET = Charset.forName("ISO8859-1");
 
   static {
@@ -84,7 +85,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       File configFile = null;
       File home = new File(System.getProperty("user.home"));
       String manuallyConfiguredDataFolderPath = RpcClientConfig.get().bitcoinCoreDataFolder();
-      
+
       if (!StringUtils.isEmpty(manuallyConfiguredDataFolderPath) &&
     		  (configFile = new File(manuallyConfiguredDataFolderPath, "bitcoin.conf")
     		  ).exists())
@@ -130,7 +131,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
         password = configProps.getProperty("rpcpassword", password);
         host = configProps.getProperty("rpcconnect", host);
         port = configProps.getProperty("rpcport", port);
-        
+
         // rpcuser and rpcpassword are being phased out of bitcoind
         // bitcoind shows this warning when these configs are used:
         // "Config options rpcuser and rpcpassword will soon be deprecated. Locally-run instances may remove rpcuser to use cookie-based auth, or may be replaced with rpcauth"
@@ -144,7 +145,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
         // This contains a temporary password for the RPC API
         // The .cookie file is automatically deleted when bitcoind is stopped
         // Option 2) seems like the best one to use for this client, so warn user if rpcuser / rpcpassword are still used
-        
+
         // Show warning if legacy auth mechanism (using rpcuser / rpcpassword) detected
         if (configProps.getProperty("rpcuser") != null || configProps.getProperty("rpcpassword") != null)
         {
@@ -152,7 +153,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
         			+ "This will soon be deprecated in bitcoind. "
         			+ "To use newer auth mechanism based on a temporary password, remove properties rpcuser / rpcpassword from bitcoin.conf");
         }
-        
+
         // Also show warning if rpcauth mechanism is detected
         if (configProps.getProperty("rpcauth") != null)
         {
@@ -160,26 +161,26 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
         			+ "This cannot be used by this library, because the password needed for API authentication cannot be retrieved from bitcoin.conf. "
         			+ "To use newer auth mechanism based on a temporary password, remove the property rpcauth from bitcoin.conf");
         }
-        
+
         // Look for .cookie file, which is in a subfolder of the .bitcoin folder
         // Subfolder is one of regtest, testnet3, or mainnet - depending on which mode bitcoind is currently using
         Optional<Path> cookieFile = Files.walk(configFile.getParentFile().toPath())
         		.filter(f -> f.toFile().getName().equals(".cookie"))
         		.findFirst();
-        
+
         if (cookieFile.isPresent())
         {
         	Path cookieFilePath = cookieFile.get();
-        	
+
             // Format is __cookie__:tempPassword
             String cookieFileContents = new String(Files.readAllBytes(cookieFilePath));
-            
+
             String[] temp = cookieFileContents.split(":");
             user = temp[0];
             password = temp[1];
         }
       }
-      
+
     } catch (Exception ex) {
       logger.log(Level.SEVERE, null, ex);
     }
@@ -249,6 +250,17 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }).getBytes(QUERY_CHARSET);
   }
 
+  @SuppressWarnings("serial")
+  protected byte[] prepareBatchRequest(final String method, final List<Object[]> paramsList) {
+    return JSON.stringify(paramsList.stream().map(params-> new LinkedHashMap<String, Object>() {
+      {
+        put("method", method);
+        put("params", params);
+        put("id", "1");
+      }
+    }).collect(Collectors.toList())).getBytes(QUERY_CHARSET);
+  }
+
   private static byte[] loadStream(InputStream in, boolean close) throws IOException {
     ByteArrayOutputStream o = new ByteArrayOutputStream();
     byte[] buffer = new byte[1024];
@@ -273,13 +285,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       try {
         Map response = (Map) JSON.parse(r);
 
-        if (!expectedID.equals(response.get("id")))
-          throw new BitcoinRPCException("Wrong response ID (expected: " + String.valueOf(expectedID) + ", response: " + response.get("id") + ")");
-
-        if (response.get("error") != null)
-          throw new BitcoinRPCException(new BitcoinRPCError((Map)response.get("error")));
-
-        return response.get("result");
+        return getResponseObject(expectedID, response);
       } catch (ClassCastException ex) {
         throw new BitcoinRPCException("Invalid server response format (data: \"" + r + "\")");
       }
@@ -287,6 +293,34 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       if (close)
         in.close();
     }
+  }
+
+    @SuppressWarnings("rawtypes")
+    public Object loadBatchResponse(InputStream in, Object expectedID, boolean close) throws IOException, GenericRpcException {
+        try {
+            String r = new String(loadStream(in, close), QUERY_CHARSET);
+            logger.log(Level.FINE, "Bitcoin JSON-RPC response:\n{0}", r);
+            try {
+                List<Map> response = (List<Map>) JSON.parse(r);
+
+                return response.stream().map(item-> getResponseObject(expectedID, item)).collect(Collectors.toList());
+            } catch (ClassCastException ex) {
+                throw new BitcoinRPCException("Invalid server response format (data: \"" + r + "\")");
+            }
+        } finally {
+            if (close)
+                in.close();
+        }
+    }
+
+  private Object getResponseObject(Object expectedID, Map response) {
+    if (!expectedID.equals(response.get("id")))
+      throw new BitcoinRPCException("Wrong response ID (expected: " + String.valueOf(expectedID) + ", response: " + response.get("id") + ")");
+
+    if (response.get("error") != null)
+      throw new BitcoinRPCException(new BitcoinRPCError((Map)response.get("error")));
+
+    return response.get("result");
   }
 
   public Object query(String method, Object... o) throws GenericRpcException {
@@ -312,15 +346,51 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       int responseCode = conn.getResponseCode();
       if (responseCode != 200) {
         InputStream errorStream = conn.getErrorStream();
-        throw new BitcoinRPCException(method, 
-                                      Arrays.deepToString(o), 
-                                      responseCode, 
-                                      conn.getResponseMessage(), 
+        throw new BitcoinRPCException(method,
+                                      Arrays.deepToString(o),
+                                      responseCode,
+                                      conn.getResponseMessage(),
                                       errorStream == null ? null : new String(loadStream(errorStream, true)));
       }
       return loadResponse(conn.getInputStream(), "1", true);
     } catch (IOException ex) {
       throw new BitcoinRPCException(method, Arrays.deepToString(o), ex);
+    }
+  }
+
+  public Object batchQuery(String method, List<Object[]> paramsList) throws GenericRpcException {
+    HttpURLConnection conn;
+    try {
+      conn = (HttpURLConnection) noAuthURL.openConnection();
+
+      conn.setDoOutput(true);
+      conn.setDoInput(true);
+
+      if (conn instanceof HttpsURLConnection) {
+        if (hostnameVerifier != null)
+          ((HttpsURLConnection) conn).setHostnameVerifier(hostnameVerifier);
+        if (sslSocketFactory != null)
+          ((HttpsURLConnection) conn).setSSLSocketFactory(sslSocketFactory);
+      }
+
+      ((HttpURLConnection) conn).setRequestProperty("Authorization", "Basic " + authStr);
+      byte[] r = prepareBatchRequest(method, paramsList);
+      logger.log(Level.FINE, "Bitcoin JSON-RPC request:\n{0}", new String(r, QUERY_CHARSET));
+      conn.getOutputStream().write(r);
+      conn.getOutputStream().close();
+      int responseCode = conn.getResponseCode();
+      if (responseCode != 200) {
+        InputStream errorStream = conn.getErrorStream();
+        throw new BitcoinRPCException(method,
+                paramsList.stream().map(param->Arrays.deepToString(param)).collect(Collectors.joining()),
+                responseCode,
+                conn.getResponseMessage(),
+                errorStream == null ? null : new String(loadStream(errorStream, true)));
+      }
+      return loadBatchResponse((conn.getInputStream()), "1", true);
+    } catch (IOException ex) {
+      throw new BitcoinRPCException(method, paramsList.stream()
+              .map(param->Arrays.deepToString(param)).collect(Collectors.joining()), ex);
     }
   }
 
@@ -339,7 +409,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     Map<String, Object> pOutputs = new LinkedHashMap<>();
-    
+
     for (TxOutput txOutput : outputs) {
       pOutputs.put(txOutput.address(), txOutput.amount());
       if (txOutput.data() != null) {
@@ -420,7 +490,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   public BlockChainInfo getBlockChainInfo() throws GenericRpcException {
     return new BlockChainInfoMapWrapper((Map<String, ?>) query("getblockchaininfo"));
   }
-  
+
   @Override
   @SuppressWarnings({ "unchecked" })
   public AddressInfo getAddressInfo(String address) throws GenericRpcException {
@@ -511,6 +581,14 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return new RawTransactionImpl((Map<String, Object>) query("getrawtransaction", txId, 1));
   }
 
+  @SuppressWarnings("unchecked")
+  public List<RawTransaction> getRawTransactions(List<String> txIds) throws GenericRpcException {
+    List<Map<String, Object>> rawTransactions = (List<Map<String, Object>>) batchQuery("getrawtransaction",
+            txIds.stream().map(txId -> new Object[]{txId, 1})
+                    .collect(Collectors.toList()));
+    return rawTransactions.stream().map(RawTransactionImpl::new).collect(Collectors.toList());
+  }
+
   @Override
   public BigDecimal getReceivedByAddress(String address) throws GenericRpcException {
     return (BigDecimal) query("getreceivedbyaddress", address);
@@ -563,7 +641,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   @Override
   @SuppressWarnings({ "unchecked", "rawtypes" })
   public List<LockedUnspent> listLockUnspent() {
-    
+
     return new ListMapWrapper<LockedUnspent>((List<Map<String, ?>>) query("listlockunspent")) {
       protected LockedUnspent wrap(final Map m) {
         return new LockedUnspentWrapper(m);
@@ -606,7 +684,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   public TransactionsSinceBlock listSinceBlock(String blockHash, int targetConfirmations) throws GenericRpcException {
     return new TransactionsSinceBlockImpl((Map<String, ?>) query("listsinceblock", blockHash, targetConfirmations));
   }
-  
+
   @Override
   @SuppressWarnings("unchecked")
   public TransactionsSinceBlock listSinceBlock(String blockHash, int targetConfirmations, boolean includeWatchOnly) throws GenericRpcException {
@@ -768,7 +846,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     else
       throw new GenericRpcException("Incomplete");
   }
-  
+
 	@SuppressWarnings("serial")
 	@Override
 	public SignedRawTransaction signRawTransactionWithKey(String hex, List<String> privateKeys, List<? extends TxInput> prevTxs, SignatureHashType sigHashType)
@@ -785,7 +863,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 						put("vout", txInput.vout());
 						put("scriptPubKey", txInput.scriptPubKey());
 						put("amount", txInput.amount());
-						
+
 						if (txInput instanceof ExtendedTxInput)
 						{
 							ExtendedTxInput extIn = (ExtendedTxInput) txInput;
@@ -803,7 +881,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 	    		privateKeys,
 	    		prevTxsJson,
 	    		sigHashType);
-	    
+
 	    return new SignedRawTransactionWrapper(result);
 	}
 
@@ -1026,16 +1104,16 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   @Override
   @SuppressWarnings("unchecked")
   public Transaction getTransaction(String txId) {
-    
+
     TransactionWrapper tx = new TransactionWrapper((Map<String, ?>) query("gettransaction", txId));
-    
+
     // [#88] Request for invalid Tx should fail
     // https://github.com/Polve/JavaBitcoindRpcClient/issues/88
     RawTransaction rawTx = tx.raw();
     if (rawTx == null || rawTx.vIn().isEmpty() || rawTx.vOut().isEmpty()) {
       throw new BitcoinRPCException("Invalid Tx: " + txId);
     }
-    
+
     return tx;
   }
 
@@ -1132,9 +1210,9 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       return height;
     }
   }
-  
+
   private class AddressUtxoList extends ListMapWrapper<AddressUtxo> {
-    
+
     private AddressUtxoList(List<Map<String, ?>> list) {
           super((List<Map<String, ?>>)list);
       }
@@ -1144,7 +1222,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
           return new AddressUtxoWrapper(m);
       }
   }
-  
+
   @SuppressWarnings("serial")
   private class AddressValidationResultWrapper extends MapWrapper implements AddressValidationResult {
 
@@ -1187,7 +1265,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       return mapStr("account");
     }
   };
-  
+
   @SuppressWarnings("serial")
   private class AddressWrapper extends MapWrapper implements Address, Serializable {
 
@@ -1297,7 +1375,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 		return mapStr("warnings");
 	}
   }
-  
+
 	private class AddressInfoMapWrapper extends MapWrapper implements AddressInfo, Serializable
 	{
 		private static final long serialVersionUID = 8801943420993238518L;
@@ -1378,7 +1456,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 		{
 			return mapStr("script");
 		}
-		
+
 		@Override
 		public String hex()
 		{
@@ -1391,7 +1469,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 		{
 			if (! m.containsKey("pubkeys"))
 				return null;
-			
+
 			return (List<String>) m.get("pubkeys");
 		}
 
@@ -1413,7 +1491,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 		{
 			if (! m.containsKey("embedded"))
 				return null;
-			
+
 			return new AddressInfoMapWrapper((Map<String, ?>) m.get("embedded"));
 		}
 
@@ -1458,14 +1536,14 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 		{
 			if (! m.containsKey("labels"))
 				return null;
-			
+
 			@SuppressWarnings("unchecked")
 			List<Map<String, ?>> list = (List<Map<String, ?>>) m.get("labels");
-			
+
 			return new AddressInfoLabelList(list);
 		}
 	}
-	
+
 	private class AddressInfoLabelList extends ListMapWrapper<AddressInfoLabel>
 	{
 		private AddressInfoLabelList(List<Map<String, ?>> list)
@@ -1630,7 +1708,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       return ((Long) m.get("vout")).intValue();
     }
   }
-  
+
   @SuppressWarnings("serial")
   private class MiningInfoWrapper extends MapWrapper implements MiningInfo, Serializable {
 
@@ -2068,7 +2146,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       public Integer vout() {
         return mapInt("vout");
       }
-      
+
       @Override
       public BigDecimal amount() {
     	return mapBigDecimal("amount");
@@ -2402,7 +2480,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       return m.toString();
     }
   }
-  
+
   private class TransactionListMapWrapper extends ListMapWrapper<Transaction> {
 
     private TransactionListMapWrapper(List<Map<String, ?>> list) {
@@ -2437,7 +2515,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       return lastBlock;
     }
   }
-  
+
   @SuppressWarnings("serial")
   private class TxOutSetInfoWrapper extends MapWrapper implements TxOutSetInfo, Serializable {
 
@@ -2554,7 +2632,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
   @SuppressWarnings("serial")
   private class UnspentWrapper extends MapWrapper implements Unspent {
-    
+
 	private UnspentWrapper(Map<String, ?> m) {
       super(m);
     }
@@ -2640,7 +2718,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 		return mapBool("safe");
 	}
   }
-  
+
   @SuppressWarnings("serial")
   private class WalletInfoWrapper extends MapWrapper implements WalletInfo, Serializable {
 
@@ -2724,10 +2802,10 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 		{
 			if (! m.containsKey("errors"))
 				return null;
-			
+
 			@SuppressWarnings("unchecked")
 			List<Map<String, ?>> list = (List<Map<String, ?>>) m.get("errors");
-			
+
 			return new RawTransactionSigningOrVerificationErrorList(list);
 		}
 	}
@@ -2747,7 +2825,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 			return new RawTransactionSigningOrVerificationErrorWrapper(m);
 		}
 	}
-	
+
 	@SuppressWarnings("serial")
 	private class RawTransactionSigningOrVerificationErrorWrapper extends MapWrapper implements RawTransactionSigningOrVerificationError, Serializable
 	{
@@ -2755,7 +2833,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 		{
 			super(m);
 		}
-		
+
 		@Override
 		public String txId()
 		{
@@ -2786,7 +2864,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 			return mapStr("error");
 		}
 	}
-	
+
 	private class AddressInfoLabelWrapper extends MapWrapper implements AddressInfoLabel, Serializable
 	{
 		private static final long serialVersionUID = 3290420293956206271L;
