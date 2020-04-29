@@ -251,12 +251,12 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @SuppressWarnings("serial")
-  protected byte[] prepareBatchRequest(final String method, final List<Object[]> paramsList) {
-    return JSON.stringify(paramsList.stream().map(params-> new LinkedHashMap<String, Object>() {
+  protected byte[] prepareBatchRequest(final String method, final List<BatchParam> paramsList) {
+    return JSON.stringify(paramsList.stream().map(batchParam-> new LinkedHashMap<String, Object>() {
       {
         put("method", method);
-        put("params", params);
-        put("id", "1");
+        put("params", batchParam.params);
+        put("id", batchParam.id);
       }
     }).collect(Collectors.toList())).getBytes(QUERY_CHARSET);
   }
@@ -296,14 +296,23 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
     @SuppressWarnings("rawtypes")
-    public Object loadBatchResponse(InputStream in, Object expectedID, boolean close) throws IOException, GenericRpcException {
+    public Object loadBatchResponse(InputStream in, List<BatchParam> batchParams, boolean close) throws IOException, GenericRpcException {
         try {
             String r = new String(loadStream(in, close), QUERY_CHARSET);
             logger.log(Level.FINE, "Bitcoin JSON-RPC response:\n{0}", r);
             try {
                 List<Map> response = (List<Map>) JSON.parse(r);
 
-                return response.stream().map(item-> getResponseObject(expectedID, item)).collect(Collectors.toList());
+                return response.stream().map(item-> {
+                  try {
+                    Object expectedId = batchParams.stream()
+                            .filter(batchParam -> batchParam.id.equals(item.get("id")))
+                            .findFirst().orElseGet(()->new BatchParam(null, null)).id;
+                    return getResponseObject(expectedId, item);
+                  } catch (BitcoinRPCException e) {
+                    return e;
+                  }
+                  }).collect(Collectors.toList());
             } catch (ClassCastException ex) {
                 throw new BitcoinRPCException("Invalid server response format (data: \"" + r + "\")");
             }
@@ -318,7 +327,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       throw new BitcoinRPCException("Wrong response ID (expected: " + String.valueOf(expectedID) + ", response: " + response.get("id") + ")");
 
     if (response.get("error") != null)
-      throw new BitcoinRPCException(new BitcoinRPCError((Map)response.get("error")));
+      throw new BitcoinRPCException(new BitcoinRPCError(response));
 
     return response.get("result");
   }
@@ -358,7 +367,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
   }
 
-  public Object batchQuery(String method, List<Object[]> paramsList) throws GenericRpcException {
+  public Object batchQuery(String method, List<BatchParam> batchParams) throws GenericRpcException {
     HttpURLConnection conn;
     try {
       conn = (HttpURLConnection) noAuthURL.openConnection();
@@ -374,7 +383,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       }
 
       ((HttpURLConnection) conn).setRequestProperty("Authorization", "Basic " + authStr);
-      byte[] r = prepareBatchRequest(method, paramsList);
+      byte[] r = prepareBatchRequest(method, batchParams);
       logger.log(Level.FINE, "Bitcoin JSON-RPC request:\n{0}", new String(r, QUERY_CHARSET));
       conn.getOutputStream().write(r);
       conn.getOutputStream().close();
@@ -382,15 +391,15 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       if (responseCode != 200) {
         InputStream errorStream = conn.getErrorStream();
         throw new BitcoinRPCException(method,
-                paramsList.stream().map(param->Arrays.deepToString(param)).collect(Collectors.joining()),
+                batchParams.stream().map(param->Arrays.deepToString(param.params)).collect(Collectors.joining()),
                 responseCode,
                 conn.getResponseMessage(),
                 errorStream == null ? null : new String(loadStream(errorStream, true)));
       }
-      return loadBatchResponse((conn.getInputStream()), "1", true);
+      return loadBatchResponse((conn.getInputStream()), batchParams, true);
     } catch (IOException ex) {
-      throw new BitcoinRPCException(method, paramsList.stream()
-              .map(param->Arrays.deepToString(param)).collect(Collectors.joining()), ex);
+      throw new BitcoinRPCException(method, batchParams.stream()
+              .map(param->Arrays.deepToString(param.params)).collect(Collectors.joining()), ex);
     }
   }
 
@@ -583,10 +592,21 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
   @SuppressWarnings("unchecked")
   public List<RawTransaction> getRawTransactions(List<String> txIds) throws GenericRpcException {
-    List<Map<String, Object>> rawTransactions = (List<Map<String, Object>>) batchQuery("getrawtransaction",
-            txIds.stream().map(txId -> new Object[]{txId, 1})
+    List<Object> rawTransactions = (List<Object>) batchQuery("getrawtransaction",
+            txIds.stream().map(txId -> new BatchParam(txId, new Object[]{txId, 1}))
                     .collect(Collectors.toList()));
-    return rawTransactions.stream().map(RawTransactionImpl::new).collect(Collectors.toList());
+
+    return rawTransactions.stream().<RawTransaction>map(rawTransaction -> {
+      if (rawTransaction instanceof BitcoinRPCException) {
+        Map<String, Object> builtErroredTx = new LinkedHashMap<>();
+        BitcoinRPCError rpcError = ((BitcoinRPCException) rawTransaction).getRPCError();
+        builtErroredTx.put("txid", rpcError.getId());
+        builtErroredTx.put("error", rpcError.getMessage());
+        return new RawTransactionImpl(builtErroredTx);
+      } else {
+        return new RawTransactionImpl((Map<String, ?>) rawTransaction);
+      }
+    }).collect(Collectors.toList());
   }
 
   @Override
@@ -2097,6 +2117,11 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
     @Override
+    public String error() {
+      return mapStr("error");
+    }
+
+    @Override
     public String hex() {
       return mapStr("hex");
     }
@@ -2886,4 +2911,14 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 			return mapStr("purpose");
 		}
 	}
+
+	private class BatchParam {
+      public final String id;
+      public final Object[] params;
+
+      BatchParam(String id, Object[] params) {
+        this.id=id;
+        this.params=params;
+      }
+    }
 }

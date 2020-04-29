@@ -28,12 +28,15 @@ import java.util.Map;
 public class BitcoinRPCError {
     private int code;
     private String message;
+    private Object id;
 
     @SuppressWarnings({ "rawtypes" })
-    public BitcoinRPCError(Map errorMap) {
-        Number n = (Number) errorMap.get("code");
+    public BitcoinRPCError(Map errorResponse) {
+        Map error = (Map)errorResponse.get("error");
+        Number n = (Number) error.get("code");
         this.code    = n != null ? n.intValue() : 0;
-        this.message = (String) errorMap.get("message");
+        this.message = (String) error.get("message");
+        this.id = errorResponse.get("id");
     }
 
     /**
@@ -46,5 +49,9 @@ public class BitcoinRPCError {
 
     public String getMessage() {
         return message;
+    }
+
+    public Object getId(){
+        return id;
     }
 }

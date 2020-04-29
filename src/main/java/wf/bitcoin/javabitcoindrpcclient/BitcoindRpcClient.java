@@ -1775,6 +1775,8 @@ public interface BitcoindRpcClient {
 
   interface RawTransaction extends MapWrapperType, Serializable {
 
+   String error();
+
     String hex();
 
     String txId();
