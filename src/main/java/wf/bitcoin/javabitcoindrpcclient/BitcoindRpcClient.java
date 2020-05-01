@@ -427,6 +427,15 @@ public interface BitcoindRpcClient {
   RawTransaction getRawTransaction(String txId) throws GenericRpcException;
 
   /**
+   * Get list of raw transactions
+   *
+   * @param txIds The TXIDs of the transactions to get, encoded as hex in RPC byte order
+   *
+   * @see #getRawTransaction(String) for details
+   */
+  List<RawTransaction> getRawTransactions(List<String> txIds) throws GenericRpcException;
+
+  /**
    * The getrawtransaction RPC gets a hex-encoded serialized transaction.
    * 
    * @param txId The TXID of the transaction to get, encoded as hex in RPC byte order
@@ -1765,6 +1774,8 @@ public interface BitcoindRpcClient {
   }
 
   interface RawTransaction extends MapWrapperType, Serializable {
+
+   String error();
 
     String hex();
 

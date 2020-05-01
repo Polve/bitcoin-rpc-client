@@ -48,8 +48,8 @@ public class BitcoinRPCException extends GenericRpcException {
    */
   @SuppressWarnings("rawtypes")
   public BitcoinRPCException(String method, 
-                             String params, 
-                             int    responseCode, 
+                             String params,
+                             int    responseCode,
                              String responseMessage, 
                              String response) {
     super("RPC Query Failed (method: " + method + ", params: " + params + ", response code: " + responseCode + " responseMessage " + responseMessage + ", response: " + response);
@@ -86,7 +86,7 @@ public class BitcoinRPCException extends GenericRpcException {
 
   public BitcoinRPCException(BitcoinRPCError error) {
       super(error.getMessage());
-      this.rpcError  = error;
+      this.rpcError = error;
   }
   
   public BitcoinRPCException(String message, Throwable cause) {
