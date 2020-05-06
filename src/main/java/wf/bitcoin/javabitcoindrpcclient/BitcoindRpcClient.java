@@ -1241,6 +1241,74 @@ public interface BitcoindRpcClient {
   * @see <a href="https://bitcoin.org/en/developer-reference#walletpassphrase">walletpassphrase</a>
   */
  void walletPassPhrase(String passPhrase, long timeOut);
+ 
+ /**
+  * The scantxoutset RPC scans the unspent transaction output set for entries that match certain output descriptors.
+  * <p>
+  * Examples of output descriptors are:
+  * <ul>
+    <li>addr(&lt;address&gt;})                     Outputs whose scriptPubKey corresponds to the specified address (does not include P2PK)</li>
+    <li>raw(&lt;hex script&gt;)                    Outputs whose scriptPubKey equals the specified hex scripts</li>
+    <li>combo(&lt;pubkey&gt;)                      P2PK, P2PKH, P2WPKH, and P2SH-P2WPKH outputs for the given pubkey</li>
+    <li>pkh(&lt;pubkey&gt;)                        P2PKH outputs for the given pubkey</li>
+    <li>sh(multi(&lt;n&gt;,&lt;pubkey&gt;,&lt;pubkey&gt;,...)) P2SH-multisig outputs for the given threshold and pubkeys</li>
+    </ul>
+  * 
+  * In the above, <pubkey> either refers to a fixed public key in hexadecimal notation, or to an xpub/xprv optionally followed by one
+  * or more path elements separated by "/", and optionally ending in "/*" (unhardened), or "/*'" or "/*h" (hardened) to specify all
+  * unhardened or hardened child keys.
+  * In the latter case, a range needs to be specified by below if different from 1000.
+  * For more information on output descriptors, see the documentation in the doc/descriptors.md file.
+  * @see <a href="https://bitcoin.org/en/developer-reference#scantxoutset">scantxoutset</a>
+  * 
+  * @param scanObjects Output descriptors
+  * @return
+  */
+ UtxoSet scanTxOutSet(List<ScanObject> scanObjects);
+
+ /**
+  * Returns the status for progress report (in %) of the current scan.
+  * 
+  * @see #scanTxOutSet(List)
+  * @return
+  * @throws GenericRpcException
+  */
+ Integer scanTxOutSetStatus() throws GenericRpcException;
+
+ /**
+  * Aborts the current scan
+  * 
+  * @see #scanTxOutSet(List)
+  * @return true when abort was successful
+  * @throws GenericRpcException
+  */
+ Boolean abortScanTxOutSet() throws GenericRpcException;
+ 
+ /**
+  * Convenience method for retrieving UTXO SET for a list of addresses.
+  * (Outputs whose scriptPubKey corresponds to the specified address (does not include P2PK))
+  * @see #scanTxOutSet(List) 
+  * @param addresses
+  * @return
+  * @throws GenericRpcException
+  */
+ public UtxoSet scanTxOutSetAddresses(List<String> addresses) throws GenericRpcException;
+ 
+ /**
+  * Convenience method for retrieving UTXO SET (P2PK, P2PKH, P2WPKH, and
+  * P2SH-P2WPKH outputs) for a given pubkey.
+  * 
+  * <pubkey> either refers to a fixed public key in hexadecimal notation, or to
+  * an xpub/xprv optionally followed by one or more path elements separated by
+  * "/", and optionally ending in "/*" (unhardened), or "/*'" or "/*h" (hardened)
+  * to specify all unhardened or hardened child keys.
+  * 
+  * @see #scanTxOutSet(List)
+  * @param addresses
+  * @return
+  * @throws GenericRpcException
+  */
+ public UtxoSet scanTxOutSetPubKey(String pubkey, int range) throws GenericRpcException;
 
  /*
   * Zmq
@@ -2116,4 +2184,62 @@ public interface BitcoindRpcClient {
 	   */
 	  String error();
   }
+  
+
+  public static interface UnspentTxOutput extends TxInput {
+
+    public String txid();
+
+    public Integer vout();
+
+    public String scriptPubKey();
+    
+    public String desc();
+
+    public BigDecimal amount();
+
+    public int height();
+  }
+
+  public static interface UtxoSet {
+
+    public Integer searchedItems();
+
+    public BigDecimal totalAmount();
+
+    public List<UnspentTxOutput> unspents();
+  }
+
+  /**
+   * Input object for scantxoutset operation
+   */
+  @SuppressWarnings("serial")
+  public static class ScanObject implements Serializable {
+
+    private String descriptor;
+    private Integer range;
+
+    public ScanObject(String descriptor, Integer range) {
+      this.descriptor = descriptor;
+      this.range = range;
+    }
+
+    public String getDescriptor() {
+      return descriptor;
+    }
+
+    public void setDescriptor(String descriptor) {
+      this.descriptor = descriptor;
+    }
+
+    public Integer getRange() {
+      return range;
+    }
+
+    public void setRange(Integer range) {
+      this.range = range;
+    }
+
+  }
+
 }
