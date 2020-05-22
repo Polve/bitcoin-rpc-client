@@ -941,6 +941,12 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
+  public List<String> generateToAddress(int numBlocks, String address, long maxTries) throws BitcoinRPCException {
+    return (List<String>) query("generatetoaddress", numBlocks, address, maxTries);
+  }
+
+  @Override
   public BigDecimal estimateFee(int nBlocks) throws GenericRpcException {
     return (BigDecimal) query("estimatefee", nBlocks);
   }

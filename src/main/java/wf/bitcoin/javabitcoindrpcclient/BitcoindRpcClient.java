@@ -240,6 +240,17 @@ public interface BitcoindRpcClient {
    * @see <a href="https://bitcoin.org/en/developer-reference#generatetoaddress">generatetoaddress</a>
    */
   List<String> generateToAddress(int numBlocks, String address) throws BitcoinRPCException;
+  
+  /**
+   * The generatetoaddress RPC mines blocks immediately to a specified address.
+   *
+   * @param numBlocks The number of blocks to generate.
+   * @param address The address to send the newly generated Bitcoin to
+   * @param maxTries The maximum number of iterations that are tried to create the requested number of blocks.
+   *
+   * @see <a href="https://bitcoin.org/en/developer-reference#generatetoaddress">generatetoaddress</a>
+   */
+  List<String> generateToAddress(int numBlocks, String address, long maxTries) throws BitcoinRPCException;
 
   /*
    * Mining
