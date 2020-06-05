@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -75,6 +76,8 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   public static final URL DEFAULT_JSONRPC_REGTEST_URL;
 
   public static final Charset QUERY_CHARSET = Charset.forName("ISO8859-1");
+  public static final int CONNECT_TIMEOUT = (int) TimeUnit.MINUTES.toMillis(1);
+  public static final int READ_TIMEOUT = (int) TimeUnit.MINUTES.toMillis(5);
 
   static {
     String user = "user";
@@ -341,6 +344,9 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       conn.setDoOutput(true);
       conn.setDoInput(true);
 
+      conn.setConnectTimeout(CONNECT_TIMEOUT);
+      conn.setReadTimeout(READ_TIMEOUT);
+
       if (conn instanceof HttpsURLConnection) {
         if (hostnameVerifier != null)
           ((HttpsURLConnection) conn).setHostnameVerifier(hostnameVerifier);
@@ -375,6 +381,9 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
       conn.setDoOutput(true);
       conn.setDoInput(true);
+
+      conn.setConnectTimeout(CONNECT_TIMEOUT);
+      conn.setReadTimeout(READ_TIMEOUT);
 
       if (conn instanceof HttpsURLConnection) {
         if (hostnameVerifier != null)
