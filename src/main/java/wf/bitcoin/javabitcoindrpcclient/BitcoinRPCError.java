@@ -32,11 +32,13 @@ public class BitcoinRPCError {
 
     @SuppressWarnings({ "rawtypes" })
     public BitcoinRPCError(Map errorResponse) {
-        Map error = (Map)errorResponse.get("error");
-        Number n = (Number) error.get("code");
-        this.code    = n != null ? n.intValue() : 0;
-        this.message = (String) error.get("message");
         this.id = errorResponse.get("id");
+        Map error = (Map)errorResponse.get("error");
+        if (error != null) {
+          Number n = (Number) error.get("code");
+          this.code    = n != null ? n.intValue() : 0;
+          this.message = (String) error.get("message");
+        }
     }
 
     /**
