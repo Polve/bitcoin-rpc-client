@@ -6,7 +6,7 @@
   <artifactId>bitcoin-rpc-client</artifactId>
   <packaging>jar</packaging>
   
-  <version>1.2.1</version>
+  <version>1.2.2</version>
   
   <name>Java Bitcoind RPC Client</name>
   <description>A lightweight Java bitcoin JSON-RPC client binding</description>
@@ -62,7 +62,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.12</version>
+      <version>4.13.1</version>
       <scope>test</scope>
     </dependency>
     

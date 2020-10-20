@@ -120,11 +120,12 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     		  ).exists())
       {
     	  // Look for the cofig file on the Windows path
-      }
+      } else
+        configFile = null;
 
       // If config file is found, attempt to parse its contents
       if (configFile != null) {
-        logger.fine("Bitcoin configuration file found");
+        logger.fine("Bitcoin configuration file: " + configFile);
 
         Properties configProps = new Properties();
         try (FileInputStream i = new FileInputStream(configFile)) {
