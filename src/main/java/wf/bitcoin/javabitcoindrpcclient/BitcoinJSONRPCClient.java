@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -75,6 +76,8 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   public static final URL DEFAULT_JSONRPC_REGTEST_URL;
 
   public static final Charset QUERY_CHARSET = Charset.forName("ISO8859-1");
+  public static final int CONNECT_TIMEOUT = (int) TimeUnit.MINUTES.toMillis(1);
+  public static final int READ_TIMEOUT = (int) TimeUnit.MINUTES.toMillis(5);
 
   static {
     String user = "user";
@@ -117,11 +120,12 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     		  ).exists())
       {
     	  // Look for the cofig file on the Windows path
-      }
+      } else
+        configFile = null;
 
       // If config file is found, attempt to parse its contents
       if (configFile != null) {
-        logger.fine("Bitcoin configuration file found");
+        logger.fine("Bitcoin configuration file: " + configFile);
 
         Properties configProps = new Properties();
         try (FileInputStream i = new FileInputStream(configFile)) {
@@ -341,6 +345,9 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       conn.setDoOutput(true);
       conn.setDoInput(true);
 
+      conn.setConnectTimeout(CONNECT_TIMEOUT);
+      conn.setReadTimeout(READ_TIMEOUT);
+
       if (conn instanceof HttpsURLConnection) {
         if (hostnameVerifier != null)
           ((HttpsURLConnection) conn).setHostnameVerifier(hostnameVerifier);
@@ -375,6 +382,9 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
       conn.setDoOutput(true);
       conn.setDoInput(true);
+
+      conn.setConnectTimeout(CONNECT_TIMEOUT);
+      conn.setReadTimeout(READ_TIMEOUT);
 
       if (conn instanceof HttpsURLConnection) {
         if (hostnameVerifier != null)
@@ -944,6 +954,12 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   @SuppressWarnings("unchecked")
   public List<String> generateToAddress(int numBlocks, String address) throws BitcoinRPCException {
     return (List<String>) query("generatetoaddress", numBlocks, address);
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public List<String> generateToAddress(int numBlocks, String address, long maxTries) throws BitcoinRPCException {
+    return (List<String>) query("generatetoaddress", numBlocks, address, maxTries);
   }
 
   @Override
