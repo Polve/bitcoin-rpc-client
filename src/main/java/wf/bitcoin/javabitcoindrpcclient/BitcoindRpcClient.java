@@ -79,7 +79,17 @@ public interface BitcoindRpcClient {
    * @see <a href="https://bitcoin.org/en/developer-reference#getblock">getblock</a>
    */
   Block getBlock(String blockHash) throws GenericRpcException;
-
+  
+  /**
+   * The getblock (with verbosity = 2) RPC gets a block (Containing information about each transaction) with a
+   * particular header hash from the local block database either as a JSON object or as a serialized block.
+   * 
+   * @param blockHash The hash of the header of the block to get, encoded as hex in RPC byte order
+   * 
+   * @see <a href="https://bitcoin.org/en/developer-reference#getblock">getblock</a>
+   */  
+  BlockWithTxInfo getBlockWithTxInfo(String blockHash) throws GenericRpcException;
+  
   /**
    * The getblock RPC gets a block with a particular header hash from the local block database as a serialized block.
    * 
@@ -1507,8 +1517,7 @@ public interface BitcoindRpcClient {
 	}
  }
 
- static interface Block extends MapWrapperType, Serializable {
-
+ static interface BlockBase<B, T> extends MapWrapperType, Serializable {
    String hash();
 
    int confirmations();
@@ -1521,7 +1530,7 @@ public interface BitcoindRpcClient {
 
    String merkleRoot();
 
-   List<String> tx();
+   List<T> tx();
 
    Date time();
 
@@ -1537,11 +1546,16 @@ public interface BitcoindRpcClient {
 
    String chainwork();
 
-   Block previous() throws GenericRpcException;
+   B previous() throws GenericRpcException;
 
-   Block next() throws GenericRpcException;
+   B next() throws GenericRpcException;
  }
 
+ static interface Block extends BlockBase<Block, String>, MapWrapperType, Serializable {
+ }
+ 
+ static interface BlockWithTxInfo extends BlockBase<BlockWithTxInfo, RawTransaction>, MapWrapperType, Serializable {
+ }
  static interface BlockChainInfo extends MapWrapperType, Serializable {
 
    String chain();
