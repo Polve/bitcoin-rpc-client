@@ -494,7 +494,13 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   public Block getBlock(String blockHash) throws GenericRpcException {
     return new BlockMapWrapper((Map<String, ?>) query("getblock", blockHash));
   }
-
+  
+  @Override
+  @SuppressWarnings({ "unchecked" })
+  public BlockWithTxInfo getBlockWithTxInfo(String blockHash) throws GenericRpcException {
+    return new BlockWithTxInfoMapWrapper((Map<String, ?>) query("getblock", blockHash, 2)); // verbosity = 2
+  }
+  
   @Override
   public String getRawBlock(String blockHash) throws GenericRpcException {
     return (String) query("getblock", blockHash, false);
@@ -1644,82 +1650,110 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 		}
 	}
 
+	
+
+  private abstract class BlockBaseMapWrapper extends MapWrapper {
+    private BlockBaseMapWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    public String hash() {
+      return mapStr("hash");
+    }
+
+    public int confirmations() {
+      return mapInt("confirmations");
+    }
+
+    public int size() {
+      return mapInt("size");
+    }
+
+    public int height() {
+      return mapInt("height");
+    }
+
+    public int version() {
+      return mapInt("version");
+    }
+
+    public String merkleRoot() {
+      return mapStr("merkleroot");
+    }
+
+    public String chainwork() {
+      return mapStr("chainwork");
+    }
+
+    public Date time() {
+      return mapDate("time");
+    }
+
+    public long nonce() {
+      return mapLong("nonce");
+    }
+
+    public String bits() {
+      return mapStr("bits");
+    }
+
+    public BigDecimal difficulty() {
+      return mapBigDecimal("difficulty");
+    }
+
+    public String previousHash() {
+      return mapStr("previousblockhash");
+    }
+
+    public String nextHash() {
+      return mapStr("nextblockhash");
+    }
+  }
+  
+  private class BlockWithTxInfoMapWrapper extends BlockBaseMapWrapper implements BlockWithTxInfo, Serializable {
+
+    private BlockWithTxInfoMapWrapper(Map<String, ?> m) {
+      super(m);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<RawTransaction> tx() {
+      List<Map<String, ?>> txList = (List<Map<String, ?>>) m.get("tx");
+      List<RawTransaction> transactions = new LinkedList<RawTransaction>();
+      for (Map<String, ?> m : txList) {
+        RawTransactionImpl tx = new RawTransactionImpl(m);
+        transactions.add(tx);
+      }
+      return transactions;
+    }
+
+    @Override
+    public BlockWithTxInfo previous() throws GenericRpcException {
+      if (!m.containsKey("previousblockhash"))
+        return null;
+      return getBlockWithTxInfo(previousHash());
+    }
+
+    @Override
+    public BlockWithTxInfo next() throws GenericRpcException {
+      if (!m.containsKey("nextblockhash"))
+        return null;
+      return getBlockWithTxInfo(nextHash());
+    }
+  }
+  
   @SuppressWarnings("serial")
-  private class BlockMapWrapper extends MapWrapper implements Block, Serializable {
+  private class BlockMapWrapper extends BlockBaseMapWrapper implements Block, Serializable {
 
     private BlockMapWrapper(Map<String, ?> m) {
       super(m);
     }
 
     @Override
-    public String hash() {
-      return mapStr("hash");
-    }
-
-    @Override
-    public int confirmations() {
-      return mapInt("confirmations");
-    }
-
-    @Override
-    public int size() {
-      return mapInt("size");
-    }
-
-    @Override
-    public int height() {
-      return mapInt("height");
-    }
-
-    @Override
-    public int version() {
-      return mapInt("version");
-    }
-
-    @Override
-    public String merkleRoot() {
-      return mapStr("merkleroot");
-    }
-
-    @Override
-    public String chainwork() {
-      return mapStr("chainwork");
-    }
-
-    @Override
     @SuppressWarnings("unchecked")
     public List<String> tx() {
       return (List<String>) m.get("tx");
-    }
-
-    @Override
-    public Date time() {
-      return mapDate("time");
-    }
-
-    @Override
-    public long nonce() {
-      return mapLong("nonce");
-    }
-
-    @Override
-    public String bits() {
-      return mapStr("bits");
-    }
-
-    @Override
-    public BigDecimal difficulty() {
-      return mapBigDecimal("difficulty");
-    }
-
-    @Override
-    public String previousHash() {
-      return mapStr("previousblockhash");
-    }
-
-    @Override
-    public String nextHash() {
-      return mapStr("nextblockhash");
     }
 
     @Override
@@ -1737,7 +1771,6 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     }
 
   }
-
   @SuppressWarnings("serial")
   private class DecodedScriptImpl extends MapWrapper implements DecodedScript, Serializable {
 
