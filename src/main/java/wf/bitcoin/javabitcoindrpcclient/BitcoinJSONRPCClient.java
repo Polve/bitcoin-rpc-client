@@ -355,7 +355,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
           ((HttpsURLConnection) conn).setSSLSocketFactory(sslSocketFactory);
       }
 
-      ((HttpURLConnection) conn).setRequestProperty("Authorization", "Basic " + authStr);
+      conn.setRequestProperty("Authorization", "Basic " + authStr);
       byte[] r = prepareRequest(method, o);
       logger.log(Level.FINE, "Bitcoin JSON-RPC request:\n{0}", new String(r, QUERY_CHARSET));
       conn.getOutputStream().write(r);
@@ -393,7 +393,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
           ((HttpsURLConnection) conn).setSSLSocketFactory(sslSocketFactory);
       }
 
-      ((HttpURLConnection) conn).setRequestProperty("Authorization", "Basic " + authStr);
+      conn.setRequestProperty("Authorization", "Basic " + authStr);
       byte[] r = prepareBatchRequest(method, batchParams);
       logger.log(Level.FINE, "Bitcoin JSON-RPC request:\n{0}", new String(r, QUERY_CHARSET));
       conn.getOutputStream().write(r);
