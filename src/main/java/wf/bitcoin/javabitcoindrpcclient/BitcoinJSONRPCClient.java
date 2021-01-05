@@ -1018,7 +1018,6 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 
   @Override
   public BigDecimal getDifficulty() throws GenericRpcException {
-    System.out.println(query("getdifficulty"));
     return (BigDecimal) query("getdifficulty");
   }
 
