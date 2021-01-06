@@ -357,7 +357,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
         if (sslSocketFactory != null)
           ((HttpsURLConnection) conn).setSSLSocketFactory(sslSocketFactory);
       }
-      ((HttpURLConnection) conn).setRequestProperty("Authorization", "Basic " + authStr);
+      conn.setRequestProperty("Authorization", "Basic " + authStr);
       return conn;
     } catch (IOException ex) {
       throw new BitcoinRPCException("Fail to set authenticated connection with server");
