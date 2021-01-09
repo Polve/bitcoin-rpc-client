@@ -337,7 +337,10 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
     return response.get("result");
   }
 
-  public Object query(String method, Object... o) throws GenericRpcException {
+  /**
+   * Set an authenticated connection with Bitcoin server
+   */
+  private HttpURLConnection setConnection() {
     HttpURLConnection conn;
     try {
       conn = (HttpURLConnection) noAuthURL.openConnection();
@@ -354,8 +357,16 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
         if (sslSocketFactory != null)
           ((HttpsURLConnection) conn).setSSLSocketFactory(sslSocketFactory);
       }
-
       conn.setRequestProperty("Authorization", "Basic " + authStr);
+      return conn;
+    } catch (IOException ex) {
+      throw new BitcoinRPCException("Fail to set authenticated connection with server");
+    }
+  }
+
+  public Object query(String method, Object... o) throws GenericRpcException {
+    HttpURLConnection conn = setConnection();
+    try {
       byte[] r = prepareRequest(method, o);
       logger.log(Level.FINE, "Bitcoin JSON-RPC request:\n{0}", new String(r, QUERY_CHARSET));
       conn.getOutputStream().write(r);
@@ -376,24 +387,8 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   }
 
   public Object batchQuery(String method, List<BatchParam> batchParams) throws GenericRpcException {
-    HttpURLConnection conn;
+    HttpURLConnection conn = setConnection();
     try {
-      conn = (HttpURLConnection) noAuthURL.openConnection();
-
-      conn.setDoOutput(true);
-      conn.setDoInput(true);
-
-      conn.setConnectTimeout(CONNECT_TIMEOUT);
-      conn.setReadTimeout(READ_TIMEOUT);
-
-      if (conn instanceof HttpsURLConnection) {
-        if (hostnameVerifier != null)
-          ((HttpsURLConnection) conn).setHostnameVerifier(hostnameVerifier);
-        if (sslSocketFactory != null)
-          ((HttpsURLConnection) conn).setSSLSocketFactory(sslSocketFactory);
-      }
-
-      conn.setRequestProperty("Authorization", "Basic " + authStr);
       byte[] r = prepareBatchRequest(method, batchParams);
       logger.log(Level.FINE, "Bitcoin JSON-RPC request:\n{0}", new String(r, QUERY_CHARSET));
       conn.getOutputStream().write(r);
@@ -494,13 +489,13 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   public Block getBlock(String blockHash) throws GenericRpcException {
     return new BlockMapWrapper((Map<String, ?>) query("getblock", blockHash));
   }
-  
+
   @Override
   @SuppressWarnings({ "unchecked" })
   public BlockWithTxInfo getBlockWithTxInfo(String blockHash) throws GenericRpcException {
     return new BlockWithTxInfoMapWrapper((Map<String, ?>) query("getblock", blockHash, 2)); // verbosity = 2
   }
-  
+
   @Override
   public String getRawBlock(String blockHash) throws GenericRpcException {
     return (String) query("getblock", blockHash, false);
@@ -1188,7 +1183,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
   public List<AddressUtxo> getAddressUtxo(String address) {
     return new AddressUtxoList((List<Map<String, ?>>) query("getaddressutxos", address));
   }
-  
+
 
   @SuppressWarnings("unchecked")
   @Override
@@ -1237,7 +1232,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 	   ScanObject scanObj = new ScanObject("combo(" + pubkey  + ")", range);
 	    return scanTxOutSet(Arrays.asList(scanObj));
 	  }
-	 
+
   @SuppressWarnings("serial")
   private class AddressBalanceWrapper extends MapWrapper implements AddressBalance, Serializable
   {
@@ -1650,7 +1645,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
 		}
 	}
 
-	
+
 
   private abstract class BlockBaseMapWrapper extends MapWrapper {
     private BlockBaseMapWrapper(Map<String, ?> m) {
@@ -1709,7 +1704,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       return mapStr("nextblockhash");
     }
   }
-  
+
   private class BlockWithTxInfoMapWrapper extends BlockBaseMapWrapper implements BlockWithTxInfo, Serializable {
 
     private BlockWithTxInfoMapWrapper(Map<String, ?> m) {
@@ -1742,7 +1737,7 @@ public class BitcoinJSONRPCClient implements BitcoindRpcClient {
       return getBlockWithTxInfo(nextHash());
     }
   }
-  
+
   @SuppressWarnings("serial")
   private class BlockMapWrapper extends BlockBaseMapWrapper implements Block, Serializable {
 
